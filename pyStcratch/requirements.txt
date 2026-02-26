@@ -35,8 +35,8 @@ zhipuai>=2.1.5
 pytest>=7.4.0
 pytest-asyncio>=0.21.0
 
-# Optional: Playwright for browser automation (uncomment if needed)
-# playwright==1.40.0
+# Playwright for browser automation
+playwright>=1.40.0
 
 # Streamlit Frontend
 streamlit>=1.28.0

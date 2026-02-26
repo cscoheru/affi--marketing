@@ -7,8 +7,9 @@ import requests
 from typing import Dict, List, Optional, Any
 from loguru import logger
 
-# Add project path for imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add project root to path for imports (go up two levels from utils/ to project root)
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, project_root)
 
 from utils.config import API_BASE_URL
 
