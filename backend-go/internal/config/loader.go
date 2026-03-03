@@ -64,7 +64,6 @@ func setDefaults(v *viper.Viper) {
 	// Database defaults
 	v.SetDefault("database.max_open_conns", 100)
 	v.SetDefault("database.max_idle_conns", 10)
-	v.SetDefault("database.conn_max_lifetime", "1h")
 
 	// Redis defaults
 	v.SetDefault("redis.pool_size", 10)
