@@ -1,0 +1,46 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Dependencies
+node_modules/
+vendor/
+__pycache__/
+*.pyc
+
+# Build
+dist/
+build/
+*.exe
+*.dll
+*.so
+*.dylib
+bin/
+
+# Logs
+logs/
+*.log
+
+# Temporary
+*.tmp
+.output/
+.cache/
+
+# Python
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Go
+*.test
+*.out
+go.work

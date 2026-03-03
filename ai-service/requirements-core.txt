@@ -1,0 +1,16 @@
+# Core dependencies only - no compilation needed
+fastapi==0.115.0
+uvicorn==0.30.0
+python-multipart==0.0.9
+httpx==0.27.0
+pydantic==2.6.0
+pydantic-settings==2.2.0
+python-dotenv==1.0.0
+loguru==0.7.2
+tenacity==8.2.3
+python-dateutil==2.8.2
+
+# AI SDKs
+dashscope==1.17.0
+openai==1.12.0
+zhipuai==2.0.1

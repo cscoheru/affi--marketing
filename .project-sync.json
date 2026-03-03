@@ -1,0 +1,128 @@
+{
+  "$schema": "schemas/project-sync.json",
+  "project": {
+    "name": "Affi-Marketing",
+    "version": "0.1.0",
+    "description": "商业模式测试与统一管理平台",
+    "status": "architecture_complete",
+    "started_at": "2026-03-03T00:00:00Z",
+    "updated_at": "2026-03-03T14:00:00Z",
+    "working_directory": "/Users/kjonekong/Documents/Affi-Marketing",
+    "domain": "zenconsult.top"
+  },
+  "roles": {
+    "01-architect": {
+      "name": "架构师",
+      "status": "completed",
+      "estimated_hours": 16,
+      "dependencies": [],
+      "deliverables": ["docs/ARCHITECTURE.md", "docs/PLUGIN_SYSTEM.md", "docs/API_SPEC.md", "docs/DATA_MODELS.md", "docs/DEPLOYMENT_ARCHITECTURE.md", "docs/DECISIONS.md"]
+    },
+    "02-frontend": {
+      "name": "前端工程师",
+      "status": "unblocked",
+      "estimated_hours": 24,
+      "dependencies": ["01-architect"],
+      "deliverables": ["frontend/src/", "frontend/vercel.json"]
+    },
+    "03-database": {
+      "name": "数据库工程师",
+      "status": "unblocked",
+      "estimated_hours": 8,
+      "dependencies": ["01-architect"],
+      "deliverables": ["migrations/*.sql", "docs/DATABASE_SCHEMA.md"]
+    },
+    "04-ai-engine": {
+      "name": "AI工程师",
+      "status": "unblocked",
+      "estimated_hours": 20,
+      "dependencies": ["01-architect"],
+      "deliverables": ["ai-service/services/", "ai-service/main.py"]
+    },
+    "05-backend": {
+      "name": "后端工程师",
+      "status": "unblocked",
+      "estimated_hours": 32,
+      "dependencies": ["01-architect", "03-database"],
+      "deliverables": ["backend-go/internal/", "backend-go/cmd/server/main.go"]
+    },
+    "06-devops": {
+      "name": "部署测试工程师",
+      "status": "blocked",
+      "estimated_hours": 16,
+      "dependencies": ["02-frontend", "05-backend", "04-ai-engine"],
+      "deliverables": ["docs/DEPLOYMENT_GUIDE.md", "docs/TEST_REPORT.md"]
+    }
+  },
+  "milestones": {
+    "M1-architecture": {
+      "name": "架构设计",
+      "status": "completed",
+      "roles": ["01-architect"]
+    },
+    "M2-data": {
+      "name": "数据准备",
+      "status": "pending",
+      "roles": ["03-database"]
+    },
+    "M3-development": {
+      "name": "核心开发",
+      "status": "pending",
+      "roles": ["02-frontend", "04-ai-engine", "05-backend"]
+    },
+    "M4-deployment": {
+      "name": "部署测试",
+      "status": "pending",
+      "roles": ["06-devops"]
+    }
+  },
+  "infrastructure": {
+    "aliyun": {
+      "name": "阿里云杭州",
+      "ip": "139.224.42.111",
+      "services": {
+        "postgresql": {
+          "host": "139.224.42.111",
+          "port": 5432,
+          "user": "postgres",
+          "password": "WhjQTPAwInc5Vav3sDWe",
+          "databases": ["postgres", "business_heap"]
+        },
+        "redis": {
+          "host": "139.224.42.111",
+          "port": 6379,
+          "password": "FWD4D75OKyQS7HOluA6J"
+        }
+      }
+    },
+    "hongkong": {
+      "name": "香港",
+      "ip": "103.59.103.85",
+      "services": {
+        "minio": {
+          "endpoint": "http://103.59.103.85:9000",
+          "access_key": "admin",
+          "secret_key": "xhOSMeHNmxCgNTBpoQfH",
+          "buckets": []
+        },
+        "chatwoot": {
+          "base_url": "https://chat.zenconsult.top",
+          "api_token": "7Y4bXT3epqqu5mEo1Bq96UHz"
+        }
+      }
+    }
+  },
+  "deployments": {
+    "railway": {
+      "backend": "api-hub.zenconsult.top",
+      "ai_service": "ai-api.zenconsult.top"
+    },
+    "vercel": {
+      "frontend": "hub.zenconsult.top"
+    },
+    "cloudflare": {
+      "tracking": "tracker.zenconsult.top",
+      "link_shortener": "go.zenconsult.top"
+    }
+  }
+}
