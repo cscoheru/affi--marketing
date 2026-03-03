@@ -74,9 +74,20 @@ func main() {
 	// Railway compatibility: use PORT environment variable if provided
 	port := cfg.Server.Port
 	if envPort := os.Getenv("PORT"); envPort != "" {
-		if p, err := fmt.Sscanf(envPort, "%d", &port); p == 1 && err == nil {
-			logger.Info("Using Railway PORT", zap.Int("port", port))
+		var portInt int
+		if _, err := fmt.Sscanf(envPort, "%d", &portInt); err == nil {
+			port = portInt
+			logger.Info("Using Railway PORT environment variable",
+				zap.String("raw_value", envPort),
+				zap.Int("parsed_port", port))
+		} else {
+			logger.Warn("Failed to parse PORT env var",
+				zap.String("value", envPort),
+				zap.Error(err))
 		}
+	} else {
+		logger.Info("No PORT environment variable, using config",
+			zap.Int("port", port))
 	}
 
 	// 创建服务器
@@ -125,13 +136,11 @@ func main() {
 func setupRouter(cfg *config.Config) *gin.Engine {
 	router := gin.New()
 
-	// 中间件
-	router.Use(middleware.CORS(cfg.CORS))
-	router.Use(middleware.Logging(logger.L()))
+	// 中间件（只对 API 路由应用）
 	router.Use(middleware.Recovery(logger.L()))
 	router.Use(middleware.RequestID())
 
-	// 健康检查（添加日志以调试）
+	// 健康检查和根路径不使用任何中间件，确保 Railway 健康检查能通过
 	router.GET("/health", func(c *gin.Context) {
 		logger.Info("Healthcheck called", zap.String("path", c.Request.URL.Path))
 		c.JSON(http.StatusOK, gin.H{
@@ -139,7 +148,6 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 			"service": "affi-marketing-api",
 			"version": "0.1.0",
 		})
-		logger.Info("Healthcheck response sent")
 	})
 
 	// 根端点（用于测试）
@@ -154,8 +162,10 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 	// 获取数据库实例
 	db := database.Get()
 
-	// API v1 路由组
+	// API v1 路由组 - 应用所有中间件
 	v1 := router.Group("/api/v1")
+	v1.Use(middleware.CORS(cfg.CORS))
+	v1.Use(middleware.Logging(logger.L()))
 	{
 		// 实验管理
 		experiment.RegisterRoutes(v1, db)
