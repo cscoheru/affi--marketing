@@ -25,8 +25,11 @@ COPY . .
 # Create necessary directories
 RUN mkdir -p logs data
 
-# Expose port
+# Expose port (Railway will set PORT env var)
 EXPOSE 8000
 
-# Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Set default port (Railway overrides with PORT env var)
+ENV PORT=8000
+
+# Run the application using PORT from environment
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]
