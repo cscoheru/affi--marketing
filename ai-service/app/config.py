@@ -1,8 +1,8 @@
 """
 AI Service Configuration
 """
-from typing import List
-from pydantic import Field
+from typing import List, Union, Any
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -25,10 +25,38 @@ class Settings(BaseSettings):
     api_port: int = Field(default=8000, description="API port")
 
     # CORS
-    cors_origins: List[str] = Field(
+    cors_origins: Union[List[str], str] = Field(
         default=["http://localhost:3000", "http://localhost:5173"],
         description="CORS allowed origins"
     )
+
+    @field_validator('cors_origins', mode='before')
+    @classmethod
+    def parse_cors_origins(cls, v: Any) -> List[str]:
+        """Parse CORS origins from various formats"""
+        if isinstance(v, list):
+            return v
+        if isinstance(v, str):
+            # Handle wildcard
+            if v.strip() == '*':
+                return ['*']
+            # Handle JSON array string
+            if v.startswith('[') and v.endswith(']'):
+                import json
+                try:
+                    return json.loads(v)
+                except json.JSONDecodeError:
+                    pass
+            # Handle comma-separated string
+            return [origin.strip() for origin in v.split(',')]
+        return ["http://localhost:3000", "http://localhost:5173"]
+
+    @property
+    def cors_origins_list(self) -> List[str]:
+        """Get CORS origins as a list"""
+        if isinstance(self.cors_origins, list):
+            return self.cors_origins
+        return [self.cors_origins]
     cors_allow_credentials: bool = Field(default=True, description="CORS allow credentials")
 
     # Database
