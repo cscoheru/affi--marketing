@@ -90,12 +90,19 @@ func main() {
 
 	// 启动服务器
 	go func() {
-		logger.Info("Server started",
+		logger.Info("Server starting...",
 			zap.String("address", srv.Addr))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.Fatal("Server failed", zap.Error(err))
 		}
 	}()
+
+	// Wait for server to be ready
+	logger.Info("Waiting for server to be ready...")
+	time.Sleep(500 * time.Millisecond)
+	logger.Info("Server started successfully",
+		zap.String("address", srv.Addr),
+		zap.String("healthcheck", "/health"))
 
 	// 优雅关闭
 	quit := make(chan os.Signal, 1)
@@ -124,13 +131,15 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 	router.Use(middleware.Recovery(logger.L()))
 	router.Use(middleware.RequestID())
 
-	// 健康检查
+	// 健康检查（添加日志以调试）
 	router.GET("/health", func(c *gin.Context) {
+		logger.Info("Healthcheck called", zap.String("path", c.Request.URL.Path))
 		c.JSON(http.StatusOK, gin.H{
 			"status":  "ok",
 			"service": "affi-marketing-api",
 			"version": "0.1.0",
 		})
+		logger.Info("Healthcheck response sent")
 	})
 
 	// 根端点（用于测试）
