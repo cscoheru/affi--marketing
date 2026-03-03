@@ -241,7 +241,7 @@ export interface SettlementQuery {
 // Plugin Types
 // ============================================
 
-export type PluginType = 'seo' | 'attribution' | 'settlement' | 'tracking' | 'ai'
+export type PluginType = 'seo' | 'attribution' | 'settlement' | 'tracking' | 'ai' | 'geo' | 'ai_agent' | 'affiliate_saas' | 'analytics' | 'testing'
 
 export interface Plugin {
   id: string
@@ -252,6 +252,8 @@ export interface Plugin {
   enabled: boolean
   config: Record<string, any>
   info?: PluginInfo
+  created_at?: string
+  updated_at?: string
 }
 
 export interface PluginInfo {
@@ -261,7 +263,8 @@ export interface PluginInfo {
 }
 
 export interface PluginConfigUpdate {
-  enabled: boolean
+  enabled?: boolean
+  config?: Record<string, any>
   parameters?: Record<string, any>
 }
 
