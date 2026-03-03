@@ -30,9 +30,9 @@ func Load(configPath string) (*Config, error) {
 			v.AddConfigPath("../config")
 		}
 
-		// 读取环境变量
-		v.AutomaticEnv()
+		// 设置环境变量 key 替换器（必须先设置再调用 AutomaticEnv）
 		v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+		v.AutomaticEnv()
 
 		// 读取配置文件
 		if err := v.ReadInConfig(); err != nil {
