@@ -241,9 +241,10 @@ class AIServiceManager:
 
     def _select_model(self, request: GenerationRequest) -> str:
         """Select the best model for the request"""
-        # If specific model requested, use it
-        if request.model and request.model in MODELS:
-            return request.model
+        # If specific model requested, use it (check both model and preferred_model)
+        model_to_use = request.model or request.preferred_model
+        if model_to_use and model_to_use in MODELS:
+            return model_to_use
 
         # If tier preference, select from that tier
         if request.tier:

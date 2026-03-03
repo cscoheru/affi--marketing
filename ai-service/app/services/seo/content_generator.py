@@ -195,7 +195,7 @@ class ContentGenerator:
 
         # Generate using AI manager
         try:
-            response = await self.ai_manager.generate_content(
+            response = await self.ai_manager.generate(
                 prompt=prompt,
                 system_prompt=system_prompt,
                 tier="standard",  # Use standard tier for quality content

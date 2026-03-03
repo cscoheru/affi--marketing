@@ -13,7 +13,10 @@ from pydantic import BaseModel, Field
 from loguru import logger
 
 from app.config import settings
-from app.services.manager import AIServiceManager, GenerationRequest, ModelTier
+from app.services.manager import AIServiceManager, GenerationRequest, ModelTier, ModelProvider
+from app.adapters.qwen_adapter import QwenAdapter
+from app.adapters.openai_adapter import OpenAIAdapter
+from app.adapters.chatglm_adapter import ChatGLMAdapter
 from app.services.seo import ContentGenerator, ContentGenerationRequest, KeywordAnalyzer
 from app.services.affiliate import AffiliateLinkInjector, InjectionResult
 
@@ -138,6 +141,31 @@ async def lifespan(app: FastAPI):
         logger.info("AI Service Manager initialized")
     except Exception as e:
         logger.error(f"Failed to initialize AI Manager: {e}")
+        raise
+
+    # Initialize and register AI adapters
+    try:
+        # Register Qwen adapter
+        if settings.dashscope_api_key:
+            qwen_adapter = QwenAdapter(api_key=settings.dashscope_api_key)
+            ai_manager.register_adapter(ModelProvider.QWEN, qwen_adapter)
+            logger.info("Qwen adapter registered")
+
+        # Register OpenAI adapter
+        if settings.openai_api_key:
+            openai_adapter = OpenAIAdapter(api_key=settings.openai_api_key)
+            ai_manager.register_adapter(ModelProvider.OPENAI, openai_adapter)
+            logger.info("OpenAI adapter registered")
+
+        # Register ChatGLM adapter
+        if settings.chatglm_api_key:
+            chatglm_adapter = ChatGLMAdapter(api_key=settings.chatglm_api_key)
+            ai_manager.register_adapter(ModelProvider.CHATGLM, chatglm_adapter)
+            logger.info("ChatGLM adapter registered")
+
+        logger.info(f"Total adapters registered: {len(ai_manager._adapters)}")
+    except Exception as e:
+        logger.error(f"Failed to register adapters: {e}")
         raise
 
     # Initialize Content Generator

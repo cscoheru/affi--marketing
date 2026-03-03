@@ -61,9 +61,13 @@ class QwenAdapter(BaseAdapter):
                 finish_reason = "unknown"
 
                 for chunk in response:
-                    if chunk.output.choices:
+                    # Handle both choices and text format in streaming
+                    if hasattr(chunk.output, 'choices') and chunk.output.choices:
                         content_parts.append(chunk.output.choices[0].message.content)
                         finish_reason = chunk.output.choices[0].finish_reason
+                    elif hasattr(chunk.output, 'text'):
+                        content_parts.append(chunk.output.text)
+                        finish_reason = getattr(chunk.output, 'finish_reason', 'stop')
 
                 content = "".join(content_parts)
                 raw_response = {"streaming": True}
@@ -78,9 +82,21 @@ class QwenAdapter(BaseAdapter):
                         error_msg = f"DashScope API error [{response.code}]: {response.message}"
                     raise RuntimeError(error_msg)
 
-                content = response.output.choices[0].message.content
-                finish_reason = response.output.choices[0].finish_reason
-                raw_response = response.output.model_dump()
+                # Handle response format - Qwen may return text directly or in choices
+                if hasattr(response.output, 'choices') and response.output.choices:
+                    content = response.output.choices[0].message.content
+                    finish_reason = response.output.choices[0].finish_reason
+                elif hasattr(response.output, 'text'):
+                    content = response.output.text
+                    finish_reason = getattr(response.output, 'finish_reason', 'stop')
+                else:
+                    raise RuntimeError(f"Unexpected response format: {response.output}")
+
+                # Build raw_response (avoid model_dump which may not exist)
+                raw_response = {
+                    "text": content,
+                    "finish_reason": finish_reason,
+                }
 
             # Count tokens (approximate)
             input_text = system_prompt + "\n\n" + prompt if system_prompt else prompt

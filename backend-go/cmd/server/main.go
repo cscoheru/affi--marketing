@@ -71,9 +71,17 @@ func main() {
 	// 创建路由
 	router := setupRouter(cfg)
 
+	// Railway compatibility: use PORT environment variable if provided
+	port := cfg.Server.Port
+	if envPort := os.Getenv("PORT"); envPort != "" {
+		if p, err := fmt.Sscanf(envPort, "%d", &port); p == 1 && err == nil {
+			logger.Info("Using Railway PORT", zap.Int("port", port))
+		}
+	}
+
 	// 创建服务器
 	srv := &http.Server{
-		Addr:         fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port),
+		Addr:         fmt.Sprintf("%s:%d", cfg.Server.Host, port),
 		Handler:      router,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
