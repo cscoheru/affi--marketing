@@ -125,6 +125,15 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 		})
 	})
 
+	// 根端点（用于测试）
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Affi-Marketing API",
+			"version": "0.1.0",
+			"status":  "running",
+		})
+	})
+
 	// 获取数据库实例
 	db := database.Get()
 
