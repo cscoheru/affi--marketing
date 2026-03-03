@@ -41,6 +41,15 @@ func main() {
 		zap.String("version", "0.1.0"),
 		zap.String("mode", cfg.Server.Mode))
 
+	// Debug: 打印配置信息
+	logger.Info("Config loaded",
+		zap.String("db_host", cfg.Database.Host),
+		zap.Int("db_port", cfg.Database.Port),
+		zap.String("db_user", cfg.Database.User),
+		zap.String("db_name", cfg.Database.DBName),
+		zap.String("redis_host", cfg.Redis.Host),
+		zap.Int("redis_port", cfg.Redis.Port))
+
 	// 初始化数据库
 	if err := database.Init(&cfg.Database); err != nil {
 		logger.Fatal("Failed to init database", zap.Error(err))
