@@ -44,3 +44,19 @@ htmlcov/
 *.test
 *.out
 go.work
+
+# Temporary documentation (working files)
+docs/.devops-tasks
+docs/*.sh
+docs/*.json
+docs/r0-pm-d2log.md
+docs/0*-day1log.md
+
+# AI Service temporary files
+ai-service/.env.railway
+ai-service/logs.*.json
+ai-service/railway-service-config.json
+
+# Scripts output (scripts generate files to other locations)
+scripts/!*.py
+scripts/!*.sh

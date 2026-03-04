@@ -224,6 +224,7 @@ backend-go/
 - CORS 配置验证通过
 - 集成测试通过
 - 部署文档和监控文档已完成
+- Railway 部署问题解决指南 (docs/RAILWAY_DEPLOYMENT_TROUBLESHOOTING.md)
 
 ---
 
@@ -250,7 +251,11 @@ backend-go/
 │   └── 004_geo_tables.sql
 ├── deployments/             ← 部署工程师工作目录
 ├── docs/                    ← 架构师输出目录 ✅
-│   └── DATABASE_SCHEMA.md
+│   ├── DATABASE_SCHEMA.md
+│   ├── DEPLOYMENT_GUIDE.md
+│   ├── MONITORING.md
+│   ├── API_DEBUG_GUIDE.md
+│   └── RAILWAY_DEPLOYMENT_TROUBLESHOOTING.md
 ├── schemas/                 ← JSON Schema
 └── output/                  ← 通用输出目录
 ```
@@ -327,5 +332,5 @@ backend-go/
 
 ---
 
-**最后更新**: 2026-03-03 23:30 UTC+8
-**版本**: 3.0.0 (部署测试完成)
+**最后更新**: 2026-03-04 UTC+8
+**版本**: 3.1.0 (新增 Railway 部署问题解决指南)

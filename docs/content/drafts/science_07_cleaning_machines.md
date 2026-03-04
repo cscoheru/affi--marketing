@@ -1,0 +1,291 @@
+# How to Clean Your Coffee Machine (And Why You're Probably Not Doing It Enough)
+
+**Your coffee maker is disgusting. Like, actually disgusting. And if you're like most people, you've never cleaned it properly.**
+
+Here's how to fix that before your coffee starts tasting like regret.
+
+---
+
+## The Short Answer
+
+**Clean your coffee machine regularly or it will:**
+- Taste bad
+- Grow mold (yes, really)
+- Break sooner
+- Make you question your life choices
+
+**The good news:** It's not that hard once you know how.
+
+---
+
+## Why Cleaning Matters
+
+### What Happens When You Don't Clean
+
+**Coffee oils go rancid:**
+- Leave bitter, off-flavors
+- Build up over time
+- Make every cup taste worse
+
+**Mineral scale accumulates:**
+- Reduces water flow
+- Makes heating less efficient
+- Eventually breaks your machine
+
+**Mold and bacteria grow:**
+- In water reservoirs
+- In drip trays
+- In hidden corners
+- This is as gross as it sounds
+
+**The result:** Coffee that tastes stale, bitter, and just wrong — even with fresh beans.
+
+---
+
+## The Cleaning Hierarchy
+
+Not all cleaning is equal. Here's what you need to do and how often:
+
+### Daily Cleaning (Do This Every Time)
+
+**Drip coffee maker:**
+- Wash the carafe with soap
+- Wipe down the exterior
+- Empty and rinse the filter basket
+
+**French Press:**
+- Disassemble completely
+- Scrub with soap and hot water
+- Let everything dry thoroughly
+
+**Espresso machine:**
+- Purge the steam wand
+- Wipe down the steam tip
+- Empty the knock box
+- Rinse portafilter
+
+### Weekly Cleaning (Set a Reminder)
+
+**Drip coffee maker:**
+- Run vinegar through the system (descaling)
+- Rinse with fresh water (2-3 cycles)
+- Wash the filter basket properly
+
+**French Press:**
+- Deep clean the plunger assembly
+- Check for buildup in the mesh
+- Replace if it's looking gross
+
+**Espresso machine:**
+- Backflush with detergent
+- Clean the shower screen
+- Scrub the gasket
+
+### Monthly Cleaning (Don't Skip This)
+
+**All machines:**
+- Descale with vinegar or commercial descaler
+- Clean hidden parts and corners
+- Replace water filters if applicable
+- Check for mold or mildew
+
+---
+
+## How to Clean Different Machines
+
+### Drip Coffee Maker
+
+**Daily:**
+- Wash carafe and filter basket with soap
+- Wipe exterior
+- Empty grounds
+
+**Weekly:**
+- Descale with vinegar: **1 part vinegar to 2 parts water**
+- Run through half the mixture, let sit 30 minutes
+- Finish the mixture
+- Run 2-3 cycles with fresh water
+- Wash carafe and filter basket thoroughly
+
+**Monthly:**
+- Deep clean all removable parts
+- Check for mold in water reservoir
+- Replace filter if your machine has one
+
+### French Press
+
+**Every use:**
+- Disassemble completely
+- Scrub all parts with soap and hot water
+- Let dry completely before reassembling
+
+**Weekly:**
+- Deep clean the plunger (disassemble if possible)
+- Check mesh for damage
+- Soak in baking soda solution if needed
+
+**When to replace:** Mesh is torn or buildup won't come out
+
+### Espresso Machine
+
+**Daily:**
+- Purge steam wand after every use
+- Wipe steam tip
+- Backflush with water (no detergent needed daily)
+- Clean portafilter and basket
+
+**Weekly:**
+- Backflush with espresso detergent
+- Clean shower screen
+- Scrub group head gasket
+- Clean steam wand interior
+
+**Monthly:**
+- Descale the machine
+- Deep clean water reservoir
+- Check and clean hidden parts
+- Lubricate moving parts (if required by your machine)
+
+---
+
+## Descaling: The Most Important Maintenance
+
+**Descaling** = removing mineral buildup from water
+
+**Signs you need to descale:**
+- Machine takes longer to brew
+- Coffee tastes off
+- Less coffee comes out than usual
+- Machine is noisier than usual
+
+### The Simple Way (Vinegar)
+
+**Works for:** Drip machines, French Press (no descaling needed), some espresso machines
+
+**Steps:**
+1. Mix 1 part white vinegar to 2 parts water
+2. Fill reservoir
+3. Run brewing cycle (half the mixture)
+4. Let sit for 30 minutes
+5. Finish the mixture
+6. Run 2-3 cycles with fresh water
+
+**Frequency:** Every 1-3 months, depending on water hardness
+
+### The Professional Way (Commercial Descaler)
+
+**Works for:** All machines, especially espresso machines
+
+**Why use it:**
+- More effective than vinegar
+- Smells better
+- Less corrosive to machine parts
+
+**Follow the instructions on the package.** Different products have different ratios and procedures.
+
+---
+
+## The Mold Problem (Real Talk)
+
+**Coffee machines are warm and wet** — perfect conditions for mold.
+
+**High-risk areas:**
+- Water reservoir
+- Drip tray
+- Coffee grinder (if you have one)
+- Filter basket
+
+**How to prevent mold:**
+- Leave parts open to air dry
+- Don't close everything up when wet
+- Clean regularly
+- Replace water filters on schedule
+
+**If you see mold:**
+- Clean with vinegar solution
+- Scrub with hot, soapy water
+- Rinse thoroughly
+- Consider replacing if it's bad
+
+---
+
+## Cleaning Tools You Need
+
+**Essential:**
+- Soap and water
+- White vinegar
+- Soft sponge or cloth
+- Old toothbrush (for tight spots)
+- Coffee detergent (for espresso machines)
+
+**Nice to have:**
+- Group head brush (espresso)
+- Blind filter (backflushing)
+- Cleaning tablets (some machines require these)
+- Cafiza (espresso machine detergent)
+
+**Don't use:**
+- Abrasive cleaners (scratch everything)
+- Bleach (damages some parts)
+- Dishwasher (for most coffee gear)
+
+---
+
+## Signs Your Machine Needs Cleaning
+
+**Your coffee will tell you:**
+
+- Tastes bitter or burnt → descale
+- Tastes stale or rancid → clean oils
+- Takes longer to brew → descale
+- Weird smells → clean everything
+- Visible buildup → past time to clean
+
+**Don't ignore these signs.** They'll only get worse.
+
+---
+
+## Quick Reference Cleaning Schedule
+
+| Task | Frequency | Time Required |
+|------|-----------|---------------|
+| **Basic wipe-down** | Daily | 2 minutes |
+| **Deep clean parts** | Weekly | 10 minutes |
+| **Descaling** | Monthly | 30 minutes |
+| **Replace filters** | Per manufacturer | Varies |
+
+---
+
+## The Lazy Person's Guide
+
+**Too busy? Minimum effort:**
+
+1. **Daily:** Rinse removable parts
+2. **Weekly:** Run vinegar through drip machine
+3. **Monthly:** Deep clean everything
+
+**Not ideal, but better than nothing.**
+
+**The truth:** A somewhat-clean machine makes better coffee than a perfectly maintained machine that you never use because cleaning is too complicated.
+
+---
+
+## The Bottom Line
+
+**Clean your machine regularly or:**
+- Your coffee will taste bad
+- Your machine will die sooner
+- You might be drinking mold
+
+**The basics:**
+- Daily: Quick wipe and rinse
+- Weekly: Proper cleaning with soap
+- Monthly: Descaling
+
+**The truth:** Clean equipment makes better coffee than fancy equipment. A $50 coffee maker cleaned regularly will beat a $500 machine neglected forever.
+
+Now go clean your coffee maker. It's gross, and you know it.
+
+---
+
+**Found this helpful?** Follow for more practical coffee advice that actually makes a difference in your daily cup.
