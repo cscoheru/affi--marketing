@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" ?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+  <channel>
+    <title>Coffee Enthusiast</title>
+    <link>https://hub.zenconsult.top/blog</link>
+    <description>Honest coffee reviews and brewing tips</description>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 04 Mar 2026 13:14:49 UTC</lastBuildDate>
+    <item>
+      <title>How to Store Coffee Beans: Freezer vs Counter</title>
+      <link>https://hub.zenconsult.top/blog/science_01_coffee_storage</link>
+      <description>Does storing coffee in the freezer really keep it fresh? Or should you leave it on the counter?</description>
+      <pubDate>2026-03-04T10:00:00Z</pubDate>
+      <guid>coffee-science_01_coffee_storage</guid>
+    </item>
+    <item>
+      <title>Hard Water vs Soft Water: Does It Affect Your Coffee?</title>
+      <link>https://hub.zenconsult.top/blog/science_02_water_hardness</link>
+      <description>You've probably heard coffee snobs talk about water like it's the most important ingredient.</description>
+      <pubDate>2026-03-04T09:00:00Z</pubDate>
+      <guid>coffee-science_02_water_hardness</guid>
+    </item>
+    <item>
+      <title>Arabica vs Robusta: What's the Difference?</title>
+      <link>https://hub.zenconsult.top/blog/science_03_arabica_robusta</link>
+      <description>Single-origin is having a moment. Coffee shops act like it's the only respectable choice.</description>
+      <pubDate>2026-03-04T08:00:00Z</pubDate>
+      <guid>coffee-science_03_arabica_robusta</guid>
+    </item>
+    <item>
+      <title>Why Your Coffee Tastes Bitter (And How to Fix It)</title>
+      <link>https://hub.zenconsult.top/blog/science_04_why_bitter</link>
+      <description>Bitter coffee is the universal coffee complaint. But here's the thing — some bitterness is actually good.</description>
+      <pubDate>2026-03-04T07:00:00Z</pubDate>
+      <guid>coffee-science_04_why_bitter</guid>
+    </item>
+    <item>
+      <title>Perfect Water Temperature for Coffee: Myth vs Fact</title>
+      <link>https://hub.zenconsult.top/blog/science_05_water_temperature</link>
+      <description>Water temperature can make or break your coffee. Get it wrong, and you'll be drinking regret.</description>
+      <pubDate>2026-03-04T06:00:00Z</pubDate>
+      <guid>coffee-science_05_water_temperature</guid>
+    </item>
+    <item>
+      <title>Single-Origin vs Blend: Which Coffee Should You Buy?</title>
+      <link>https://hub.zenconsult.top/blog/science_06_single_origin_blend</link>
+      <description>Single-origin is having a moment. Coffee shops act like it's the only respectable choice.</description>
+      <pubDate>2026-03-04T05:00:00Z</pubDate>
+      <guid>coffee-science_06_single_origin_blend</guid>
+    </item>
+    <item>
+      <title>How to Clean Your Coffee Machine (Without Chemicals)</title>
+      <link>https://hub.zenconsult.top/blog/science_07_cleaning_machines</link>
+      <description>Daily cleaning keeps your coffee tasting fresh. Here's how to do it right without harsh chemicals.</description>
+      <pubDate>2026-03-04T04:00:00Z</pubDate>
+      <guid>coffee-science_07_cleaning_machines</guid>
+    </item>
+    <item>
+      <title>Why I Regret Buying the De'Longhi ECAM 22.110 After 3 Months</title>
+      <link>https://hub.zenconsult.top/blog/review_01_delonghi_regret</link>
+      <description>Spoiler: I don't actually regret it. But there are things I wish I knew before dropping $350 on this machine.</description>
+      <pubDate>2026-03-04T03:00:00Z</pubDate>
+      <guid>coffee-review_01_delonghi_regret</guid>
+    </item>
+    <item>
+      <title>De'Longhi vs Breville vs Nespresso: Which Is Worth It?</title>
+      <link>https://hub.zenconsult.top/blog/review_02_comparison</link>
+      <description>I spent way too much time researching coffee machines. Here's what I learned so you don't have to.</description>
+      <pubDate>2026-03-04T02:00:00Z</pubDate>
+      <guid>coffee-review_02_comparison</guid>
+    </item>
+    <item>
+      <title>Coffee Machine Buying Guide for Beginners (2024)</title>
+      <link>https://hub.zenconsult.top/blog/review_03_buying_guide</link>
+      <description>I bought three different coffee machines so you don't have to. Here's everything I learned.</description>
+      <pubDate>2026-03-04T01:00:00Z</pubDate>
+      <guid>coffee-review_03_buying_guide</guid>
+    </item>
+  </channel>
+</rss>

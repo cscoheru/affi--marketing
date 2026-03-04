@@ -2,6 +2,30 @@ import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
+  // Public Blog Routes (no authentication - for Medium import)
+  {
+    path: '/blog',
+    name: 'Blog',
+    component: () => import('@/views/BlogView.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/blog/:slug',
+    name: 'BlogArticle',
+    component: () => import('@/views/BlogArticleView.vue'),
+    meta: { requiresAuth: false }
+  },
+  // RSS Feed redirect
+  {
+    path: '/feed.xml',
+    name: 'RSSFeed',
+    redirect: () => {
+      // Point to public RSS feed
+      window.location.href = '/content/feed.xml'
+      return { name: 'Blog' }
+    },
+    meta: { requiresAuth: false }
+  },
   {
     path: '/login',
     name: 'Login',
