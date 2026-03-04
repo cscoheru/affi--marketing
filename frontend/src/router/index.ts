@@ -86,7 +86,7 @@ const router = createRouter({
   routes
 })
 
-// Navigation guard for authentication
+// Navigation guard for authentication and page styling
 router.beforeEach((to, _from, next) => {
   const token = localStorage.getItem('token')
   const requiresAuth = to.meta.requiresAuth !== false
@@ -99,6 +99,18 @@ router.beforeEach((to, _from, next) => {
     next({ name: 'Dashboard' })
   } else {
     next()
+  }
+
+  // Add/remove dashboard class for scroll control
+  const app = document.getElementById('app')
+  const isDashboardRoute = to.matched.some(route =>
+    route.path === '/' && route.meta.requiresAuth !== false
+  )
+
+  if (isDashboardRoute) {
+    app?.classList.add('is-dashboard')
+  } else {
+    app?.classList.remove('is-dashboard')
   }
 })
 
