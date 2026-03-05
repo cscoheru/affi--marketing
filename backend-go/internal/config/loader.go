@@ -5,8 +5,25 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
+
+// splitString 分割字符串并去除空格
+func splitString(s, sep string) []string {
+	if s == "" {
+		return []string{}
+	}
+	parts := strings.Split(s, sep)
+	result := make([]string, 0, len(parts))
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
+}
 
 var (
 	globalConfig *Config
@@ -17,6 +34,11 @@ var (
 func Load(configPath string) (*Config, error) {
 	var err error
 	once.Do(func() {
+		// 加载 .env 文件（如果存在）
+		_ = godotenv.Load()
+		_ = godotenv.Load("../.env")      // 尝试父目录
+		_ = godotenv.Load("../../.env")   // 尝试上上级目录
+
 		v := viper.New()
 
 		// 设置配置文件路径
@@ -52,6 +74,18 @@ func Load(configPath string) (*Config, error) {
 		// 解析配置
 		globalConfig = &Config{}
 		err = v.Unmarshal(globalConfig)
+		if err != nil {
+			return
+		}
+
+		// 处理 CORS allowed_origins 字符串分割
+		if originsStr := v.GetString("cors.allowed_origins"); originsStr != "" {
+			// 如果是字符串，按逗号分割
+			if len(globalConfig.CORS.AllowedOrigins) == 1 {
+				// viper 可能读取为字符串，需要手动分割
+				globalConfig.CORS.AllowedOrigins = splitString(originsStr, ",")
+			}
+		}
 	})
 
 	return globalConfig, err
@@ -121,6 +155,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("server.mode", "debug")
 
 	// Database defaults
+	v.SetDefault("database.ssl_mode", "require")
 	v.SetDefault("database.max_open_conns", 100)
 	v.SetDefault("database.max_idle_conns", 10)
 
@@ -134,6 +169,7 @@ func setDefaults(v *viper.Viper) {
 	// CORS defaults
 	v.SetDefault("cors.allowed_methods", []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})
 	v.SetDefault("cors.allowed_headers", []string{"*"})
+	v.SetDefault("cors.allowed_origins", []string{"http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "http://localhost:8080"})
 
 	// Log defaults
 	v.SetDefault("log.level", "info")
