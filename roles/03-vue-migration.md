@@ -395,9 +395,57 @@ export default function DashboardPage() {
 
 ---
 
-## 📤 交付物
+### 任务7: 生产环境部署配置 (Day 8-10) ⚠️ 新增
 
-完成后，请更新 `/Users/kjonekong/Documents/Affi-Marketing/PROJECT_PROGRESS.md`:
+**问题**: 生产环境无法加载 Vue 组件
+
+**错误信息**:
+```
+Error loading Vue component
+Cannot find module 'https://hub.zenconsult.top/vue-remote/assets/remoteEntry.js'
+```
+
+**原因分析**:
+1. `next.config.ts` 中的 rewrite 规则仅用于开发环境
+2. 生产环境没有配置 `/vue-remote/` 路由
+3. Vue 构建产物未部署到可访问位置
+
+#### 解决方案 A: 将 Vue 构建产物放入 Next.js public 目录 (推荐)
+
+```bash
+# 1. 构建 Vue 应用
+cd /Users/kjonekong/Documents/Affi-Marketing/frontend
+npm run build
+
+# 2. 在 Next.js 项目中创建 vue-remote 目录
+cd /Users/kjonekong/Documents/Affi-Marketing/frontend-unified
+mkdir -p public/vue-remote
+
+# 3. 复制 Vue 构建产物到 Next.js public 目录
+cp -r ../frontend/dist/* public/vue-remote/
+
+# 4. 验证文件存在
+ls public/vue-remote/assets/
+# 应该看到: remoteEntry.js, index-xxx.js 等
+```
+
+#### 解决方案 B: 部署 Vue 应用为独立服务
+
+部署 Vue 应用到 Vercel 单独项目，配置独立域名和 CORS。
+
+---
+
+### 任务8: Vercel 部署配置修复 (Day 10) ⚠️ 新增
+
+**问题**: Vercel 部署了错误的目录
+
+**当前状态**: Vercel 部署了 `frontend/` (Vite 应用) 而不是 `frontend-unified/` (Next.js 应用)
+
+**解决方案**: 在 Vercel Dashboard 修改 Root Directory 为 `frontend-unified`
+
+---
+
+## 📤 交付物
 
 ```markdown
 ### 03-Vue迁移工程师 - Vue微应用改造
@@ -469,8 +517,8 @@ npm run build
 
 ---
 
-**任务卡版本**: v2.0
+**任务卡版本**: v3.0
 **创建时间**: 2026-03-05
-**更新时间**: 2026-03-05
+**更新时间**: 2026-03-05 (v3.0 - 新增生产环境部署任务)
 
 **启动命令**: "导入角色任务卡 /Users/kjonekong/Documents/Affi-Marketing/roles/03-vue-migration.md"
