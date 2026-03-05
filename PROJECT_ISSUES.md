@@ -1,6 +1,6 @@
 # Affi-Marketing 项目问题追踪
 
-**最后更新**: 2026-03-05 23:50
+**最后更新**: 2026-03-06 00:00
 **项目经理**: Claude Code
 
 ---
@@ -9,12 +9,16 @@
 
 | 状态 | 数量 |
 |------|------|
-| 🔴 高优先级 | 0 |
-| 🟡 中优先级 | 1 |
+| 🔴 高优先级 | 1 |
+| 🟡 中优先级 | 3 |
 | 🟢 低优先级 | 1 |
 | ✅ 已解决 | 12 |
 
-**说明**: 新增02-React前端 Phase 2 功能开发任务
+**说明**:
+- 🔴 新增: Vue组件生产环境加载失败
+- 🟡 新增: 02-React前端 Phase 2 API集成
+- 🟡 新增: 02-React前端 博客页面缺失
+- 🟡 已有: Vercel前端部署配置错误
 
 ---
 
@@ -208,6 +212,30 @@ content auth与主auth路由冲突，content.RegisterRoutes被临时注释掉，
 **解决状态**: ✅已解决
 **解决时间**: 2026-03-05 23:00
 **解决方案**: 删除了 `internal/controller/content/auth.go` 重复认证控制器，更新了 `routes.go` 移除对它的引用，然后在 `main.go` 中重新启用了 `content.RegisterRoutes(v1, db)`。
+
+---
+
+### [03-Vue迁移] Vue组件生产环境加载失败
+**提出时间**: 2026-03-05 23:55
+**优先级**: 🔴高
+**问题描述**:
+生产环境控制台报错，无法加载Vue组件：
+```
+Error loading Vue component
+Cannot find module 'https://hub.zenconsult.top/vue-remote/assets/remoteEntry.js'
+```
+
+**根本原因**:
+- `next.config.ts` 中的 rewrite 规则仅用于开发环境
+- 生产环境没有配置 `/vue-remote/` 路由
+- Vue 构建产物未部署到可访问位置
+
+**当前状态**:
+- [x] 已添加到 03-vue-migration.md 任务7
+- [ ] 需要构建 Vue 应用并部署到生产环境
+- [ ] 详见任务卡的解决方案A和B
+
+**解决状态**: 待解决
 
 ---
 
