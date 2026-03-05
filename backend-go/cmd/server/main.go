@@ -14,6 +14,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/zenconsult/affi-marketing/internal/config"
+	"github.com/zenconsult/affi-marketing/internal/core"
 	"github.com/zenconsult/affi-marketing/internal/middleware"
 	"github.com/zenconsult/affi-marketing/internal/controller/auth"
 	"github.com/zenconsult/affi-marketing/internal/controller/experiment"
@@ -171,6 +172,7 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 	{
 		// Auth controller
 		authController := auth.NewController(db, cfg.JWT)
+		authMiddleware := middleware.NewAuthMiddleware(cfg.JWT)
 
 		// Auth routes (public)
 		authGroup := v1.Group("/auth")
@@ -180,8 +182,23 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 			authGroup.POST("/logout", authController.Logout)
 		}
 
-		// 实验管理
-		experiment.RegisterRoutes(v1, db)
+		// Experiment controller
+		experimentService := core.NewExperimentService(db)
+		experimentController := experiment.NewExperimentController(experimentService)
+
+		// Experiments routes (protected)
+		experiments := v1.Group("/experiments")
+		experiments.Use(authMiddleware.Authenticate())
+		{
+			experiments.GET("", experimentController.List)
+			experiments.POST("", experimentController.Create)
+			experiments.GET("/:id", experimentController.Get)
+			experiments.PUT("/:id", experimentController.Update)
+			experiments.DELETE("/:id", experimentController.Delete)
+			experiments.POST("/:id/start", experimentController.Start)
+			experiments.POST("/:id/stop", experimentController.Stop)
+			experiments.POST("/:id/pause", experimentController.Pause)
+		}
 
 		// 追踪服务
 		tracking.RegisterRoutes(v1, db)
