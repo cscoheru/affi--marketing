@@ -23,6 +23,7 @@ import (
 	"github.com/zenconsult/affi-marketing/internal/controller/plugin"
 	"github.com/zenconsult/affi-marketing/internal/controller/content"
 	"github.com/zenconsult/affi-marketing/internal/controller/ai"
+	"github.com/zenconsult/affi-marketing/internal/controller/health"
 	"github.com/zenconsult/affi-marketing/pkg/cache"
 	"github.com/zenconsult/affi-marketing/pkg/database"
 	"github.com/zenconsult/affi-marketing/pkg/logger"
@@ -146,14 +147,11 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 	router.Use(middleware.Recovery(logger.L()))
 	router.Use(middleware.RequestID())
 
-	// 健康检查和根路径
+	// 健康检查和根路径 (public routes, no middleware)
+	healthHandler := health.NewHandler()
 	router.GET("/health", func(c *gin.Context) {
 		logger.Info("Healthcheck called", zap.String("path", c.Request.URL.Path))
-		c.JSON(http.StatusOK, gin.H{
-			"status":  "ok",
-			"service": "affi-marketing-api",
-			"version": "0.1.0",
-		})
+		healthHandler.Check(c)
 	})
 
 	// 根端点（用于测试）
