@@ -8,10 +8,10 @@
 - [x] Task 2: 配置Module Federation
 - [x] Task 3: 创建Wrapper目录
 - [x] Task 4: 创建DashboardWrapper
-- [ ] Task 5: 创建ExperimentsWrapper
+- [x] Task 5: 创建ExperimentsWrapper
 - [x] Task 6: 创建ExperimentDetailWrapper
-- [ ] Task 7: 创建PluginsWrapper
-- [ ] Task 8: 创建AnalyticsWrapper
+- [x] Task 7: 创建PluginsWrapper
+- [x] Task 8: 创建AnalyticsWrapper
 - [ ] Task 9: 创建SettlementsWrapper
 - [ ] Task 10: 创建Bridge Store
 - [ ] Task 11: 创建主题适配
