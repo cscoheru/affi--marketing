@@ -3,18 +3,21 @@
 import { useEffect, useRef, useState } from 'react'
 
 interface VueRemoteLoaderProps {
-  remoteEntry: string
-  remoteName: string
+  remoteUrl: string
   exposedModule: string
-  componentName: string
   props?: Record<string, any>
 }
 
+declare global {
+  interface Window {
+    __federation_shared__?: any
+    __FEDERATION__: any
+  }
+}
+
 export function VueRemoteLoader({
-  remoteEntry,
-  remoteName,
+  remoteUrl,
   exposedModule,
-  componentName,
   props = {}
 }: VueRemoteLoaderProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -24,70 +27,76 @@ export function VueRemoteLoader({
   useEffect(() => {
     let mounted = true
     let vueInstance: any = null
+    let styleElement: HTMLLinkElement | null = null
 
-    async function loadRemoteVueComponent() {
+    async function loadRemoteComponent() {
       try {
         setLoading(true)
         setError(null)
 
-        // Load the remote entry
-        const remoteEntryScript = document.createElement('script')
-        remoteEntryScript.src = remoteEntry
-        remoteEntryScript.type = 'module'
+        // Initialize shared scope if not exists
+        if (!window.__federation_shared__) {
+          window.__federation_shared__ = {}
+        }
 
-        await new Promise((resolve, reject) => {
-          remoteEntryScript.onload = resolve
-          remoteEntryScript.onerror = reject
-          document.head.appendChild(remoteEntryScript)
-        })
+        // Set up shared dependencies
+        const defaultScope = window.__federation_shared__['default'] = window.__federation_shared__['default'] || {}
 
-        // Wait a bit for the module to initialize
-        await new Promise(resolve => setTimeout(resolve, 100))
+        // Load Vue and make it available in shared scope
+        if (!defaultScope.vue) {
+          const vue = await import('vue')
+          defaultScope.vue = {
+            version: vue.version || '3.5.13',
+            get: () => vue
+          }
+        }
 
-        // Access the remote module from window
-        // In dev mode, Vite serves the module at /dist/assets/remoteEntry.js
-        // We need to import it and call get() to load the exposed module
-        const moduleUrl = remoteEntry.replace('remoteEntry.js', '') + `__federation_expose_${componentName}`
+        // The remoteUrl should be the remoteEntry.js
+        // In dev: http://localhost:5174/dist/assets/remoteEntry.js
+        // In prod: /vue-remote/assets/remoteEntry.js
 
-        // For Module Federation with @originjs/vite-plugin-federation
-        // The remote entry exports a `get` function
-        const response = await fetch(remoteEntry)
-        const moduleText = await response.text()
+        // Import the remote entry as a module
+        let remoteModule
+        try {
+          // Try direct import first (for same-origin or CORS-enabled)
+          remoteModule = await import(/* @vite-ignore */ remoteUrl)
+        } catch (e) {
+          // If that fails, try with full URL
+          const fullUrl = remoteUrl.startsWith('http') ? remoteUrl : `${window.location.origin}${remoteUrl}`
+          remoteModule = await import(/* @vite-ignore */ fullUrl)
+        }
 
-        // Create a blob URL for the module
-        const blob = new Blob([moduleText], { type: 'application/javascript' })
-        const moduleUrl2 = URL.createObjectURL(blob)
-
-        const remoteModule = await import(moduleUrl2)
-        const get = remoteModule.get
-
-        if (!get) {
+        if (!remoteModule || !remoteModule.get) {
           throw new Error('Remote entry does not export a get function')
         }
 
-        // Initialize shared dependencies (Vue, etc.)
-        await remoteModule.init?.({
-          vue: { version: '3.5.13', requiredVersion: '^3.5.0' },
-          pinia: { version: '2.2.4', requiredVersion: '^2.1.0' },
-          'element-plus': { version: '2.9.2', requiredVersion: '^2.8.0' }
-        })
-
-        // Load the exposed module
-        const exposed = await get(`./${componentName}`)
-        const component = exposed.default || exposed
-
-        if (!component) {
-          throw new Error(`Component ${componentName} not found in exposed module`)
+        // Initialize shared dependencies
+        if (remoteModule.init) {
+          await remoteModule.init({
+            vue: defaultScope.vue
+          })
         }
 
-        // Load Vue and create app
-        const vueModule = await import('vue')
-        const createApp = vueModule.createApp
+        // Load the exposed module
+        const moduleFactory = await remoteModule.get(`./${exposedModule}`)
+        const component = moduleFactory.default || moduleFactory
 
+        if (!component) {
+          throw new Error(`Module ${exposedModule} not found or has no default export`)
+        }
+
+        // Load styles if dynamicLoadingCss is available
+        if (remoteModule.dynamicLoadingCss) {
+          remoteModule.dynamicLoadingCss([], false, `./${exposedModule}`)
+        }
+
+        // Create Vue app and mount
         if (containerRef.current && mounted) {
+          const { createApp } = await import('vue')
+
           vueInstance = createApp({
             render() {
-              // @ts-ignore
+              // @ts-ignore - Vue component
               return typeof component === 'function'
                 ? component(props)
                 : component
@@ -101,38 +110,48 @@ export function VueRemoteLoader({
       } catch (err) {
         if (mounted) {
           console.error('Failed to load remote Vue component:', err)
-          setError(err instanceof Error ? err.message : 'Failed to load component')
+          setError(err instanceof Error ? err.message : String(err))
           setLoading(false)
         }
       }
     }
 
-    loadRemoteVueComponent()
+    loadRemoteComponent()
 
     return () => {
       mounted = false
       if (vueInstance) {
         vueInstance.unmount()
       }
+      if (styleElement) {
+        styleElement.remove()
+      }
     }
-  }, [remoteEntry, remoteName, exposedModule, componentName])
+  }, [remoteUrl, exposedModule])
 
   if (loading) {
-    return <div className="flex items-center justify-center p-8">Loading Vue component...</div>
-  }
-
-  if (error) {
     return (
-      <div className="text-red-500 p-4">
-        <div className="font-bold">Error loading Vue component:</div>
-        <div className="text-sm mt-2">{error}</div>
-        <div className="text-xs mt-4 text-gray-500">
-          Remote entry: {remoteEntry}<br />
-          Component: {componentName}
+      <div className="flex items-center justify-center p-8 text-gray-600">
+        <div className="flex flex-col items-center gap-2">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
+          <div className="text-sm">Loading Vue component...</div>
         </div>
       </div>
     )
   }
 
-  return <div ref={containerRef} className="vue-remote-container" />
+  if (error) {
+    return (
+      <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+        <div className="font-bold text-red-700">Error loading Vue component</div>
+        <div className="text-sm text-red-600 mt-2">{error}</div>
+        <div className="text-xs text-gray-500 mt-4 font-mono bg-gray-100 p-2 rounded">
+          <div>Remote URL: {remoteUrl}</div>
+          <div>Module: {exposedModule}</div>
+        </div>
+      </div>
+    )
+  }
+
+  return <div ref={containerRef} className="vue-remote-container w-full h-full" />
 }

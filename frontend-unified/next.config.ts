@@ -7,13 +7,12 @@ const nextConfig: NextConfig = {
   // },
 
   webpack(config, { isServer }) {
-    // Module Federation 配置 - Vue externals
-    config.externals = config.externals || [];
-    config.externals.push({
-      'vue': 'vue',
-    });
+    // Module Federation configuration
+    // We need Vue to be available for the remote components
+    // Don't externalize Vue - let it be bundled
 
     if (!isServer) {
+      // Ensure Vue is resolved correctly
       config.resolve.alias.vue = require.resolve('vue');
     }
 

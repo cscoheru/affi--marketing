@@ -17,7 +17,7 @@
 - [x] Task 11: 创建主题适配
 - [x] Task 12: 更新main.ts
 - [x] Task 13: 测试本地构建
-- [ ] Task 14: 测试Next.js集成
+- [x] Task 14: 测试Next.js集成
 
 ## 验证结果 (Task 0)
 
@@ -87,3 +87,26 @@
 
 4. **备份文件**
    - 原文件已备份至`src/main.ts.backup`
+
+### Task 14: 测试Next.js集成
+
+**完成的文件**:
+1. `frontend-unified/components/vue-remote-loader.tsx` - Module Federation加载器
+2. `frontend-unified/app/(dashboard)/dashboard/page.tsx` - 更新Dashboard页面
+
+**集成方案**:
+- 使用动态ES模块导入加载Vue远程组件
+- remoteEntry.js路径: `/vue-remote/dist/assets/remoteEntry.js`
+- Next.js重写规则将`/vue-remote/*`代理到`http://localhost:5174/*`
+
+**服务器配置**:
+- Vue开发服务器: `http://localhost:5174` (Vite)
+- Next.js开发服务器: `http://localhost:3000`
+- Next.js配置了webpack重写规则和Vue解析别名
+
+**验证步骤**:
+1. ✅ Vue服务器在5174端口运行
+2. ✅ Next.js服务器在3000端口运行
+3. ✅ `/vue-remote/dist/assets/remoteEntry.js`返回200状态码
+4. ✅ remoteEntry.js内容正确(Module Federation入口)
+5. ✅ Dashboard页面更新为使用VueRemoteLoader
