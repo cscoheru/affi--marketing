@@ -269,9 +269,9 @@ cp -r ../frontend/dist/* public/vue-remote/
 ```
 
 **根本原因**:
-- Railway 部署的后端代码是旧版本
-- 本地代码包含完整的内容自动化实现 (`backend-go/internal/controller/content/`)
-- 但部署版本没有这些路由
+- Railway 不知道要构建 `backend-go` 子目录
+- 缺少根目录的 `railway.toml` 配置文件指定构建目录
+- Railway 可能部署了错误的目录或使用了旧版本
 
 **影响范围**:
 - 前端产品管理页面无法加载数据
@@ -282,14 +282,22 @@ cp -r ../frontend/dist/* public/vue-remote/
 **当前状态**:
 - [x] 本地代码已完整实现
 - [x] 代码已推送到 GitHub
-- [ ] Railway 后端需要重新部署
+- [x] 已创建 `railway.toml` 配置文件 (commit 1e67363)
+- [ ] Railway 需要重新部署以应用新配置
 
 **解决方案**:
-**在 Railway Dashboard 手动触发重新部署**:
-1. 访问 https://railway.app/project/[项目ID]/service/[服务ID]
-2. 点击 "New Deploy" 或 "Redeploy" 按钮
-3. 等待部署完成（约 2-3 分钟）
-4. 验证路由可用性: `curl https://api-hub.zenconsult.top/api/v1/products`
+1. ✅ 已创建 `railway.toml` 配置 Railway 使用 `backend-go` 目录
+2. 在 Railway Dashboard 触发重新部署:
+   - 访问 Railway Dashboard → affi-marketing-api 服务
+   - 点击 "New Deploy" 或 "Redeploy"
+   - 等待 2-3 分钟
+3. 验证路由可用性: `curl https://api-hub.zenconsult.top/api/v1/products`
+
+**Railway 日志分析**:
+```
+"upstreamAddress": "http://[fd12:49b6:1414:1:4000:a3:c60:cf08]:8080"
+```
+请求到达后端但返回 404，说明路由未注册。
 
 **解决状态**: 待解决（等待 Railway 重新部署）
 
