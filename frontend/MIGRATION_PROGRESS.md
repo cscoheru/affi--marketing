@@ -5,8 +5,8 @@
 ## 任务完成状态
 
 - [x] Task 1: 安装依赖
-- [ ] Task 2: 配置Module Federation
-- [ ] Task 3: 创建Wrapper目录
+- [x] Task 2: 配置Module Federation
+- [x] Task 3: 创建Wrapper目录
 - [ ] Task 4: 创建DashboardWrapper
 - [ ] Task 5: 创建ExperimentsWrapper
 - [ ] Task 6: 创建ExperimentDetailWrapper
