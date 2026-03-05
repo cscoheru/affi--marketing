@@ -13,7 +13,14 @@ test.describe('认证功能', () => {
   };
 
   test.beforeEach(async ({ page }) => {
+    // 清除所有存储以确保干净的测试状态
+    await page.context().clearCookies();
     await page.goto('/login');
+    // 在登录页清除存储
+    await page.evaluate(() => {
+      sessionStorage.clear();
+      localStorage.clear();
+    });
   });
 
   test('登录页面正常显示', async ({ page }) => {
@@ -113,13 +120,13 @@ test.describe('登出功能', () => {
 
   test('点击登出按钮返回登录页', async ({ page }) => {
     // 点击用户下拉菜单
-    const userDropdown = page.locator('[data-testid="user-dropdown"]').or(
-      page.locator('button:has-text("demo")')
+    const userDropdown = page.locator('[data-testid="user-menu-button"]').or(
+      page.locator('[data-testid="user-avatar"]')
     );
-    await userDropdown.click();
+    await userDropdown.first().click();
 
     // 点击登出
-    const logoutButton = page.locator('text=登出').or(page.locator('text=Logout')).or(
+    const logoutButton = page.locator('text=退出登录').or(page.locator('text=Logout')).or(
       page.locator('[data-testid="logout-button"]')
     );
     await logoutButton.click();
@@ -131,11 +138,11 @@ test.describe('登出功能', () => {
 
   test('登出后无法访问受保护页面', async ({ page }) => {
     // 登出
-    const userDropdown = page.locator('[data-testid="user-dropdown"]').or(
-      page.locator('button:has-text("demo")')
+    const userDropdown = page.locator('[data-testid="user-menu-button"]').or(
+      page.locator('[data-testid="user-avatar"]')
     );
-    await userDropdown.click();
-    const logoutButton = page.locator('text=登出').or(page.locator('text=Logout'));
+    await userDropdown.first().click();
+    const logoutButton = page.locator('text=退出登录').or(page.locator('text=Logout'));
     await logoutButton.click();
     await page.waitForURL('/login');
 

@@ -1,17 +1,16 @@
 'use client'
 
-import { VueComponentLoader } from '@/components/vue-component-loader'
+import { VueRemoteLoader } from '@/components/vue-remote-loader'
+import { useAuthStore } from '@/lib/store'
 
 export default function ExperimentsPage() {
+  const { user, token } = useAuthStore()
+
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">实验管理</h1>
-      <div className="h-[calc(100vh-200px)]">
-        <VueComponentLoader
-          componentUrl="/vue-components/experiments.js"
-          componentName="Experiments"
-        />
-      </div>
-    </div>
+    <VueRemoteLoader
+      remoteUrl="/vue-remote/dist/assets/remoteEntry.js"
+      exposedModule="Experiments"
+      props={{ user, token, apiBaseUrl: "http://localhost:8080" }}
+    />
   )
 }

@@ -44,9 +44,10 @@ export function VueRemoteLoader({
 
         // Load Vue and make it available in shared scope
         if (!defaultScope.vue) {
-          const vue = await import('vue')
+          const vueModule = await import('vue')
+          const vue = vueModule.default || vueModule
           defaultScope.vue = {
-            version: vue.version || '3.5.13',
+            version: '3.5.13',
             get: () => vue
           }
         }
@@ -92,7 +93,8 @@ export function VueRemoteLoader({
 
         // Create Vue app and mount
         if (containerRef.current && mounted) {
-          const { createApp } = await import('vue')
+          const vueModule = await import('vue')
+          const { createApp } = vueModule.default || vueModule
 
           vueInstance = createApp({
             render() {

@@ -110,3 +110,28 @@
 3. ✅ `/vue-remote/dist/assets/remoteEntry.js`返回200状态码
 4. ✅ remoteEntry.js内容正确(Module Federation入口)
 5. ✅ Dashboard页面更新为使用VueRemoteLoader
+
+### Task 15: 集成Experiments页面 (Completed)
+
+**文件**: `frontend-unified/app/(dashboard)/experiments/page.tsx`
+- 更新为使用VueRemoteLoader
+- 使用exposedModule: "Experiments"
+
+**文件**: `frontend-unified/app/(dashboard)/experiments/[id]/page.tsx` (新建)
+- 使用VueRemoteLoader
+- 使用exposedModule: "ExperimentDetail"
+- 传递experimentId参数
+
+### Task 16: 集成其他页面 (Completed)
+
+**文件**: `frontend-unified/app/(dashboard)/plugins/page.tsx`
+- 更新为使用VueRemoteLoader
+- 使用exposedModule: "Plugins"
+
+**文件**: `frontend-unified/app/(dashboard)/analytics/page.tsx`
+- 更新为使用VueRemoteLoader
+- 使用exposedModule: "Analytics"
+
+**文件**: `frontend-unified/app/(dashboard)/settlements/page.tsx`
+- 更新为使用VueRemoteLoader
+- 使用exposedModule: "Settlements"

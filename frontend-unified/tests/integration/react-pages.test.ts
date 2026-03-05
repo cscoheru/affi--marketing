@@ -12,7 +12,11 @@ test.describe('React 原生页面', () => {
   };
 
   test.beforeEach(async ({ page }) => {
+    // 清除所有存储以确保干净的测试状态
+    await page.context().clearCookies();
     await page.goto('/login');
+    await page.evaluate(() => sessionStorage.clear());
+    await page.evaluate(() => localStorage.clear());
     await page.fill('input[type="email"]', demoUser.email);
     await page.fill('input[type="password"]', demoUser.password);
     await page.click('button[type="submit"]');
@@ -174,7 +178,11 @@ test.describe('shadcn/ui 组件库', () => {
   };
 
   test.beforeEach(async ({ page }) => {
+    // 清除所有存储以确保干净的测试状态
+    await page.context().clearCookies();
     await page.goto('/login');
+    await page.evaluate(() => sessionStorage.clear());
+    await page.evaluate(() => localStorage.clear());
     await page.fill('input[type="email"]', demoUser.email);
     await page.fill('input[type="password"]', demoUser.password);
     await page.click('button[type="submit"]');
