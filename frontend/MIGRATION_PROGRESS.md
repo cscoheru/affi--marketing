@@ -18,6 +18,13 @@
 - [x] Task 12: 更新main.ts
 - [x] Task 13: 测试本地构建
 - [x] Task 14: 测试Next.js集成
+- [x] Task 15: 集成Experiments页面
+- [x] Task 16: 集成其他页面
+- [x] Task 17: 更新项目进度文档
+- [x] Task 18: 创建部署文档
+- [x] Task 19: 最终验证和提交
+- [x] Task 20: 生产环境部署配置
+- [x] Task 21: Vercel部署配置修复
 
 ## 验证结果 (Task 0)
 
@@ -156,3 +163,78 @@
 - ✅ 所有页面已更新为使用VueRemoteLoader
 - ✅ 创建了提交 757786a
 - ✅ 更新了项目进度文档
+
+---
+
+## 生产环境部署 (新增任务)
+
+### Task 20: 生产环境部署配置 (Completed)
+
+**完成时间**: 2026-03-05 22:03
+
+**问题**: 生产环境无法加载 Vue 组件
+
+**解决方案**: 将 Vue 构建产物复制到 Next.js public 目录
+
+**执行步骤**:
+1. ✅ 重新构建 Vue 应用: `npm run build`
+2. ✅ 创建 vue-remote 目录: `frontend-unified/public/vue-remote/`
+3. ✅ 复制构建产物: `cp -r ../frontend/dist/* public/vue-remote/`
+
+**验证结果**:
+```bash
+ls -la frontend-unified/public/vue-remote/assets/remoteEntry.js
+# -rw-r--r--  1 kjonekong  staff  2512  3月  5 22:03 remoteEntry.js ✅
+```
+
+**产出文件**:
+- `frontend-unified/public/vue-remote/assets/remoteEntry.js`
+- `frontend-unified/public/vue-remote/assets/__federation_expose_*.js`
+- `frontend-unified/public/vue-remote/assets/__federation_shared_*.js`
+
+### Task 21: Vercel 部署配置修复 (Completed)
+
+**完成时间**: 2026-03-05 22:05
+
+**问题**: Vercel 部署了错误的目录 (`frontend/` 而不是 `frontend-unified/`)
+
+**解决方案**: 更新 `vercel.json` 添加 `root` 字段
+
+**配置变更**:
+```json
+{
+  "root": "frontend-unified",      // 新增
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "framework": "nextjs"
+}
+```
+
+**产出文件**:
+- `vercel.json` - 已更新
+
+**Git提交**:
+- 提交: `8adad70`
+- 消息: "feat: add Vue remote module production deployment configuration"
+- 状态: 已推送到 origin/main
+
+---
+
+## 最终状态
+
+✅ **所有任务完成** (Task 1-21)
+
+**开发环境**:
+- Vue开发服务器: `http://localhost:5174`
+- Next.js开发服务器: `http://localhost:3000`
+- remoteEntry.js路径: `/vue-remote/dist/assets/remoteEntry.js`
+
+**生产环境**:
+- 前端部署: `https://hub.zenconsult.top`
+- remoteEntry.js路径: `/vue-remote/assets/remoteEntry.js`
+- Vercel配置: `root: "frontend-unified"`
+
+**提交记录**:
+- `757786a` - 初始迁移实现
+- `8adad70` - 生产环境部署配置
