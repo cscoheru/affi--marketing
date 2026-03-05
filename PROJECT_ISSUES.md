@@ -1,6 +1,6 @@
 # Affi-Marketing 项目问题追踪
 
-**最后更新**: 2026-03-06 00:15
+**最后更新**: 2026-03-06 00:25
 **项目经理**: Claude Code
 
 ---
@@ -9,17 +9,16 @@
 
 | 状态 | 数量 |
 |------|------|
-| 🔴 高优先级 | 1 |
+| 🔴 高优先级 | 2 |
 | 🟡 中优先级 | 1 |
 | 🟢 低优先级 | 1 |
 | ✅ 已解决 | 14 |
 
 **说明**:
 - 🔴 待解决: Vue组件生产环境加载失败
+- 🔴 新增: 内容自动化API路由未部署 (BE-05)
 - 🟡 待解决: Vercel前端部署配置错误
 - 🟢 低优先级: Vue组件主题CSS字体栈不一致
-- ✅ 新增已解决: 02-React前端 Phase 2 API集成
-- ✅ 新增已解决: 02-React前端 博客页面创建
 
 ---
 
@@ -235,6 +234,48 @@ Cannot find module 'https://hub.zenconsult.top/vue-remote/assets/remoteEntry.js'
 - [x] 已添加到 03-vue-migration.md 任务7
 - [ ] 需要构建 Vue 应用并部署到生产环境
 - [ ] 详见任务卡的解决方案A和B
+
+**解决状态**: 待解决
+
+---
+
+### [04-后端与AI] 内容自动化API路由未部署 (BE-05)
+**提出时间**: 2026-03-06 00:20
+**优先级**: 🔴高
+**问题描述**:
+生产环境后端 API 返回 404 错误，内容自动化路由不可用：
+- `/api/v1/products` → 404 Not Found
+- `/api/v1/materials` → 404 Not Found
+- `/api/v1/content` → 404 Not Found
+- `/api/v1/publish` → 404 Not Found
+
+**测试结果**:
+```
+✅ /health → 200 OK (后端运行正常)
+⚠️ /api/v1/experiments → origin not allowed (路由存在，CORS限制)
+❌ /api/v1/products → 404 Not Found (路由不存在)
+❌ /api/v1/materials → 404 Not Found (路由不存在)
+```
+
+**根本原因**:
+- Railway 部署的后端代码是旧版本
+- 本地代码包含完整的内容自动化实现 (`backend-go/internal/controller/content/`)
+- 但部署版本没有这些路由
+
+**影响范围**:
+- 前端产品管理页面无法加载数据
+- 前端素材库页面无法上传/下载
+- 前端内容管理页面无法创建/发布
+- 前端发布中心页面无法创建任务
+
+**当前状态**:
+- [x] 本地代码已完整实现
+- [ ] Railway 后端需要重新部署
+
+**解决方案**:
+1. 确认最新代码已推送到 GitHub
+2. 在 Railway Dashboard 触发重新部署
+3. 验证路由可用性: `curl https://api-hub.zenconsult.top/api/v1/products`
 
 **解决状态**: 待解决
 
