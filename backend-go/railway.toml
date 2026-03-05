@@ -1,6 +1,8 @@
 [build]
-builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
+builder = "NIXPACKS"
+
+[build.env]
+GO_VERSION = "1.21"
 
 [deploy]
 healthcheckPath = "/health"
