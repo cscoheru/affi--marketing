@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd frontend-unified && npm run build",
+  "outputDirectory": "frontend-unified/.next",
+  "installCommand": "cd frontend-unified && npm install",
+  "framework": "nextjs"
+}

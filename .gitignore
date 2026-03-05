@@ -60,3 +60,4 @@ ai-service/railway-service-config.json
 # Scripts output (scripts generate files to other locations)
 scripts/!*.py
 scripts/!*.sh
+.vercel
