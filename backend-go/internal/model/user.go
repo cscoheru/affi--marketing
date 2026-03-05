@@ -2,6 +2,8 @@ package model
 
 import (
     "time"
+
+    "github.com/lib/pq"
 )
 
 // User 系统用户
@@ -43,14 +45,15 @@ const (
 
 // APIKey API 密钥
 type APIKey struct {
-    ID        string    `json:"id" gorm:"primaryKey;type:varchar(50)"`
-    UserID    string    `json:"user_id" gorm:"type:varchar(50);not null;index"`
-    Name      string    `json:"name" gorm:"type:varchar(255);not null"`
-    Key       string    `json:"key" gorm:"type:varchar(255);uniqueIndex;not null"`
-    Scopes    []string  `json:"scopes" gorm:"type:text[]"`
-    LastUsed  *time.Time `json:"last_used"`
-    ExpiresAt *time.Time `json:"expires_at"`
-    CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
+    ID        string         `json:"id" gorm:"primaryKey;type:varchar(50)"`
+    UserID    string         `json:"user_id" gorm:"type:varchar(50);not null;index"`
+    Name      string         `json:"name" gorm:"type:varchar(255);not null"`
+    Key       string         `json:"key" gorm:"type:varchar(255);uniqueIndex;not null"`
+    Scopes    pq.StringArray `json:"scopes" gorm:"type:text[]"`
+    LastUsed  *time.Time     `json:"last_used"`
+    ExpiresAt *time.Time     `json:"expires_at"`
+    CreatedAt time.Time      `json:"created_at" gorm:"autoCreateTime"`
+    UpdatedAt time.Time      `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
 // TableName 指定表名
