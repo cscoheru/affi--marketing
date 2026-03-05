@@ -11,7 +11,6 @@ interface VueRemoteLoaderProps {
 declare global {
   interface Window {
     __federation_shared__?: any
-    __FEDERATION__: any
   }
 }
 
@@ -27,7 +26,6 @@ export function VueRemoteLoader({
   useEffect(() => {
     let mounted = true
     let vueInstance: any = null
-    let scriptElement: HTMLScriptElement | null = null
 
     async function loadRemoteComponent() {
       try {
@@ -41,7 +39,7 @@ export function VueRemoteLoader({
 
         const defaultScope = window.__federation_shared__['default'] = window.__federation_shared__['default'] || {}
 
-        // Load Vue
+        // Load Vue as shared dependency
         if (!defaultScope.vue) {
           const vueModule = await import('vue') as any
           const vue = vueModule.default || vueModule
@@ -56,32 +54,10 @@ export function VueRemoteLoader({
           ? remoteUrl
           : `${window.location.origin}${remoteUrl}`
 
-        // Create a script element to load the remote entry
-        scriptElement = document.createElement('script')
-        scriptElement.src = fullUrl
-        scriptElement.type = 'module'
-        scriptElement.crossOrigin = 'anonymous'
-
-        // Wait for script to load
-        await new Promise<void>((resolve, reject) => {
-          scriptElement!.onload = () => resolve()
-          scriptElement!.onerror = () => reject(new Error(`Failed to load script: ${fullUrl}`))
-          document.head.appendChild(scriptElement!)
-        })
-
-        // Wait a bit for Module Federation to initialize
-        await new Promise(r => setTimeout(r, 200))
-
-        // Now try to import the module - it should work since script is loaded
-        let remoteModule
-        try {
-          // This import should now succeed since we loaded the script
-          // Use a dynamic URL to prevent webpack from bundling it
-          const importUrl = new URL(fullUrl, window.location.href).href
-          remoteModule = await import(/* webpackIgnore: true */ importUrl)
-        } catch (e) {
-          throw new Error(`Failed to import remote module: ${e}`)
-        }
+        // Dynamically import the remote entry
+        // Use Function constructor to avoid bundler trying to resolve the path
+        const dynamicImport = new Function('url', 'return import(url)')
+        const remoteModule = await dynamicImport(fullUrl)
 
         if (!remoteModule || !remoteModule.get) {
           throw new Error('Remote entry does not export a get function')
@@ -102,7 +78,7 @@ export function VueRemoteLoader({
           throw new Error(`Module ${exposedModule} not found or has no default export`)
         }
 
-        // Load styles
+        // Load styles if available
         if (remoteModule.dynamicLoadingCss) {
           remoteModule.dynamicLoadingCss([], false, `./${exposedModule}`)
         }
@@ -139,9 +115,6 @@ export function VueRemoteLoader({
       mounted = false
       if (vueInstance) {
         vueInstance.unmount()
-      }
-      if (scriptElement && scriptElement.parentNode) {
-        scriptElement.parentNode.removeChild(scriptElement)
       }
     }
   }, [remoteUrl, exposedModule])
