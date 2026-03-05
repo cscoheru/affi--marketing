@@ -57,16 +57,16 @@ export function VueRemoteLoader({
           : `${window.location.origin}${remoteUrl}`
 
         // Create a script element to load the remote entry
-        scriptElement = document.createElement('script')
+        const scriptElement = document.createElement('script')
         scriptElement.src = fullUrl
         scriptElement.type = 'module'
         scriptElement.crossOrigin = 'anonymous'
 
         // Wait for script to load
         await new Promise<void>((resolve, reject) => {
-          scriptElement.onload = () => resolve()
-          scriptElement.onerror = () => reject(new Error(`Failed to load script: ${fullUrl}`))
-          document.head.appendChild(scriptElement)
+          scriptElement!.onload = () => resolve()
+          scriptElement!.onerror = () => reject(new Error(`Failed to load script: ${fullUrl}`))
+          document.head.appendChild(scriptElement!)
         })
 
         // Wait a bit for Module Federation to initialize
