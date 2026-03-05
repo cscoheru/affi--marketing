@@ -9,7 +9,7 @@
 - [x] Task 3: 创建Wrapper目录
 - [x] Task 4: 创建DashboardWrapper
 - [ ] Task 5: 创建ExperimentsWrapper
-- [ ] Task 6: 创建ExperimentDetailWrapper
+- [x] Task 6: 创建ExperimentDetailWrapper
 - [ ] Task 7: 创建PluginsWrapper
 - [ ] Task 8: 创建AnalyticsWrapper
 - [ ] Task 9: 创建SettlementsWrapper
