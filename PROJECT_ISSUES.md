@@ -1,6 +1,6 @@
 # Affi-Marketing 项目问题追踪
 
-**最后更新**: 2026-03-06 00:25
+**最后更新**: 2026-03-06 00:35
 **项目经理**: Claude Code
 
 ---
@@ -9,16 +9,16 @@
 
 | 状态 | 数量 |
 |------|------|
-| 🔴 高优先级 | 2 |
+| 🔴 高优先级 | 1 |
 | 🟡 中优先级 | 1 |
 | 🟢 低优先级 | 1 |
-| ✅ 已解决 | 14 |
+| ✅ 已解决 | 15 |
 
 **说明**:
-- 🔴 待解决: Vue组件生产环境加载失败
-- 🔴 新增: 内容自动化API路由未部署 (BE-05)
+- 🔴 待解决: 内容自动化API路由未部署 (BE-05) - 需 Railway 重新部署
 - 🟡 待解决: Vercel前端部署配置错误
 - 🟢 低优先级: Vue组件主题CSS字体栈不一致
+- ✅ 新增已解决: Vue组件生产环境加载失败
 
 ---
 
@@ -231,11 +231,22 @@ Cannot find module 'https://hub.zenconsult.top/vue-remote/assets/remoteEntry.js'
 - Vue 构建产物未部署到可访问位置
 
 **当前状态**:
-- [x] 已添加到 03-vue-migration.md 任务7
-- [ ] 需要构建 Vue 应用并部署到生产环境
-- [ ] 详见任务卡的解决方案A和B
+- [x] Vue 应用已构建
+- [x] 构建产物已复制到 `frontend-unified/public/vue-remote/`
+- [x] remoteEntry.js 文件已就位
 
-**解决状态**: 待解决
+**解决状态**: ✅已解决
+**解决时间**: 2026-03-06
+**解决方案**:
+```bash
+cd frontend
+npm run build
+cd ../frontend-unified
+mkdir -p public/vue-remote
+cp -r ../frontend/dist/* public/vue-remote/
+```
+
+**注意**: Vue 构建产物已部署，但需要重新部署 Vercel 前端才能生效。
 
 ---
 
@@ -270,14 +281,17 @@ Cannot find module 'https://hub.zenconsult.top/vue-remote/assets/remoteEntry.js'
 
 **当前状态**:
 - [x] 本地代码已完整实现
+- [x] 代码已推送到 GitHub
 - [ ] Railway 后端需要重新部署
 
 **解决方案**:
-1. 确认最新代码已推送到 GitHub
-2. 在 Railway Dashboard 触发重新部署
-3. 验证路由可用性: `curl https://api-hub.zenconsult.top/api/v1/products`
+**在 Railway Dashboard 手动触发重新部署**:
+1. 访问 https://railway.app/project/[项目ID]/service/[服务ID]
+2. 点击 "New Deploy" 或 "Redeploy" 按钮
+3. 等待部署完成（约 2-3 分钟）
+4. 验证路由可用性: `curl https://api-hub.zenconsult.top/api/v1/products`
 
-**解决状态**: 待解决
+**解决状态**: 待解决（等待 Railway 重新部署）
 
 ---
 
