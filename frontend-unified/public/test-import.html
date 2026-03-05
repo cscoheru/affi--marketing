@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vue Remote Import Test</title>
+</head>
+<body>
+    <h1>Vue Remote Module Import Test</h1>
+    <div id="logs"></div>
+
+    <script type="module">
+        const logs = document.getElementById('logs');
+        function log(msg) {
+            const div = document.createElement('div');
+            div.textContent = `[${new Date().toISOString()}] ${msg}`;
+            logs.appendChild(div);
+            console.log(msg);
+        }
+
+        async function test() {
+            try {
+                log('Starting test...');
+                log(`Current origin: ${window.location.origin}`);
+
+                // Test dynamic import
+                log('Fetching /vue-remote/assets/remoteEntry.js...');
+                const remoteModule = await import('/vue-remote/assets/remoteEntry.js');
+                log(`Import success! Keys: ${Object.keys(remoteModule).join(', ')}`);
+                log(`Has get: ${typeof remoteModule.get}`);
+                log(`Has init: ${typeof remoteModule.init}`);
+
+                if (remoteModule.get) {
+                    log('Calling get("./Dashboard")...');
+                    const factory = await remoteModule.get('./Dashboard');
+                    log(`Success! Factory: ${JSON.stringify(Object.keys(factory))}`);
+                }
+
+                log('✅ All tests passed!');
+            } catch (err) {
+                log(`❌ ERROR: ${err.message}`);
+                log(`Stack: ${err.stack}`);
+            }
+        }
+
+        test();
+    </script>
+</body>
+</html>
