@@ -1,0 +1,749 @@
+/**
+ * Theme Adaptation Styles for Element Plus
+ *
+ * This file provides HSL-based color variables that match the Next.js shadcn/ui theme
+ * from the backend project, ensuring consistent styling across the full-stack application.
+ *
+ * Color System: HSL (Hue, Saturation, Lightness)
+ * - Allows for easy color manipulation
+ * - Provides better consistency than hex/rgb
+ * - Matches Tailwind CSS and shadcn/ui conventions
+ */
+
+/* ========== HSL Color Variables (Matching Backend Theme) ========== */
+
+:root {
+  /* Primary Brand Colors */
+  --primary-hue: 221;
+  --primary-saturation: 83%;
+  --primary-lightness: 53%;
+  --primary: hsl(var(--primary-hue), var(--primary-saturation), var(--primary-lightness));
+  --primary-foreground: hsl(0, 0%, 98%);
+
+  /* Secondary Colors */
+  --secondary-hue: 210;
+  --secondary-saturation: 40%;
+  --secondary-lightness: 96.1%;
+  --secondary: hsl(var(--secondary-hue), var(--secondary-saturation), var(--secondary-lightness));
+  --secondary-foreground: hsl(222.2, 47.4%, 11.2%);
+
+  /* Muted/Neutral Colors */
+  --muted-hue: 210;
+  --muted-saturation: 40%;
+  --muted-lightness: 96.1%;
+  --muted: hsl(var(--muted-hue), var(--muted-saturation), var(--muted-lightness));
+  --muted-foreground: hsl(215.4, 16.3%, 46.9%);
+
+  /* Accent Colors */
+  --accent-hue: 210;
+  --accent-saturation: 40%;
+  --accent-lightness: 96.1%;
+  --accent: hsl(var(--accent-hue), var(--accent-saturation), var(--accent-lightness));
+  --accent-foreground: hsl(222.2, 47.4%, 11.2%);
+
+  /* Destructive/Error Colors */
+  --destructive-hue: 0;
+  --destructive-saturation: 84.2%;
+  --destructive-lightness: 60.2%;
+  --destructive: hsl(var(--destructive-hue), var(--destructive-saturation), var(--destructive-lightness));
+  --destructive-foreground: hsl(0, 0%, 98%);
+
+  /* Semantic Colors */
+  --success: hsl(142, 76%, 36%);
+  --success-foreground: hsl(0, 0%, 98%);
+  --warning: hsl(38, 92%, 50%);
+  --warning-foreground: hsl(0, 0%, 98%);
+  --info: hsl(199, 89%, 48%);
+  --info-foreground: hsl(0, 0%, 98%);
+
+  /* Base Colors */
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(222.2, 47.4%, 11.2%);
+
+  /* Card/Surface Colors */
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(222.2, 47.4%, 11.2%);
+
+  /* Border Colors */
+  --border: hsl(214.3, 31.8%, 91.4%);
+  --input: hsl(214.3, 31.8%, 91.4%);
+  --ring: hsl(var(--primary-hue), var(--primary-saturation), var(--primary-lightness));
+
+  /* Radius */
+  --radius: 0.5rem;
+
+  /* Element Plus Specific Overrides */
+  --el-color-primary: var(--primary);
+  --el-color-primary-light-3: hsl(var(--primary-hue), var(--primary-saturation), calc(var(--primary-lightness) + 15%));
+  --el-color-primary-light-5: hsl(var(--primary-hue), var(--primary-saturation), calc(var(--primary-lightness) + 25%));
+  --el-color-primary-light-7: hsl(var(--primary-hue), var(--primary-saturation), calc(var(--primary-lightness) + 35%));
+  --el-color-primary-light-8: hsl(var(--primary-hue), var(--primary-saturation), calc(var(--primary-lightness) + 40%));
+  --el-color-primary-light-9: hsl(var(--primary-hue), var(--primary-saturation), calc(var(--primary-lightness) + 45%));
+  --el-color-primary-dark-2: hsl(var(--primary-hue), var(--primary-saturation), calc(var(--primary-lightness) - 15%));
+
+  --el-color-success: var(--success);
+  --el-color-warning: var(--warning);
+  --el-color-danger: var(--destructive);
+  --el-color-error: var(--destructive);
+  --el-color-info: var(--info);
+
+  --el-bg-color: var(--background);
+  --el-text-color-primary: var(--foreground);
+  --el-text-color-regular: hsl(222.2, 47.4%, 35%);
+  --el-text-color-secondary: hsl(215.4, 16.3%, 46.9%);
+  --el-text-color-placeholder: hsl(215.4, 16.3%, 66%);
+  --el-border-color: var(--border);
+  --el-border-color-light: hsl(214.3, 31.8%, 95%);
+  --el-border-color-lighter: hsl(214.3, 31.8%, 97%);
+  --el-border-color-extra-light: hsl(214.3, 31.8%, 98%);
+  --el-border-color-dark: hsl(214.3, 31.8%, 86%);
+  --el-border-color-darker: hsl(214.3, 31.8%, 81%);
+  --el-fill-color: hsl(var(--muted-hue), var(--muted-saturation), calc(var(--muted-lightness) + 2%));
+  --el-fill-color-light: hsl(var(--muted-hue), var(--muted-saturation), calc(var(--muted-lightness) + 4%));
+  --el-fill-color-lighter: hsl(var(--muted-hue), var(--muted-saturation), calc(var(--muted-lightness) + 6%));
+  --el-fill-color-extra-light: hsl(var(--muted-hue), var(--muted-saturation), calc(var(--muted-lightness) + 8%));
+  --el-fill-color-dark: hsl(var(--muted-hue), var(--muted-saturation), calc(var(--muted-lightness) - 2%));
+  --el-fill-color-darker: hsl(var(--muted-hue), var(--muted-saturation), calc(var(--muted-lightness) - 4%));
+  --el-fill-color-blank: hsl(0, 0%, 100%);
+  --el-box-shadow: 0 12px 32px 4px hsl(0, 0%, 0%, 0.04), 0 8px 20px hsl(0, 0%, 0%, 0.08);
+  --el-box-shadow-light: 0 0 12px hsla(0, 0%, 0%, 0.12);
+  --el-box-shadow-lighter: 0 0 6px hsla(0, 0%, 0%, 0.12);
+  --el-box-shadow-dark: 0 16px 48px 16px hsla(0, 0%, 0%, 0.24), 0 12px 32px hsla(0, 0%, 0%, 0.28), 0 8px 16px -8px hsla(0, 0%, 0%, 0.36);
+
+  --el-disabled-bg-color: var(--el-fill-color-light);
+  --el-disabled-text-color: var(--el-text-color-placeholder);
+  --el-disabled-border-color: var(--el-border-color-light);
+
+  --el-overlay-color: hsla(0, 0%, 0%, 0.5);
+  --el-overlay-color-light: hsla(0, 0%, 0%, 0.3);
+  --el-overlay-color-lighter: hsla(0, 0%, 0%, 0.15);
+
+  --el-mask-color: hsla(0, 0%, 0%, 0.7);
+  --el-mask-color-extra-light: hsla(0, 0%, 0%, 0.3);
+
+  --el-border-radius-base: var(--radius);
+  --el-border-radius-small: calc(var(--radius) - 2px);
+  --el-border-radius-round: 9999px;
+  --el-border-radius-circle: 50%;
+
+  --el-font-size-extra-large: 20px;
+  --el-font-size-large: 18px;
+  --el-font-size-medium: 16px;
+  --el-font-size-base: 14px;
+  --el-font-size-small: 13px;
+  --el-font-size-extra-small: 12px;
+
+  --el-font-weight-primary: 500;
+
+  --el-transition-duration: 0.3s;
+  --el-transition-duration-fast: 0.2s;
+}
+
+/* ========== Dark Mode Support ========== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: hsl(222.2, 47.4%, 11.2%);
+    --foreground: hsl(210, 40%, 98%);
+
+    --card: hsl(222.2, 47.4%, 11.2%);
+    --card-foreground: hsl(210, 40%, 98%);
+
+    --primary-hue: 217.2;
+    --primary-saturation: 91.2%;
+    --primary-lightness: 59.8%;
+    --primary: hsl(var(--primary-hue), var(--primary-saturation), var(--primary-lightness));
+    --primary-foreground: hsl(222.2, 47.4%, 11.2%);
+
+    --secondary: hsl(217.2, 32.6%, 17.5%);
+    --secondary-foreground: hsl(210, 40%, 98%);
+
+    --muted: hsl(217.2, 32.6%, 17.5%);
+    --muted-foreground: hsl(215, 20.2%, 65.1%);
+
+    --accent: hsl(217.2, 32.6%, 17.5%);
+    --accent-foreground: hsl(210, 40%, 98%);
+
+    --destructive: hsl(0, 62.8%, 30.6%);
+    --destructive-foreground: hsl(210, 40%, 98%);
+
+    --success: hsl(142, 71%, 45%);
+    --warning: hsl(38, 92%, 50%);
+    --info: hsl(199, 89%, 48%);
+
+    --border: hsl(217.2, 32.6%, 17.5%);
+    --input: hsl(217.2, 32.6%, 17.5%);
+    --ring: hsl(var(--primary-hue), var(--primary-saturation), calc(var(--primary-lightness) - 10%));
+
+    /* Element Plus Dark Mode Overrides */
+    --el-bg-color: var(--background);
+    --el-bg-color-overlay: hsl(222.2, 47.4%, 11.2%);
+    --el-text-color-primary: var(--foreground);
+    --el-text-color-regular: hsl(210, 40%, 85%);
+    --el-text-color-secondary: hsl(215, 20.2%, 65.1%);
+    --el-text-color-placeholder: hsl(215, 20.2%, 55%);
+    --el-border-color: var(--border);
+    --el-border-color-light: hsl(217.2, 32.6%, 22%);
+    --el-border-color-lighter: hsl(217.2, 32.6%, 25%);
+    --el-border-color-extra-light: hsl(217.2, 32.6%, 27%);
+    --el-border-color-dark: hsl(217.2, 32.6%, 15%);
+    --el-border-color-darker: hsl(217.2, 32.6%, 12%);
+    --el-fill-color: hsl(217.2, 32.6%, 17.5%);
+    --el-fill-color-light: hsl(217.2, 32.6%, 20%);
+    --el-fill-color-lighter: hsl(217.2, 32.6%, 22%);
+    --el-fill-color-extra-light: hsl(217.2, 32.6%, 24%);
+    --el-fill-color-dark: hsl(217.2, 32.6%, 15%);
+    --el-fill-color-darker: hsl(217.2, 32.6%, 12%);
+
+    --el-box-shadow: 0 12px 32px 4px hsl(0, 0%, 0%, 0.36), 0 8px 20px hsl(0, 0%, 0%, 0.44);
+    --el-box-shadow-light: 0 0 12px hsla(0, 0%, 0%, 0.48);
+    --el-box-shadow-lighter: 0 0 6px hsla(0, 0%, 0%, 0.48);
+    --el-box-shadow-dark: 0 16px 48px 16px hsla(0, 0%, 0%, 0.72), 0 12px 32px 24px hsla(0, 0%, 0%, 0.84), 0 8px 16px -8px hsla(0, 0%, 0%, 0.9);
+
+    --el-disabled-bg-color: hsl(217.2, 32.6%, 15%);
+    --el-disabled-text-color: hsl(215, 20.2%, 55%);
+    --el-disabled-border-color: hsl(217.2, 32.6%, 15%);
+  }
+}
+
+/* ========== Element Plus Component Overrides ========== */
+
+/* Button Component */
+.el-button {
+  border-radius: var(--el-border-radius-base);
+  font-weight: var(--el-font-weight-primary);
+  transition: all var(--el-transition-duration);
+}
+
+.el-button--primary {
+  background-color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+  color: var(--primary-foreground);
+}
+
+.el-button--primary:hover {
+  background-color: var(--el-color-primary-light-3);
+  border-color: var(--el-color-primary-light-3);
+}
+
+.el-button--primary:active {
+  background-color: var(--el-color-primary-dark-2);
+  border-color: var(--el-color-primary-dark-2);
+}
+
+/* Card Component */
+.el-card {
+  border-radius: var(--el-border-radius-base);
+  border-color: var(--el-border-color);
+  box-shadow: var(--el-box-shadow-light);
+}
+
+.el-card__header {
+  border-bottom-color: var(--el-border-color-light);
+  background-color: var(--el-fill-color-light);
+}
+
+/* Input Component */
+.el-input__wrapper {
+  border-radius: var(--el-border-radius-base);
+  box-shadow: 0 0 0 1px var(--el-border-color) inset;
+  transition: all var(--el-transition-duration-fast);
+}
+
+.el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px var(--el-border-color-dark) inset;
+}
+
+.el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 1px var(--el-color-primary) inset;
+}
+
+.el-input__inner {
+  color: var(--el-text-color-primary);
+}
+
+/* Select Component */
+.el-select .el-input__wrapper {
+  border-radius: var(--el-border-radius-base);
+}
+
+.el-select-dropdown {
+  border-radius: var(--el-border-radius-base);
+  box-shadow: var(--el-box-shadow-light);
+}
+
+/* Table Component */
+.el-table {
+  border-radius: var(--el-border-radius-base);
+  overflow: hidden;
+}
+
+.el-table th.el-table__cell {
+  background-color: var(--el-fill-color-light);
+  color: var(--el-text-color-secondary);
+}
+
+.el-table tr:hover > td {
+  background-color: var(--el-fill-color-light) !important;
+}
+
+.el-table--border {
+  border-color: var(--el-border-color);
+}
+
+.el-table--border::after,
+.el-table--border::before,
+.el-table--border .el-table__cell {
+  border-color: var(--el-border-color);
+}
+
+/* Dialog Component */
+.el-dialog {
+  border-radius: var(--el-border-radius-base);
+  box-shadow: var(--el-box-shadow-dark);
+}
+
+.el-dialog__header {
+  border-bottom: 1px solid var(--el-border-color-light);
+  padding: 20px 20px 15px;
+}
+
+.el-dialog__title {
+  color: var(--el-text-color-primary);
+  font-weight: var(--el-font-weight-primary);
+}
+
+.el-dialog__body {
+  padding: 20px;
+  color: var(--el-text-color-regular);
+}
+
+.el-dialog__footer {
+  border-top: 1px solid var(--el-border-color-light);
+  padding: 15px 20px 20px;
+}
+
+/* Message Component */
+.el-message {
+  border-radius: var(--el-border-radius-base);
+  box-shadow: var(--el-box-shadow-light);
+  padding: 12px 20px;
+}
+
+.el-message--success {
+  background-color: hsl(142, 76%, 96%);
+  border-color: var(--el-color-success);
+  color: var(--success);
+}
+
+.el-message--warning {
+  background-color: hsl(38, 92%, 96%);
+  border-color: var(--el-color-warning);
+  color: var(--warning);
+}
+
+.el-message--error {
+  background-color: hsl(0, 84%, 96%);
+  border-color: var(--el-color-danger);
+  color: var(--el-color-danger);
+}
+
+.el-message--info {
+  background-color: hsl(199, 89%, 96%);
+  border-color: var(--el-color-info);
+  color: var(--el-color-info);
+}
+
+/* Notification Component */
+.el-notification {
+  border-radius: var(--el-border-radius-base);
+  box-shadow: var(--el-box-shadow);
+}
+
+.el-notification__title {
+  font-weight: var(--el-font-weight-primary);
+}
+
+/* Loading Component */
+.el-loading-mask {
+  background-color: var(--el-mask-color);
+  border-radius: var(--el-border-radius-base);
+}
+
+/* Menu Component */
+.el-menu {
+  border-right-color: var(--el-border-color-light);
+}
+
+.el-menu-item,
+.el-sub-menu__title {
+  color: var(--el-text-color-primary);
+}
+
+.el-menu-item:hover,
+.el-sub-menu__title:hover {
+  background-color: var(--el-fill-color-light);
+}
+
+.el-menu-item.is-active {
+  color: var(--el-color-primary);
+  background-color: var(--el-fill-color-light);
+}
+
+/* Tabs Component */
+.el-tabs__item {
+  color: var(--el-text-color-secondary);
+}
+
+.el-tabs__item:hover {
+  color: var(--el-color-primary);
+}
+
+.el-tabs__item.is-active {
+  color: var(--el-color-primary);
+}
+
+.el-tabs__active-bar {
+  background-color: var(--el-color-primary);
+}
+
+/* Tag Component */
+.el-tag {
+  border-radius: var(--el-border-radius-small);
+}
+
+.el-tag--primary {
+  background-color: hsl(var(--primary-hue), var(--primary-saturation), 95%);
+  border-color: var(--el-color-primary-light-7);
+  color: var(--el-color-primary);
+}
+
+/* Progress Component */
+.el-progress__text {
+  color: var(--el-text-color-regular);
+}
+
+/* Alert Component */
+.el-alert {
+  border-radius: var(--el-border-radius-base);
+}
+
+.el-alert--success.is-light {
+  background-color: hsl(142, 76%, 96%);
+  color: var(--success);
+}
+
+.el-alert--warning.is-light {
+  background-color: hsl(38, 92%, 96%);
+  color: var(--warning);
+}
+
+.el-alert--error.is-light {
+  background-color: hsl(0, 84%, 96%);
+  color: var(--el-color-danger);
+}
+
+/* Dropdown Component */
+.el-dropdown-menu {
+  border-radius: var(--el-border-radius-base);
+  box-shadow: var(--el-box-shadow-light);
+}
+
+.el-dropdown-menu__item:hover {
+  background-color: var(--el-fill-color-light);
+  color: var(--el-color-primary);
+}
+
+/* Tooltip Component */
+.el-tooltip__popper {
+  border-radius: var(--el-border-radius-small);
+  box-shadow: var(--el-box-shadow-lighter);
+}
+
+/* Pagination Component */
+.el-pagination {
+  color: var(--el-text-color-regular);
+}
+
+.el-pagination button,
+.el-pager li {
+  background-color: var(--el-fill-color-blank);
+  color: var(--el-text-color-primary);
+}
+
+.el-pagination button:hover,
+.el-pager li:hover {
+  color: var(--el-color-primary);
+}
+
+.el-pager li.is-active {
+  background-color: var(--el-color-primary);
+  color: var(--primary-foreground);
+}
+
+/* Form Component */
+.el-form-item__label {
+  color: var(--el-text-color-regular);
+  font-weight: var(--el-font-weight-primary);
+}
+
+.el-form-item__error {
+  color: var(--el-color-danger);
+}
+
+/* Checkbox Component */
+.el-checkbox__label {
+  color: var(--el-text-color-regular);
+}
+
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+}
+
+/* Radio Component */
+.el-radio__label {
+  color: var(--el-text-color-regular);
+}
+
+.el-radio__input.is-checked .el-radio__inner {
+  background-color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+}
+
+/* Switch Component */
+.el-switch.is-checked .el-switch__core {
+  background-color: var(--el-color-primary);
+}
+
+/* Slider Component */
+.el-slider__runway {
+  background-color: var(--el-fill-color-light);
+}
+
+.el-slider__bar {
+  background-color: var(--el-color-primary);
+}
+
+/* Rate Component */
+.el-rate__icon.hover {
+  color: var(--el-color-primary);
+}
+
+/* Transfer Component */
+.el-transfer-panel {
+  border-radius: var(--el-border-radius-base);
+  border-color: var(--el-border-color);
+}
+
+/* Calendar Component */
+.el-calendar-table td.is-selected {
+  background-color: var(--el-fill-color-light);
+}
+
+.el-calendar-table td.is-today {
+  color: var(--el-color-primary);
+}
+
+/* Upload Component */
+.el-upload-dragger {
+  border-color: var(--el-border-color-darker);
+  border-radius: var(--el-border-radius-base);
+}
+
+.el-upload-dragger:hover {
+  border-color: var(--el-color-primary);
+}
+
+/* Tree Component */
+.el-tree-node__content:hover {
+  background-color: var(--el-fill-color-light);
+}
+
+.el-tree-node.is-current > .el-tree-node__content {
+  background-color: var(--el-fill-color-light);
+  color: var(--el-color-primary);
+}
+
+/* Breadcrumb Component */
+.el-breadcrumb__item {
+  color: var(--el-text-color-secondary);
+}
+
+.el-breadcrumb__item:last-child .el-breadcrumb__inner {
+  color: var(--el-text-color-primary);
+}
+
+/* Badge Component */
+.el-badge__content {
+  border-radius: var(--el-border-radius-round);
+}
+
+/* Avatar Component */
+.el-avatar {
+  border-radius: var(--el-border-radius-base);
+}
+
+/* Divider Component */
+.el-divider--horizontal {
+  border-top-color: var(--el-border-color-light);
+}
+
+.el-divider__text {
+  background-color: var(--el-bg-color);
+  color: var(--el-text-color-primary);
+}
+
+/* Drawer Component */
+.el-drawer {
+  border-radius: var(--el-border-radius-base) 0 0 var(--el-border-radius-base);
+  box-shadow: var(--el-box-shadow-dark);
+}
+
+.el-drawer__header {
+  margin-bottom: 0;
+  padding: 20px 20px 15px;
+  border-bottom: 1px solid var(--el-border-color-light);
+  color: var(--el-text-color-primary);
+}
+
+.el-drawer__body {
+  padding: 20px;
+  color: var(--el-text-color-regular);
+}
+
+/* Popover Component */
+.el-popover {
+  border-radius: var(--el-border-radius-base);
+  box-shadow: var(--el-box-shadow-light);
+}
+
+/* Steps Component */
+.el-step__head.is-process {
+  color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+}
+
+.el-step__head.is-finish {
+  color: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+}
+
+/* Timeline Component */
+.el-timeline-item__timestamp {
+  color: var(--el-text-color-secondary);
+}
+
+/* Result Component */
+.el-result__title {
+  color: var(--el-text-color-primary);
+}
+
+.el-result__subtitle {
+  color: var(--el-text-color-secondary);
+}
+
+/* Empty Component */
+.el-empty__description {
+  color: var(--el-text-color-secondary);
+}
+
+/* Typography */
+.el-typography {
+  color: var(--el-text-color-primary);
+}
+
+.el-typography__text {
+  color: var(--el-text-color-primary);
+}
+
+/* Image Component */
+.el-image__error {
+  background-color: var(--el-fill-color-light);
+  color: var(--el-text-color-placeholder);
+}
+
+/* Skeleton Component */
+.el-skeleton {
+  background-color: var(--el-fill-color-blank);
+}
+
+/* ========== Custom Utility Classes ========== */
+
+.text-primary {
+  color: var(--el-color-primary);
+}
+
+.text-success {
+  color: var(--el-color-success);
+}
+
+.text-warning {
+  color: var(--el-color-warning);
+}
+
+.text-danger {
+  color: var(--el-color-danger);
+}
+
+.bg-primary {
+  background-color: var(--el-color-primary);
+}
+
+.bg-success {
+  background-color: var(--el-color-success);
+}
+
+.bg-warning {
+  background-color: var(--el-color-warning);
+}
+
+.bg-danger {
+  background-color: var(--el-color-danger);
+}
+
+/* ========== Smooth Animations ========== */
+
+* {
+  transition-property: color, background-color, border-color;
+  transition-duration: var(--el-transition-duration-fast);
+  transition-timing-function: ease-in-out;
+}
+
+/* Disable transition on specific elements if needed */
+.el-table td,
+.el-table th {
+  transition: none;
+}
+
+/* ========== Responsive Utilities ========== */
+
+@media (max-width: 768px) {
+  :root {
+    --el-font-size-large: 16px;
+    --el-font-size-medium: 15px;
+    --el-font-size-base: 13px;
+    --el-font-size-small: 12px;
+  }
+
+  .el-dialog {
+    width: 90% !important;
+    margin: 0 auto;
+  }
+}
+
+/* ========== Print Styles ========== */
+
+@media print {
+  .el-button,
+  .el-input,
+  .el-select,
+  .el-pagination {
+    display: none;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+}
