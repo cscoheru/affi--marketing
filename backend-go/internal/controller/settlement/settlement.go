@@ -20,6 +20,9 @@ func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
 	service := core.NewSettlementService(db, core.AttributionLastClick)
 	controller := NewSettlementController(service)
 
+	// API规范兼容路由 - /api/v1/settlements 直接访问结算记录列表
+	r.GET("/settlements", controller.ListRecords)
+
 	settlementGroup := r.Group("/settlement")
 	{
 		settlementGroup.GET("/records", controller.ListRecords)
