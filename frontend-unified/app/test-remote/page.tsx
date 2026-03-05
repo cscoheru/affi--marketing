@@ -25,6 +25,7 @@ export default function TestRemotePage() {
 
         // Test 2: Try dynamic import
         addLog('Test 2: Trying dynamic import...')
+        // @ts-expect-error - No type declarations for runtime remoteEntry.js
         const remoteModule = await import('/vue-remote/assets/remoteEntry.js')
         addLog(`Import result: ${JSON.stringify(Object.keys(remoteModule))}`)
         addLog(`Has get: ${typeof remoteModule.get}`)
