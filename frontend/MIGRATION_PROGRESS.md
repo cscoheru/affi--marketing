@@ -12,7 +12,7 @@
 - [x] Task 6: 创建ExperimentDetailWrapper
 - [x] Task 7: 创建PluginsWrapper
 - [x] Task 8: 创建AnalyticsWrapper
-- [ ] Task 9: 创建SettlementsWrapper
+- [x] Task 9: 创建SettlementsWrapper
 - [ ] Task 10: 创建Bridge Store
 - [ ] Task 11: 创建主题适配
 - [ ] Task 12: 更新main.ts
