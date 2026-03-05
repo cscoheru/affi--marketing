@@ -11,10 +11,19 @@ require (
 	github.com/redis/go-redis/v9 v9.4.0
 	github.com/spf13/viper v1.18.2
 	go.uber.org/zap v1.26.0
-	golang.org/x/crypto v0.47.0
+	golang.org/x/crypto v0.19.0
 	gorm.io/driver/postgres v1.5.4
 	gorm.io/gorm v1.25.5
 )
+
+// Force downgrade golang.org/x packages for Go 1.22 compatibility
+replace golang.org/x/crypto => golang.org/x/crypto v0.17.0
+
+replace golang.org/x/net => golang.org/x/net v0.17.0
+
+replace golang.org/x/sys => golang.org/x/sys v0.13.0
+
+replace golang.org/x/text => golang.org/x/text v0.13.0
 
 require (
 	github.com/bytedance/sonic v1.11.6 // indirect
