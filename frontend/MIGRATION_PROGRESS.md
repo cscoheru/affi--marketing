@@ -7,7 +7,7 @@
 - [x] Task 1: 安装依赖
 - [x] Task 2: 配置Module Federation
 - [x] Task 3: 创建Wrapper目录
-- [ ] Task 4: 创建DashboardWrapper
+- [x] Task 4: 创建DashboardWrapper
 - [ ] Task 5: 创建ExperimentsWrapper
 - [ ] Task 6: 创建ExperimentDetailWrapper
 - [ ] Task 7: 创建PluginsWrapper
