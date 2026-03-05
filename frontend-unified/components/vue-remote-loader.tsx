@@ -57,7 +57,7 @@ export function VueRemoteLoader({
           : `${window.location.origin}${remoteUrl}`
 
         // Create a script element to load the remote entry
-        const scriptElement = document.createElement('script')
+        scriptElement = document.createElement('script')
         scriptElement.src = fullUrl
         scriptElement.type = 'module'
         scriptElement.crossOrigin = 'anonymous'
