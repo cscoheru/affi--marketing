@@ -8,7 +8,7 @@ export default function SettlementsPage() {
 
   return (
     <VueRemoteLoader
-      remoteUrl="/vue-remote/dist/assets/remoteEntry.js"
+      remoteUrl="/vue-remote/assets/remoteEntry.js"
       exposedModule="Settlements"
       props={{ user, token, apiBaseUrl: "http://localhost:8080" }}
     />

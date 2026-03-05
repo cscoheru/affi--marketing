@@ -8,7 +8,7 @@ export default function ExperimentsPage() {
 
   return (
     <VueRemoteLoader
-      remoteUrl="/vue-remote/dist/assets/remoteEntry.js"
+      remoteUrl="/vue-remote/assets/remoteEntry.js"
       exposedModule="Experiments"
       props={{ user, token, apiBaseUrl: "http://localhost:8080" }}
     />

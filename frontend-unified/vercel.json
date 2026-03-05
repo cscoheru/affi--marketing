@@ -57,10 +57,5 @@
       ]
     }
   ],
-  "rewrites": [
-    {
-      "source": "/vue-remote/:path*",
-      "destination": "https://hub.zenconsult.top/vue-remote/:path*"
-    }
-  ]
+  "rewrites": []
 }

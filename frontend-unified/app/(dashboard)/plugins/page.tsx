@@ -8,7 +8,7 @@ export default function PluginsPage() {
 
   return (
     <VueRemoteLoader
-      remoteUrl="/vue-remote/dist/assets/remoteEntry.js"
+      remoteUrl="/vue-remote/assets/remoteEntry.js"
       exposedModule="Plugins"
       props={{ user, token, apiBaseUrl: "http://localhost:8080" }}
     />

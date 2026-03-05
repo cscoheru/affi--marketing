@@ -8,7 +8,7 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-bold mb-4">仪表板</h1>
       <div className="h-[calc(100vh-200px)]">
         <VueRemoteLoader
-          remoteUrl="/vue-remote/dist/assets/remoteEntry.js"
+          remoteUrl="/vue-remote/assets/remoteEntry.js"
           exposedModule="Dashboard"
         />
       </div>
