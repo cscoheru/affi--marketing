@@ -22,9 +22,11 @@ import (
 	"github.com/zenconsult/affi-marketing/internal/controller/settlement"
 	"github.com/zenconsult/affi-marketing/internal/controller/plugin"
 	"github.com/zenconsult/affi-marketing/internal/controller/content"
+	"github.com/zenconsult/affi-marketing/internal/controller/ai"
 	"github.com/zenconsult/affi-marketing/pkg/cache"
 	"github.com/zenconsult/affi-marketing/pkg/database"
 	"github.com/zenconsult/affi-marketing/pkg/logger"
+	aiservice "github.com/zenconsult/affi-marketing/internal/service/ai"
 )
 
 func main() {
@@ -211,6 +213,20 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 
 		// 内容自动化系统
 		content.RegisterRoutes(v1, db)
+
+		// AI 内容生成服务
+		aiClient := aiservice.NewClient(aiservice.Config{
+			URL:     cfg.AIService.URL,
+			Timeout: cfg.AIService.Timeout,
+		})
+		aiController := ai.NewController(aiClient)
+
+		// AI routes (protected)
+		aiRoutes := v1.Group("/ai")
+		aiRoutes.Use(authMiddleware.Authenticate())
+		{
+			aiRoutes.POST("/generate-content", aiController.GenerateContent)
+		}
 	}
 
 	return router
