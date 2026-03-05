@@ -1,97 +1,335 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useToast } from '@/hooks/use-toast'
+import { publishApi, type PublishTask, type ContentItem } from '@/lib/api'
+import { contentApi } from '@/lib/api'
+import { format } from 'date-fns'
+import { zhCN } from 'date-fns/locale'
 
-// 模拟数据
-const mockPublishTasks = [
-  { id: '1', title: 'Nespresso 咖啡机深度测评', platform: 'blog', status: 'scheduled', publishDate: '2026-03-10 10:00' },
-  { id: '2', title: '2025年最佳咖啡机推荐', platform: 'twitter', status: 'published', publishDate: '2026-03-05 14:00' },
-  { id: '3', title: '咖啡机使用指南视频', platform: 'youtube', status: 'draft', publishDate: '-' },
+const platforms = [
+  { value: 'blog', label: '博客' },
+  { value: 'twitter', label: 'Twitter' },
+  { value: 'facebook', label: 'Facebook' },
+  { value: 'instagram', label: 'Instagram' },
 ]
 
+const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
+  pending: { label: '待发布', variant: 'secondary' },
+  publishing: { label: '发布中', variant: 'outline' },
+  completed: { label: '已完成', variant: 'default' },
+  failed: { label: '失败', variant: 'destructive' },
+}
+
 export default function PublishPage() {
-  const [tasks] = useState(mockPublishTasks)
+  const [tasks, setTasks] = useState<PublishTask[]>([])
+  const [contents, setContents] = useState<ContentItem[]>([])
+  const [loading, setLoading] = useState(false)
+  const [executing, setExecuting] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState('all')
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const { toast } = useToast()
+
+  // 获取发布任务列表
+  const fetchTasks = async () => {
+    setLoading(true)
+    try {
+      const params: any = {}
+      if (activeTab !== 'all') params.status = activeTab
+
+      const response = await publishApi.list(params)
+      setTasks(response.data.items)
+    } catch (error) {
+      toast({
+        title: '错误',
+        description: error instanceof Error ? error.message : '获取发布任务失败',
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 获取可发布内容列表
+  const fetchContents = async () => {
+    try {
+      const response = await contentApi.list({ status: 'published', size: 100 })
+      setContents(response.data.items)
+    } catch (error) {
+      console.error('Failed to fetch contents:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchTasks()
+  }, [activeTab])
+
+  useEffect(() => {
+    if (dialogOpen) {
+      fetchContents()
+    }
+  }, [dialogOpen])
+
+  // 创建发布任务
+  const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+
+    setSubmitting(true)
+    try {
+      const data = {
+        content_id: formData.get('content_id') as string,
+        platform: formData.get('platform') as 'blog' | 'twitter' | 'facebook' | 'instagram',
+        scheduled_at: formData.get('scheduled_at') as string || undefined,
+      }
+
+      await publishApi.create(data)
+      toast({
+        title: '成功',
+        description: '发布任务已创建',
+      })
+      setDialogOpen(false)
+      fetchTasks()
+    } catch (error) {
+      toast({
+        title: '错误',
+        description: error instanceof Error ? error.message : '创建发布任务失败',
+        variant: 'destructive',
+      })
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  // 执行发布
+  const handleExecute = async (id: string) => {
+    setExecuting(id)
+    try {
+      await publishApi.execute(id)
+      toast({
+        title: '成功',
+        description: '发布任务已开始执行',
+      })
+      fetchTasks()
+    } catch (error) {
+      toast({
+        title: '错误',
+        description: error instanceof Error ? error.message : '执行发布任务失败',
+        variant: 'destructive',
+      })
+    } finally {
+      setExecuting(null)
+    }
+  }
+
+  // 取消发布
+  const handleCancel = async (id: string) => {
+    if (!confirm('确定要取消这个发布任务吗？')) return
+
+    try {
+      await publishApi.cancel(id)
+      toast({
+        title: '成功',
+        description: '发布任务已取消',
+      })
+      fetchTasks()
+    } catch (error) {
+      toast({
+        title: '错误',
+        description: error instanceof Error ? error.message : '取消发布任务失败',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  // 获取内容标题
+  const getContentTitle = (contentId: string) => {
+    const content = contents.find(c => c.id === contentId)
+    return content?.title || contentId
+  }
+
+  // 格式化时间
+  const formatTime = (dateStr?: string) => {
+    if (!dateStr) return '-'
+    return format(new Date(dateStr), 'yyyy-MM-dd HH:mm', { locale: zhCN })
+  }
+
+  // 过滤后的任务
+  const filteredTasks = tasks.filter(t =>
+    activeTab === 'all' || t.status === activeTab
+  )
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">发布中心</h1>
-        <Button>创建发布任务</Button>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>创建发布任务</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>创建发布任务</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div>
+                <Label htmlFor="content_id">选择内容</Label>
+                <Select name="content_id" required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择要发布的内容" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {contents.map((content) => (
+                      <SelectItem key={content.id} value={content.id}>
+                        {content.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="platform">发布平台</Label>
+                <Select name="platform" required>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {platforms.map((platform) => (
+                      <SelectItem key={platform.value} value={platform.value}>
+                        {platform.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="scheduled_at">计划发布时间 (可选)</Label>
+                <Input
+                  id="scheduled_at"
+                  name="scheduled_at"
+                  type="datetime-local"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  留空表示立即发布
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                  取消
+                </Button>
+                <Button type="submit" disabled={submitting}>
+                  {submitting ? '提交中...' : '创建'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      <Tabs defaultValue="all" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="all">全部</TabsTrigger>
-          <TabsTrigger value="scheduled">待发布</TabsTrigger>
-          <TabsTrigger value="published">已发布</TabsTrigger>
-          <TabsTrigger value="draft">草稿</TabsTrigger>
+          <TabsTrigger value="pending">待发布</TabsTrigger>
+          <TabsTrigger value="publishing">发布中</TabsTrigger>
+          <TabsTrigger value="completed">已完成</TabsTrigger>
+          <TabsTrigger value="failed">失败</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all">
+        <TabsContent value={activeTab}>
           <Card>
             <CardHeader>
-              <CardTitle>发布任务</CardTitle>
+              <CardTitle>
+                发布任务
+                {activeTab !== 'all' && ` (${statusConfig[activeTab]?.label})`}
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {tasks.map((task) => (
-                  <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3">
-                        <h3 className="font-medium">{task.title}</h3>
-                        <Badge variant="outline">{task.platform}</Badge>
-                        <Badge
-                          variant={
-                            task.status === 'published' ? 'default' :
-                            task.status === 'scheduled' ? 'secondary' :
-                            'outline'
-                          }
-                        >
-                          {task.status === 'published' ? '已发布' :
-                           task.status === 'scheduled' ? '待发布' : '草稿'}
-                        </Badge>
+              {loading ? (
+                <div className="text-center py-8">加载中...</div>
+              ) : filteredTasks.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  暂无发布任务
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredTasks.map((task) => (
+                    <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="font-medium">{getContentTitle(task.content_id)}</h3>
+                          <Badge variant="outline">
+                            {platforms.find(p => p.value === task.platform)?.label || task.platform}
+                          </Badge>
+                          <Badge variant={statusConfig[task.status]?.variant}>
+                            {statusConfig[task.status]?.label || task.status}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <p>创建时间: {formatTime(task.created_at)}</p>
+                          {task.scheduled_at && (
+                            <p>计划发布: {formatTime(task.scheduled_at)}</p>
+                          )}
+                          {task.published_at && (
+                            <p>实际发布: {formatTime(task.published_at)}</p>
+                          )}
+                          {task.error_message && (
+                            <p className="text-destructive">错误: {task.error_message}</p>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        发布时间: {task.publishDate}
-                      </p>
+                      <div className="flex gap-2">
+                        {task.status === 'pending' && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleExecute(task.id)}
+                              disabled={executing === task.id}
+                            >
+                              {executing === task.id ? '执行中...' : '立即发布'}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleCancel(task.id)}
+                            >
+                              取消
+                            </Button>
+                          </>
+                        )}
+                        {task.status === 'failed' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleExecute(task.id)}
+                            disabled={executing === task.id}
+                          >
+                            重试
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="sm">编辑</Button>
-                      {task.status === 'scheduled' && (
-                        <Button variant="ghost" size="sm">立即发布</Button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="scheduled">
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-muted-foreground">待发布的任务 ({tasks.filter(t => t.status === 'scheduled').length})</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="published">
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-muted-foreground">已发布的任务 ({tasks.filter(t => t.status === 'published').length})</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="draft">
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-muted-foreground">草稿箱 ({tasks.filter(t => t.status === 'draft').length})</p>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { updateApiToken, clearApiToken } from './api'
 
 // 用户状态
 interface User {
@@ -38,6 +39,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ user, token, isAuthenticated: true })
       localStorage.setItem('auth_token', token)
       localStorage.setItem('auth_user', JSON.stringify(user))
+      // 更新 API 客户端的 token
+      updateApiToken(token)
     } else {
       throw new Error('登录失败')
     }
@@ -47,6 +50,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user: null, token: null, isAuthenticated: false })
     localStorage.removeItem('auth_token')
     localStorage.removeItem('auth_user')
+    // 清除 API 客户端的 token
+    clearApiToken()
   },
 
   setUser: (user: User) => set({ user }),
@@ -58,6 +63,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       try {
         const user = JSON.parse(userStr) as User
         set({ user, token, isAuthenticated: true })
+        // 更新 API 客户端的 token
+        updateApiToken(token)
       } catch {
         // Invalid stored user, clear everything
         localStorage.removeItem('auth_token')
