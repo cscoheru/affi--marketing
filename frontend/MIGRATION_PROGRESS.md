@@ -26,5 +26,5 @@
 ✅ vue-component-loader.tsx 文件存在
 ✅ Vue 3项目存在
 ✅ 所有目标Vue组件存在
-⚠️  需要安装 @module-federation/vite
+✅ @module-federation/vite 已安装 (v1.12.0)
 ⚠️  需要将端口从 5173 改为 5174
