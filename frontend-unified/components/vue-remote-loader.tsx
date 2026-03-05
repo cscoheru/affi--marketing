@@ -27,22 +27,21 @@ export function VueRemoteLoader({
   useEffect(() => {
     let mounted = true
     let vueInstance: any = null
-    let styleElement: HTMLLinkElement | null = null
+    let scriptElement: HTMLScriptElement | null = null
 
     async function loadRemoteComponent() {
       try {
         setLoading(true)
         setError(null)
 
-        // Initialize shared scope if not exists
+        // Initialize shared scope
         if (!window.__federation_shared__) {
           window.__federation_shared__ = {}
         }
 
-        // Set up shared dependencies
         const defaultScope = window.__federation_shared__['default'] = window.__federation_shared__['default'] || {}
 
-        // Load Vue and make it available in shared scope
+        // Load Vue
         if (!defaultScope.vue) {
           const vueModule = await import('vue') as any
           const vue = vueModule.default || vueModule
@@ -52,19 +51,36 @@ export function VueRemoteLoader({
           }
         }
 
-        // The remoteUrl should be the remoteEntry.js
-        // In dev: http://localhost:5174/dist/assets/remoteEntry.js
-        // In prod: /vue-remote/assets/remoteEntry.js
+        // Determine full URL
+        const fullUrl = remoteUrl.startsWith('http')
+          ? remoteUrl
+          : `${window.location.origin}${remoteUrl}`
 
-        // Import the remote entry as a module
+        // Create a script element to load the remote entry
+        scriptElement = document.createElement('script')
+        scriptElement.src = fullUrl
+        scriptElement.type = 'module'
+        scriptElement.crossOrigin = 'anonymous'
+
+        // Wait for script to load
+        await new Promise<void>((resolve, reject) => {
+          scriptElement.onload = () => resolve()
+          scriptElement.onerror = () => reject(new Error(`Failed to load script: ${fullUrl}`))
+          document.head.appendChild(scriptElement)
+        })
+
+        // Wait a bit for Module Federation to initialize
+        await new Promise(r => setTimeout(r, 200))
+
+        // Now try to import the module - it should work since script is loaded
         let remoteModule
         try {
-          // Try direct import first (for same-origin or CORS-enabled)
-          remoteModule = await import(/* @vite-ignore */ remoteUrl)
+          // This import should now succeed since we loaded the script
+          // Use a dynamic URL to prevent webpack from bundling it
+          const importUrl = new URL(fullUrl, window.location.href).href
+          remoteModule = await import(/* webpackIgnore: true */ importUrl)
         } catch (e) {
-          // If that fails, try with full URL
-          const fullUrl = remoteUrl.startsWith('http') ? remoteUrl : `${window.location.origin}${remoteUrl}`
-          remoteModule = await import(/* @vite-ignore */ fullUrl)
+          throw new Error(`Failed to import remote module: ${e}`)
         }
 
         if (!remoteModule || !remoteModule.get) {
@@ -86,19 +102,18 @@ export function VueRemoteLoader({
           throw new Error(`Module ${exposedModule} not found or has no default export`)
         }
 
-        // Load styles if dynamicLoadingCss is available
+        // Load styles
         if (remoteModule.dynamicLoadingCss) {
           remoteModule.dynamicLoadingCss([], false, `./${exposedModule}`)
         }
 
-        // Create Vue app and mount
+        // Create and mount Vue app
         if (containerRef.current && mounted) {
           const vueModule = await import('vue') as any
           const createApp = vueModule.createApp
 
           vueInstance = createApp({
             render() {
-              // @ts-ignore - Vue component
               return typeof component === 'function'
                 ? component(props)
                 : component
@@ -125,9 +140,8 @@ export function VueRemoteLoader({
       if (vueInstance) {
         vueInstance.unmount()
       }
-      const el = styleElement as HTMLLinkElement | null
-      if (el) {
-        el.remove()
+      if (scriptElement && scriptElement.parentNode) {
+        scriptElement.parentNode.removeChild(scriptElement)
       }
     }
   }, [remoteUrl, exposedModule])
