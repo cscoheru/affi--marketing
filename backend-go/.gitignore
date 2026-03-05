@@ -6,6 +6,7 @@ bin/
 *.so
 *.dylib
 *.test
+server
 
 # Output
 *.out
