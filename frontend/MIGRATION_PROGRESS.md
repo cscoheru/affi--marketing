@@ -13,7 +13,7 @@
 - [x] Task 7: 创建PluginsWrapper
 - [x] Task 8: 创建AnalyticsWrapper
 - [x] Task 9: 创建SettlementsWrapper
-- [ ] Task 10: 创建Bridge Store
+- [x] Task 10: 创建Bridge Store
 - [ ] Task 11: 创建主题适配
 - [ ] Task 12: 更新main.ts
 - [ ] Task 13: 测试本地构建
