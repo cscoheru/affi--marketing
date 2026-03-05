@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/zenconsult/affi-marketing/internal/core"
-	"github.com/zenconsult/affi-marketing/internal/model/experiment"
+	"github.com/zenconsult/affi-marketing/internal/model"
 	"github.com/zenconsult/affi-marketing/pkg/logger"
 )
 
@@ -28,6 +28,7 @@ func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
 		experiments.DELETE("/:id", controller.Delete)
 		experiments.POST("/:id/start", controller.Start)
 		experiments.POST("/:id/stop", controller.Stop)
+		experiments.POST("/:id/pause", controller.Pause)
 	}
 }
 
@@ -98,12 +99,12 @@ func (ctrl *ExperimentController) List(c *gin.Context) {
 // @Summary 获取实验详情
 // @Tags 实验
 // @Produce json
-// @Param id path int true "实验 ID"
+// @Param id path string true "实验 ID"
 // @Success 200 {object} Response
 // @Router /api/v1/experiments/{id} [get]
 func (ctrl *ExperimentController) Get(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
+	id := c.Param("id")
+	if id == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success":   false,
 			"code":      400,
@@ -113,7 +114,7 @@ func (ctrl *ExperimentController) Get(c *gin.Context) {
 		return
 	}
 
-	exp, err := ctrl.service.Get(c.Request.Context(), uint(id))
+	exp, err := ctrl.service.Get(c.Request.Context(), id)
 	if err != nil {
 		ctrl.logger.Error("Failed to get experiment", zap.Error(err))
 		c.JSON(http.StatusNotFound, gin.H{
@@ -139,11 +140,11 @@ func (ctrl *ExperimentController) Get(c *gin.Context) {
 // @Tags 实验
 // @Accept json
 // @Produce json
-// @Param experiment body experiment.Experiment true "实验信息"
+// @Param experiment body model.Experiment true "实验信息"
 // @Success 201 {object} Response
 // @Router /api/v1/experiments [post]
 func (ctrl *ExperimentController) Create(c *gin.Context) {
-	var req experiment.Experiment
+	var req model.Experiment
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success":   false,
@@ -179,13 +180,13 @@ func (ctrl *ExperimentController) Create(c *gin.Context) {
 // @Tags 实验
 // @Accept json
 // @Produce json
-// @Param id path int true "实验 ID"
-// @Param experiment body experiment.Experiment true "实验信息"
+// @Param id path string true "实验 ID"
+// @Param experiment body model.Experiment true "实验信息"
 // @Success 200 {object} Response
 // @Router /api/v1/experiments/{id} [put]
 func (ctrl *ExperimentController) Update(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
+	id := c.Param("id")
+	if id == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success":   false,
 			"code":      400,
@@ -195,7 +196,7 @@ func (ctrl *ExperimentController) Update(c *gin.Context) {
 		return
 	}
 
-	var req experiment.Experiment
+	var req model.Experiment
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success":   false,
@@ -206,7 +207,7 @@ func (ctrl *ExperimentController) Update(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.service.Update(c.Request.Context(), uint(id), &req); err != nil {
+	if err := ctrl.service.Update(c.Request.Context(), id, &req); err != nil {
 		ctrl.logger.Error("Failed to update experiment", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success":   false,
@@ -234,8 +235,8 @@ func (ctrl *ExperimentController) Update(c *gin.Context) {
 // @Success 200 {object} Response
 // @Router /api/v1/experiments/{id} [delete]
 func (ctrl *ExperimentController) Delete(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
+	id := c.Param("id")
+	if id == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success":   false,
 			"code":      400,
@@ -245,7 +246,7 @@ func (ctrl *ExperimentController) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.service.Delete(c.Request.Context(), uint(id)); err != nil {
+	if err := ctrl.service.Delete(c.Request.Context(), id); err != nil {
 		ctrl.logger.Error("Failed to delete experiment", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success":   false,
@@ -273,8 +274,8 @@ func (ctrl *ExperimentController) Delete(c *gin.Context) {
 // @Success 200 {object} Response
 // @Router /api/v1/experiments/{id}/start [post]
 func (ctrl *ExperimentController) Start(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
+	id := c.Param("id")
+	if id == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success":   false,
 			"code":      400,
@@ -284,7 +285,7 @@ func (ctrl *ExperimentController) Start(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.service.Start(c.Request.Context(), uint(id)); err != nil {
+	if err := ctrl.service.Start(c.Request.Context(), id); err != nil {
 		ctrl.logger.Error("Failed to start experiment", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success":   false,
@@ -312,8 +313,8 @@ func (ctrl *ExperimentController) Start(c *gin.Context) {
 // @Success 200 {object} Response
 // @Router /api/v1/experiments/{id}/stop [post]
 func (ctrl *ExperimentController) Stop(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
+	id := c.Param("id")
+	if id == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success":   false,
 			"code":      400,
@@ -323,7 +324,7 @@ func (ctrl *ExperimentController) Stop(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.service.Stop(c.Request.Context(), uint(id)); err != nil {
+	if err := ctrl.service.Stop(c.Request.Context(), id); err != nil {
 		ctrl.logger.Error("Failed to stop experiment", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success":   false,
@@ -338,6 +339,45 @@ func (ctrl *ExperimentController) Stop(c *gin.Context) {
 		"success":   true,
 		"code":      200,
 		"message":   "Experiment stopped",
+		"data":      nil,
+		"timestamp": time.Now().Unix(),
+	})
+}
+
+// Pause 暂停实验
+// @Summary 暂停实验
+// @Tags 实验
+// @Produce json
+// @Param id path string true "实验 ID"
+// @Success 200 {object} Response
+// @Router /api/v1/experiments/{id}/pause [post]
+func (ctrl *ExperimentController) Pause(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success":   false,
+			"code":      400,
+			"message":   "Invalid experiment ID",
+			"timestamp": time.Now().Unix(),
+		})
+		return
+	}
+
+	if err := ctrl.service.Stop(c.Request.Context(), id); err != nil {
+		ctrl.logger.Error("Failed to pause experiment", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success":   false,
+			"code":      500,
+			"message":   err.Error(),
+			"timestamp": time.Now().Unix(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success":   true,
+		"code":      200,
+		"message":   "Experiment paused",
 		"data":      nil,
 		"timestamp": time.Now().Unix(),
 	})

@@ -46,7 +46,7 @@ Host: 139.224.42.111
 Port: 5432
 Database: business_hub
 User: postgres
-Password: WhjQTPAwInc5Vav3sDWe
+Password: changeme-postgres-password-123
 ```
 
 ### Connect via psql

@@ -3,6 +3,8 @@ package response
 import (
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 // Response 统一响应格式
@@ -69,4 +71,28 @@ func GetHTTPStatus(code int) int {
 		return status
 	}
 	return http.StatusInternalServerError
+}
+
+// Success 发送成功响应
+func Success(c *gin.Context, data interface{}) {
+	c.JSON(http.StatusOK, NewSuccessResponse(data))
+}
+
+// Error 发送错误响应
+func Error(c *gin.Context, statusCode int, message string, err error) {
+	resp := NewErrorResponse(statusCode, message, []ErrorItem{})
+	if err != nil {
+		// 可以在这里添加日志记录
+		resp.Errors = []ErrorItem{
+			{
+				Message: err.Error(),
+			},
+		}
+	}
+	c.JSON(statusCode, resp)
+}
+
+// ValidationError 发送验证错误响应
+func ValidationError(c *gin.Context, errors []ErrorItem) {
+	c.JSON(http.StatusUnprocessableEntity, NewValidationErrorResponse(errors))
 }

@@ -7,7 +7,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/zenconsult/affi-marketing/internal/model/experiment"
+	"github.com/zenconsult/affi-marketing/internal/model"
 )
 
 // ExperimentService 实验服务
@@ -21,11 +21,11 @@ func NewExperimentService(db *gorm.DB) *ExperimentService {
 }
 
 // List 获取实验列表
-func (s *ExperimentService) List(ctx context.Context, filter ExperimentFilter) ([]experiment.Experiment, int64, error) {
-	var experiments []experiment.Experiment
+func (s *ExperimentService) List(ctx context.Context, filter ExperimentFilter) ([]model.Experiment, int64, error) {
+	var experiments []model.Experiment
 	var total int64
 
-	query := s.db.WithContext(ctx).Model(&experiment.Experiment{})
+	query := s.db.WithContext(ctx).Model(&model.Experiment{})
 
 	// 应用筛选条件
 	if filter.ExperimentType != "" {
@@ -55,11 +55,11 @@ func (s *ExperimentService) List(ctx context.Context, filter ExperimentFilter) (
 }
 
 // Get 获取实验详情
-func (s *ExperimentService) Get(ctx context.Context, id uint) (*experiment.Experiment, error) {
-	var exp experiment.Experiment
-	if err := s.db.WithContext(ctx).First(&exp, id).Error; err != nil {
+func (s *ExperimentService) Get(ctx context.Context, id string) (*model.Experiment, error) {
+	var exp model.Experiment
+	if err := s.db.WithContext(ctx).Where("id = ?", id).First(&exp).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("experiment not found: %d", id)
+			return nil, fmt.Errorf("experiment not found: %s", id)
 		}
 		return nil, fmt.Errorf("failed to get experiment: %w", err)
 	}
@@ -67,10 +67,10 @@ func (s *ExperimentService) Get(ctx context.Context, id uint) (*experiment.Exper
 }
 
 // Create 创建实验
-func (s *ExperimentService) Create(ctx context.Context, exp *experiment.Experiment) error {
+func (s *ExperimentService) Create(ctx context.Context, exp *model.Experiment) error {
 	// 设置初始状态
 	if exp.Status == "" {
-		exp.Status = experiment.ExperimentStatusDraft
+		exp.Status = model.ExperimentStatusDraft
 	}
 
 	// 验证实验配置
@@ -87,24 +87,24 @@ func (s *ExperimentService) Create(ctx context.Context, exp *experiment.Experime
 }
 
 // Update 更新实验
-func (s *ExperimentService) Update(ctx context.Context, id uint, exp *experiment.Experiment) error {
+func (s *ExperimentService) Update(ctx context.Context, id string, exp *model.Experiment) error {
 	// 检查实验是否存在
-	var existing experiment.Experiment
-	if err := s.db.WithContext(ctx).First(&existing, id).Error; err != nil {
+	var existing model.Experiment
+	if err := s.db.WithContext(ctx).Where("id = ?", id).First(&existing).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("experiment not found: %d", id)
+			return fmt.Errorf("experiment not found: %s", id)
 		}
 		return fmt.Errorf("failed to get experiment: %w", err)
 	}
 
 	// 运行中的实验不允许修改关键配置
-	if existing.Status == experiment.ExperimentStatusActive {
+	if existing.Status == model.ExperimentStatusActive {
 		// 只允许修改部分字段
 		updates := map[string]interface{}{
 			"name":        exp.Name,
-			"description": exp.Description,
+			"metadata": exp.Metadata,
 		}
-		if err := s.db.WithContext(ctx).Model(&existing).Updates(updates).Error; err != nil {
+		if err := s.db.WithContext(ctx).Model(&existing).Where("id = ?", id).Updates(updates).Error; err != nil {
 			return fmt.Errorf("failed to update experiment: %w", err)
 		}
 		return nil
@@ -120,19 +120,19 @@ func (s *ExperimentService) Update(ctx context.Context, id uint, exp *experiment
 }
 
 // Delete 删除实验
-func (s *ExperimentService) Delete(ctx context.Context, id uint) error {
+func (s *ExperimentService) Delete(ctx context.Context, id string) error {
 	// 检查实验是否存在
-	var exp experiment.Experiment
-	if err := s.db.WithContext(ctx).First(&exp, id).Error; err != nil {
+	var exp model.Experiment
+	if err := s.db.WithContext(ctx).Where("id = ?", id).First(&exp).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("experiment not found: %d", id)
+			return fmt.Errorf("experiment not found: %s", id)
 		}
 		return fmt.Errorf("failed to get experiment: %w", err)
 	}
 
 	// 运行中的实验不允许删除
-	if exp.Status == experiment.ExperimentStatusActive {
-		return fmt.Errorf("cannot delete running experiment: %d", id)
+	if exp.Status == model.ExperimentStatusActive {
+		return fmt.Errorf("cannot delete running experiment: %s", id)
 	}
 
 	// 删除实验
@@ -144,23 +144,23 @@ func (s *ExperimentService) Delete(ctx context.Context, id uint) error {
 }
 
 // Start 启动实验
-func (s *ExperimentService) Start(ctx context.Context, id uint) error {
+func (s *ExperimentService) Start(ctx context.Context, id string) error {
 	// 检查实验是否存在
-	var exp experiment.Experiment
-	if err := s.db.WithContext(ctx).First(&exp, id).Error; err != nil {
+	var exp model.Experiment
+	if err := s.db.WithContext(ctx).Where("id = ?", id).First(&exp).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("experiment not found: %d", id)
+			return fmt.Errorf("experiment not found: %s", id)
 		}
 		return fmt.Errorf("failed to get experiment: %w", err)
 	}
 
 	// 检查状态
-	if exp.Status != experiment.ExperimentStatusDraft && exp.Status != experiment.ExperimentStatusPaused {
+	if exp.Status != model.ExperimentStatusDraft && exp.Status != model.ExperimentStatusPaused {
 		return fmt.Errorf("experiment is not in startable status: %s", exp.Status)
 	}
 
 	// 更新状态为运行中
-	if err := s.db.WithContext(ctx).Model(&exp).Update("status", experiment.ExperimentStatusActive).Error; err != nil {
+	if err := s.db.WithContext(ctx).Model(&exp).Where("id = ?", id).Update("status", model.ExperimentStatusActive).Error; err != nil {
 		return fmt.Errorf("failed to start experiment: %w", err)
 	}
 
@@ -168,32 +168,51 @@ func (s *ExperimentService) Start(ctx context.Context, id uint) error {
 }
 
 // Stop 停止实验
-func (s *ExperimentService) Stop(ctx context.Context, id uint) error {
+func (s *ExperimentService) Stop(ctx context.Context, id string) error {
 	// 检查实验是否存在
-	var exp experiment.Experiment
-	if err := s.db.WithContext(ctx).First(&exp, id).Error; err != nil {
+	var exp model.Experiment
+	if err := s.db.WithContext(ctx).Where("id = ?", id).First(&exp).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("experiment not found: %d", id)
+			return fmt.Errorf("experiment not found: %s", id)
 		}
 		return fmt.Errorf("failed to get experiment: %w", err)
 	}
 
 	// 检查状态
-	if exp.Status != experiment.ExperimentStatusActive {
+	if exp.Status != model.ExperimentStatusActive {
 		return fmt.Errorf("experiment is not running: %s", exp.Status)
 	}
 
 	// 更新状态为已停止
-	if err := s.db.WithContext(ctx).Model(&exp).Update("status", experiment.ExperimentStatusPaused).Error; err != nil {
+	if err := s.db.WithContext(ctx).Model(&exp).Where("id = ?", id).Update("status", model.ExperimentStatusPaused).Error; err != nil {
 		return fmt.Errorf("failed to stop experiment: %w", err)
 	}
 
 	return nil
 }
 
+// UpdateStatus 更新实验状态
+func (s *ExperimentService) UpdateStatus(ctx context.Context, id string, status model.ExperimentStatus) error {
+	// 检查实验是否存在
+	var exp model.Experiment
+	if err := s.db.WithContext(ctx).Where("id = ?", id).First(&exp).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("experiment not found: %s", id)
+		}
+		return fmt.Errorf("failed to get experiment: %w", err)
+	}
+
+	// 更新状态
+	if err := s.db.WithContext(ctx).Model(&exp).Where("id = ?", id).Update("status", status).Error; err != nil {
+		return fmt.Errorf("failed to update experiment status: %w", err)
+	}
+
+	return nil
+}
+
 // GetByTrackingID 根据追踪ID获取实验
-func (s *ExperimentService) GetByTrackingID(ctx context.Context, trackingID string) (*experiment.Experiment, error) {
-	var track experiment.Track
+func (s *ExperimentService) GetByTrackingID(ctx context.Context, trackingID string) (*model.Experiment, error) {
+	var track model.Track
 	if err := s.db.WithContext(ctx).Where("tracking_id = ?", trackingID).First(&track).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("track not found: %s", trackingID)
@@ -205,24 +224,24 @@ func (s *ExperimentService) GetByTrackingID(ctx context.Context, trackingID stri
 }
 
 // validateConfig 验证实验配置
-func (s *ExperimentService) validateConfig(exp *experiment.Experiment) error {
+func (s *ExperimentService) validateConfig(exp *model.Experiment) error {
 	// 验证实验类型
-	switch exp.ExperimentType {
-	case experiment.ExperimentTypeSEO:
+	switch exp.Type {
+	case model.ExperimentTypeSEO:
 		return s.validateSEOConfig(exp)
-	case experiment.ExperimentTypeGEO:
+	case model.ExperimentTypeGEO:
 		return s.validateGEOConfig(exp)
-	case experiment.ExperimentTypeAIAgent:
+	case model.ExperimentTypeAIAgent:
 		return s.validateAIAgentConfig(exp)
-	case experiment.ExperimentTypeAffiliateSAAS:
+	case model.ExperimentTypeAffiliateSAAS:
 		return s.validateAffiliateSAASConfig(exp)
 	default:
-		return fmt.Errorf("unknown experiment type: %s", exp.ExperimentType)
+		return fmt.Errorf("unknown experiment type: %s", exp.Type)
 	}
 }
 
 // validateSEOConfig 验证SEO实验配置
-func (s *ExperimentService) validateSEOConfig(exp *experiment.Experiment) error {
+func (s *ExperimentService) validateSEOConfig(exp *model.Experiment) error {
 	if exp.Config.SEOConfig == nil {
 		return fmt.Errorf("SEO config is required for SEO experiment")
 	}
@@ -230,7 +249,7 @@ func (s *ExperimentService) validateSEOConfig(exp *experiment.Experiment) error 
 }
 
 // validateGEOConfig 验证GEO优化配置
-func (s *ExperimentService) validateGEOConfig(exp *experiment.Experiment) error {
+func (s *ExperimentService) validateGEOConfig(exp *model.Experiment) error {
 	if exp.Config.GEOConfig == nil {
 		return fmt.Errorf("GEO config is required for GEO experiment")
 	}
@@ -238,7 +257,7 @@ func (s *ExperimentService) validateGEOConfig(exp *experiment.Experiment) error 
 }
 
 // validateAIAgentConfig 验证AI Agent配置
-func (s *ExperimentService) validateAIAgentConfig(exp *experiment.Experiment) error {
+func (s *ExperimentService) validateAIAgentConfig(exp *model.Experiment) error {
 	if exp.Config.AIAgentConfig == nil {
 		return fmt.Errorf("AI Agent config is required for AI Agent experiment")
 	}
@@ -246,7 +265,7 @@ func (s *ExperimentService) validateAIAgentConfig(exp *experiment.Experiment) er
 }
 
 // validateAffiliateSAASConfig 验证联盟SAAS配置
-func (s *ExperimentService) validateAffiliateSAASConfig(exp *experiment.Experiment) error {
+func (s *ExperimentService) validateAffiliateSAASConfig(exp *model.Experiment) error {
 	if exp.Config.AffiliateSAASConfig == nil {
 		return fmt.Errorf("Affiliate SAAS config is required for Affiliate SAAS experiment")
 	}

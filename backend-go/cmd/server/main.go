@@ -15,10 +15,12 @@ import (
 
 	"github.com/zenconsult/affi-marketing/internal/config"
 	"github.com/zenconsult/affi-marketing/internal/middleware"
+	"github.com/zenconsult/affi-marketing/internal/controller/auth"
 	"github.com/zenconsult/affi-marketing/internal/controller/experiment"
 	"github.com/zenconsult/affi-marketing/internal/controller/tracking"
 	"github.com/zenconsult/affi-marketing/internal/controller/settlement"
 	"github.com/zenconsult/affi-marketing/internal/controller/plugin"
+	"github.com/zenconsult/affi-marketing/internal/controller/content"
 	"github.com/zenconsult/affi-marketing/pkg/cache"
 	"github.com/zenconsult/affi-marketing/pkg/database"
 	"github.com/zenconsult/affi-marketing/pkg/logger"
@@ -136,11 +138,12 @@ func main() {
 func setupRouter(cfg *config.Config) *gin.Engine {
 	router := gin.New()
 
-	// 中间件（只对 API 路由应用）
+	// CORS 中间件需要在全局级别应用，以便处理 OPTIONS 预检请求
+	router.Use(middleware.CORS(cfg.CORS))
 	router.Use(middleware.Recovery(logger.L()))
 	router.Use(middleware.RequestID())
 
-	// 健康检查和根路径不使用任何中间件，确保 Railway 健康检查能通过
+	// 健康检查和根路径
 	router.GET("/health", func(c *gin.Context) {
 		logger.Info("Healthcheck called", zap.String("path", c.Request.URL.Path))
 		c.JSON(http.StatusOK, gin.H{
@@ -162,11 +165,21 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 	// 获取数据库实例
 	db := database.Get()
 
-	// API v1 路由组 - 应用所有中间件
+	// API v1 路由组 - 应用日志中间件
 	v1 := router.Group("/api/v1")
-	v1.Use(middleware.CORS(cfg.CORS))
 	v1.Use(middleware.Logging(logger.L()))
 	{
+		// Auth controller
+		authController := auth.NewController(db, cfg.JWT)
+
+		// Auth routes (public)
+		authGroup := v1.Group("/auth")
+		{
+			authGroup.POST("/login", authController.Login)
+			authGroup.POST("/refresh", authController.RefreshToken)
+			authGroup.POST("/logout", authController.Logout)
+		}
+
 		// 实验管理
 		experiment.RegisterRoutes(v1, db)
 
@@ -178,6 +191,9 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 
 		// 插件管理
 		plugin.RegisterRoutes(v1)
+
+		// 内容自动化系统
+		content.RegisterRoutes(v1, db)
 	}
 
 	return router

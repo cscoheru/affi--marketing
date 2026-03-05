@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "bash": "allow",
+    "edit": "allow",
+    "read": "allow",
+    "write": "allow",
+    "network": "allow"
+  },
+  "askBeforeRunningCommands": false,
+  "experimental": {
+    "autoApproval": {
+      "bash": true,
+      "edit": true,
+      "read": true,
+      "write": true
+    }
+  }
+}

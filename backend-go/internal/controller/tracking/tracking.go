@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/zenconsult/affi-marketing/internal/core"
-	"github.com/zenconsult/affi-marketing/internal/model/experiment"
+	"github.com/zenconsult/affi-marketing/internal/model"
 	"github.com/zenconsult/affi-marketing/pkg/logger"
 )
 
@@ -46,11 +46,11 @@ func NewTrackingController(service *core.TrackingService) *TrackingController {
 // @Tags 追踪
 // @Accept json
 // @Produce json
-// @Param event body experiment.Track true "追踪事件"
+// @Param event body model.Track true "追踪事件"
 // @Success 201 {object} Response
 // @Router /api/v1/tracking/events [post]
 func (ctrl *TrackingController) RecordEvent(c *gin.Context) {
-	var req experiment.Track
+	var req model.Track
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success":   false,
@@ -63,7 +63,7 @@ func (ctrl *TrackingController) RecordEvent(c *gin.Context) {
 
 	if err := ctrl.service.RecordEvent(c.Request.Context(), &req); err != nil {
 		ctrl.logger.Error("Failed to record event",
-			zap.Uint("experiment_id", req.ExperimentID),
+			zap.String("experiment_id", req.ExperimentID),
 			zap.String("event_type", req.EventType),
 			zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -76,7 +76,7 @@ func (ctrl *TrackingController) RecordEvent(c *gin.Context) {
 	}
 
 	ctrl.logger.Info("Event recorded",
-		zap.Uint("experiment_id", req.ExperimentID),
+		zap.String("experiment_id", req.ExperimentID),
 		zap.String("event_type", req.EventType),
 		zap.String("tracking_id", req.TrackingID))
 

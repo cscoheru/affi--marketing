@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "regions": ["hkg1"],
+  "domains": ["content-hub.zenconsult.top"],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://api-hub.zenconsult.top/api/v1"
+  }
+}
