@@ -16,7 +16,7 @@
 - [x] Task 10: 创建Bridge Store
 - [x] Task 11: 创建主题适配
 - [x] Task 12: 更新main.ts
-- [ ] Task 13: 测试本地构建
+- [x] Task 13: 测试本地构建
 - [ ] Task 14: 测试Next.js集成
 
 ## 验证结果 (Task 0)

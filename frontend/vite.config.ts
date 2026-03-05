@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import federation from '@module-federation/vite'
+import federation from '@originjs/vite-plugin-federation'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
@@ -17,20 +17,7 @@ export default defineConfig({
         './Analytics': './src/wrappers/AnalyticsWrapper.vue',
         './Settlements': './src/wrappers/SettlementsWrapper.vue',
       },
-      shared: {
-        vue: {
-          singleton: true,
-          requiredVersion: '^3.5.0',
-        },
-        pinia: {
-          singleton: true,
-          requiredVersion: '^3.0.0',
-        },
-        'element-plus': {
-          singleton: true,
-          requiredVersion: '^2.13.0',
-        },
-      },
+      shared: ['vue', 'pinia', 'element-plus'],
     }),
   ],
   resolve: {

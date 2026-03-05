@@ -30,8 +30,6 @@ app.mount('#app')
 // Initialize Bridge Store after app mount (when DOM is available)
 const bridgeStore = useBridgeStore()
 
-// Wait for next tick to ensure DOM is fully mounted
-app.config.globalProperties.$nextTick = () => {
-  // Initialize the bridge store on app startup
-  bridgeStore.initialize()
-}
+// Initialize the bridge store on app startup
+bridgeStore.hydrate()
+bridgeStore.setupReactListener()
