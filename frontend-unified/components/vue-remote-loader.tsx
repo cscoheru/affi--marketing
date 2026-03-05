@@ -44,7 +44,7 @@ export function VueRemoteLoader({
 
         // Load Vue and make it available in shared scope
         if (!defaultScope.vue) {
-          const vueModule = await import('vue')
+          const vueModule = await import('vue') as any
           const vue = vueModule.default || vueModule
           defaultScope.vue = {
             version: '3.5.13',
@@ -93,8 +93,8 @@ export function VueRemoteLoader({
 
         // Create Vue app and mount
         if (containerRef.current && mounted) {
-          const vueModule = await import('vue')
-          const { createApp } = vueModule.default || vueModule
+          const vueModule = await import('vue') as any
+          const createApp = vueModule.createApp
 
           vueInstance = createApp({
             render() {
@@ -125,8 +125,9 @@ export function VueRemoteLoader({
       if (vueInstance) {
         vueInstance.unmount()
       }
-      if (styleElement) {
-        styleElement.remove()
+      const el = styleElement as HTMLLinkElement | null
+      if (el) {
+        el.remove()
       }
     }
   }, [remoteUrl, exposedModule])
