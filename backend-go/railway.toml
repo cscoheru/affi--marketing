@@ -3,6 +3,7 @@ builder = "NIXPACKS"
 
 [build.env]
 GO_VERSION = "1.22"
+CGO_ENABLED = "0"
 
 [deploy]
 healthcheckPath = "/health"
