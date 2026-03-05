@@ -1,16 +1,16 @@
 'use client'
 
-import { VueRemoteLoader } from '@/components/vue-remote-loader'
-import { useAuthStore } from '@/lib/store'
+import { VuePlaceholder } from '@/components/vue-placeholder'
 
 export default function PluginsPage() {
-  const { user, token } = useAuthStore()
-
   return (
-    <VueRemoteLoader
-      remoteUrl="/vue-remote/assets/remoteEntry.js"
-      exposedModule="Plugins"
-      props={{ user, token, apiBaseUrl: "http://localhost:8080" }}
-    />
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">插件管理</h1>
+      <VuePlaceholder
+        title="Plugins"
+        description="插件管理模块正在迁移中，即将上线。"
+        icon="🔌"
+      />
+    </div>
   )
 }

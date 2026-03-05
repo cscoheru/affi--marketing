@@ -33,3 +33,14 @@ const bridgeStore = useBridgeStore()
 // Initialize the bridge store on app startup
 bridgeStore.hydrate()
 bridgeStore.setupReactListener()
+
+// Iframe mode: notify parent when Vue app is ready
+if (window.self !== window.top) {
+  // Running in iframe
+  window.addEventListener('load', () => {
+    window.parent.postMessage({
+      type: 'vue:ready',
+      payload: { view: window.location.hash }
+    }, '*')
+  })
+}

@@ -1,19 +1,16 @@
 'use client'
 
-import { VueRemoteLoader } from '@/components/vue-remote-loader'
-import { useAuthStore } from '@/lib/store'
-import { useParams } from 'next/navigation'
+import { VuePlaceholder } from '@/components/vue-placeholder'
 
 export default function ExperimentDetailPage() {
-  const { user, token } = useAuthStore()
-  const params = useParams()
-  const id = params.id as string
-
   return (
-    <VueRemoteLoader
-      remoteUrl="/vue-remote/assets/remoteEntry.js"
-      exposedModule="ExperimentDetail"
-      props={{ user, token, apiBaseUrl: "http://localhost:8080", experimentId: id }}
-    />
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">实验详情</h1>
+      <VuePlaceholder
+        title="Experiment Detail"
+        description="实验详情页面正在迁移中，即将上线。"
+        icon="🔍"
+      />
+    </div>
   )
 }

@@ -2,6 +2,13 @@ import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
+  // Iframe mode: Direct view loading for embedding in Next.js
+  {
+    path: '/view/:viewName',
+    name: 'IframeView',
+    component: () => import('@/views/IframeView.vue'),
+    meta: { requiresAuth: true, iframeMode: true }
+  },
   // Public Blog Routes (no authentication - for Medium import)
   {
     path: '/blog',
