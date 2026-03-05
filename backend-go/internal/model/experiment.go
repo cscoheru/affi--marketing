@@ -1,11 +1,35 @@
 package model
 
 import (
-    "time"
     "database/sql/driver"
     "encoding/json"
     "errors"
+    "time"
 )
+
+// MetadataMap is a custom type for Metadata to enable Scanner/Valuer
+type MetadataMap map[string]interface{}
+
+// Scan implements sql.Scanner for MetadataMap
+func (m *MetadataMap) Scan(value interface{}) error {
+    if value == nil {
+        *m = make(map[string]interface{})
+        return nil
+    }
+    bytes, ok := value.([]byte)
+    if !ok {
+        return errors.New("type assertion to []byte failed")
+    }
+    return json.Unmarshal(bytes, m)
+}
+
+// Value implements driver.Valuer for MetadataMap
+func (m MetadataMap) Value() (driver.Value, error) {
+    if len(m) == 0 {
+        return nil, nil
+    }
+    return json.Marshal(m)
+}
 
 // Experiment 商业模式实验
 type Experiment struct {
@@ -14,7 +38,7 @@ type Experiment struct {
     Type        ExperimentType         `json:"type" gorm:"type:varchar(50);not null;index"`
     Status      ExperimentStatus       `json:"status" gorm:"type:varchar(50);not null;default:'draft';index"`
     Config      ExperimentConfig       `json:"config" gorm:"type:jsonb"`
-    Metadata    map[string]interface{} `json:"metadata" gorm:"type:jsonb"`
+    Metadata    MetadataMap            `json:"metadata" gorm:"type:jsonb"`
     StartDate   *time.Time             `json:"start_date"`
     EndDate     *time.Time             `json:"end_date"`
     CreatedBy   string                 `json:"created_by" gorm:"type:varchar(50)"`
