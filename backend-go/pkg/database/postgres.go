@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm/logger"
 
 	"github.com/zenconsult/affi-marketing/internal/config"
+	"github.com/zenconsult/affi-marketing/internal/model"
 )
 
 var (
@@ -32,6 +33,10 @@ func Init(cfg *config.DatabaseConfig) error {
 		cfg.DBName,
 		cfg.SSLMode,
 	)
+
+	// Debug: 打印 DSN (不包含密码)
+	fmt.Printf("Connecting to database: host=%s port=%d user=%s dbname=%s password_len=%d\n",
+		cfg.Host, cfg.Port, cfg.User, cfg.DBName, len(cfg.Password))
 
 	// 连接数据库
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
@@ -77,4 +82,44 @@ func Close() error {
 		return sqlDB.Close()
 	}
 	return nil
+}
+
+// NewPostgres 创建 PostgreSQL 连接
+func NewPostgres(cfg config.DatabaseConfig) (*gorm.DB, error) {
+	dsn := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DBName, cfg.SSLMode,
+	)
+
+	gormConfig := &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+		NowFunc: func() time.Time {
+			return time.Now().UTC()
+		},
+	}
+
+	db, err := gorm.Open(postgres.Open(dsn), gormConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get database instance: %w", err)
+	}
+
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxLifetime(time.Hour)
+
+	return db, nil
+}
+
+// AutoMigrate 自动迁移数据库表
+func AutoMigrate(db *gorm.DB) error {
+	return db.AutoMigrate(
+		&model.Experiment{},
+		&model.User{},
+		&model.APIKey{},
+	)
 }
