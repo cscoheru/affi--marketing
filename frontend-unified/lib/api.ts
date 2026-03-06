@@ -246,7 +246,7 @@ export interface ContentListResponse {
   contents: ContentItem[]
   total: number
   page: number
-  pageSize: number
+  size: number
 }
 
 export interface PublishTask {
