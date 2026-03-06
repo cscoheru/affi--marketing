@@ -271,32 +271,32 @@ export interface PublishTaskListResponse {
 
 export const productsApi = {
   list: (params?: { page?: number; pageSize?: number; search?: string }) =>
-    api.get<ApiResponse<ProductListResponse>>('/api/v1/products', params),
+    api.get<ProductListResponse>('/api/v1/products', params),
 
   get: (id: string) =>
-    api.get<ApiResponse<Product>>(`/api/v1/products/${id}`),
+    api.get<Product>(`/api/v1/products/${id}`),
 
   create: (data: CreateProductDto) =>
-    api.post<ApiResponse<Product>>('/api/v1/products', data),
+    api.post<Product>('/api/v1/products', data),
 
   update: (id: string, data: UpdateProductDto) =>
-    api.put<ApiResponse<Product>>(`/api/v1/products/${id}`, data),
+    api.put<Product>(`/api/v1/products/${id}`, data),
 
   delete: (id: string) =>
-    api.delete<ApiResponse<void>>(`/api/v1/products/${id}`),
+    api.delete<void>(`/api/v1/products/${id}`),
 }
 
 // ==================== 素材 API ====================
 
 export const materialsApi = {
   list: (params?: { page?: number; pageSize?: number; type?: string }) =>
-    api.get<ApiResponse<MaterialListResponse>>('/api/v1/materials', params),
+    api.get<MaterialListResponse>('/api/v1/materials', params),
 
   upload: (formData: FormData) =>
-    api.postForm<ApiResponse<Material>>('/api/v1/materials/upload', formData),
+    api.postForm<Material>('/api/v1/materials/upload', formData),
 
   delete: (id: string) =>
-    api.delete<ApiResponse<void>>(`/api/v1/materials/${id}`),
+    api.delete<void>(`/api/v1/materials/${id}`),
 
   getUrl: (id: string) => `${API_BASE}/api/v1/materials/${id}/download`,
 }
@@ -305,36 +305,36 @@ export const materialsApi = {
 
 export const contentApi = {
   list: (params?: { page?: number; pageSize?: number; status?: string; type?: string }) =>
-    api.get<ApiResponse<ContentListResponse>>('/api/v1/contents', params),
+    api.get<ContentListResponse>('/api/v1/contents', params),
 
   get: (id: string) =>
-    api.get<ApiResponse<ContentItem>>(`/api/v1/contents/${id}`),
+    api.get<ContentItem>(`/api/v1/contents/${id}`),
 
   create: (data: CreateContentDto) =>
-    api.post<ApiResponse<ContentItem>>('/api/v1/contents', data),
+    api.post<ContentItem>('/api/v1/contents', data),
 
   update: (id: string, data: UpdateContentDto) =>
-    api.put<ApiResponse<ContentItem>>(`/api/v1/contents/${id}`, data),
+    api.put<ContentItem>(`/api/v1/contents/${id}`, data),
 
   delete: (id: string) =>
-    api.delete<ApiResponse<void>>(`/api/v1/contents/${id}`),
+    api.delete<void>(`/api/v1/contents/${id}`),
 
   publish: (id: string) =>
-    api.post<ApiResponse<ContentItem>>(`/api/v1/contents/${id}/publish`),
+    api.post<ContentItem>(`/api/v1/contents/${id}/publish`),
 }
 
 // ==================== 发布 API ====================
 
 export const publishApi = {
   list: (params?: { page?: number; pageSize?: number; status?: string }) =>
-    api.get<ApiResponse<PublishTaskListResponse>>('/api/v1/publish/queue', params),
+    api.get<PublishTaskListResponse>('/api/v1/publish/queue', params),
 
   create: (data: CreatePublishDto) =>
-    api.post<ApiResponse<PublishTask>>('/api/v1/publish', data),
+    api.post<PublishTask>('/api/v1/publish', data),
 
   execute: (id: string) =>
-    api.post<ApiResponse<PublishResult>>(`/api/v1/publish/${id}/execute`),
+    api.post<PublishResult>(`/api/v1/publish/${id}/execute`),
 
   cancel: (id: string) =>
-    api.post<ApiResponse<void>>(`/api/v1/publish/${id}/cancel`),
+    api.post<void>(`/api/v1/publish/${id}/cancel`),
 }
