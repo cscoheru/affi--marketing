@@ -3,6 +3,7 @@
 import { create } from 'zustand'
 import type { Article, BlogFilters, Category, Comment, AIGenerationOptions, AIGenerationResult } from './types'
 import { contentApi } from '@/lib/api'
+import { sampleArticles } from './sample-articles'
 
 // Map content types from backend to blog categories
 export const categories: Category[] = [
@@ -80,17 +81,20 @@ export const useBlogStore = create<BlogState>((set, get) => ({
     set({ loading: true, error: null })
     try {
       const response = await contentApi.list({ page: 1, size: 100, status: 'published' })
-      const articles = response.contents.map(contentToArticle)
-      set({ articles, loading: false })
+      const apiArticles = response.contents.map(contentToArticle)
+      // 合并 API 数据和示例数据
+      const allArticles = [...sampleArticles, ...apiArticles]
+      set({ articles: allArticles, loading: false })
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : '获取文章失败', loading: false })
+      // 如果 API 失败，只使用示例数据
+      set({ articles: sampleArticles, loading: false })
     }
   },
 
   fetchArticleBySlug: async (slug: string) => {
     set({ loading: true, error: null })
     try {
-      // Try to find in existing articles first
+      // Try to find in existing articles first (including sample articles)
       const { articles } = get()
       const existing = articles.find(a => a.slug === slug)
       if (existing) {
@@ -100,10 +104,10 @@ export const useBlogStore = create<BlogState>((set, get) => ({
 
       // Fetch from API if not found
       const response = await contentApi.list({ page: 1, size: 100 })
-      const allArticles = response.contents.map(contentToArticle)
-      const article = allArticles.find(a => a.slug === slug) || null
+      const apiArticles = response.contents.map(contentToArticle)
+      const article = apiArticles.find(a => a.slug === slug) || null
 
-      set({ currentArticle: article, articles: allArticles, loading: false })
+      set({ currentArticle: article, articles: [...sampleArticles, ...apiArticles], loading: false })
     } catch (error) {
       set({ error: error instanceof Error ? error.message : '获取文章详情失败', loading: false })
     }
