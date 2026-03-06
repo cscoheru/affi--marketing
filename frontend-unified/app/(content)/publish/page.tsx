@@ -30,8 +30,8 @@ const platforms = [
 
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
   pending: { label: '待发布', variant: 'secondary' },
-  publishing: { label: '发布中', variant: 'outline' },
-  completed: { label: '已完成', variant: 'default' },
+  processing: { label: '处理中', variant: 'outline' },
+  success: { label: '成功', variant: 'default' },
   failed: { label: '失败', variant: 'destructive' },
 }
 
@@ -53,7 +53,7 @@ export default function PublishPage() {
       if (activeTab !== 'all') params.status = activeTab
 
       const response = await publishApi.list(params)
-      setTasks(response.Tasks)
+      setTasks(response.queue)
     } catch (error) {
       toast({
         title: '错误',
@@ -69,7 +69,7 @@ export default function PublishPage() {
   const fetchContents = async () => {
     try {
       const response = await contentApi.list({ status: 'published', pageSize: 100 })
-      setContents(response.Contents)
+      setContents(response.contents)
     } catch (error) {
       console.error('Failed to fetch contents:', error)
     }
@@ -248,8 +248,8 @@ export default function PublishPage() {
         <TabsList>
           <TabsTrigger value="all">全部</TabsTrigger>
           <TabsTrigger value="pending">待发布</TabsTrigger>
-          <TabsTrigger value="publishing">发布中</TabsTrigger>
-          <TabsTrigger value="completed">已完成</TabsTrigger>
+          <TabsTrigger value="processing">处理中</TabsTrigger>
+          <TabsTrigger value="success">成功</TabsTrigger>
           <TabsTrigger value="failed">失败</TabsTrigger>
         </TabsList>
 
@@ -270,64 +270,36 @@ export default function PublishPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {filteredTasks.map((task) => (
+                  {filteredTasks.map((task) => {
+                    // Parse platforms from JSON string
+                    let platformList: string[] = []
+                    try {
+                      platformList = JSON.parse(task.platforms)
+                    } catch {
+                      platformList = []
+                    }
+
+                    return (
                     <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-medium">{getContentTitle(task.content_id)}</h3>
-                          <Badge variant="outline">
-                            {platforms.find(p => p.value === task.platform)?.label || task.platform}
-                          </Badge>
+                          <h3 className="font-medium">{getContentTitle(String(task.contentId))}</h3>
+                          {platformList.map((p) => (
+                            <Badge key={p} variant="outline">{p}</Badge>
+                          ))}
                           <Badge variant={statusConfig[task.status]?.variant}>
                             {statusConfig[task.status]?.label || task.status}
                           </Badge>
                         </div>
                         <div className="text-sm text-muted-foreground space-y-1">
-                          <p>创建时间: {formatTime(task.created_at)}</p>
-                          {task.scheduled_at && (
-                            <p>计划发布: {formatTime(task.scheduled_at)}</p>
-                          )}
-                          {task.published_at && (
-                            <p>实际发布: {formatTime(task.published_at)}</p>
-                          )}
-                          {task.error_message && (
-                            <p className="text-destructive">错误: {task.error_message}</p>
+                          <p>创建时间: {formatTime(task.createdAt)}</p>
+                          {task.errorMsg && (
+                            <p className="text-destructive">错误: {task.errorMsg}</p>
                           )}
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        {task.status === 'pending' && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleExecute(task.id)}
-                              disabled={executing === task.id}
-                            >
-                              {executing === task.id ? '执行中...' : '立即发布'}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleCancel(task.id)}
-                            >
-                              取消
-                            </Button>
-                          </>
-                        )}
-                        {task.status === 'failed' && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleExecute(task.id)}
-                            disabled={executing === task.id}
-                          >
-                            重试
-                          </Button>
-                        )}
-                      </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               )}
             </CardContent>

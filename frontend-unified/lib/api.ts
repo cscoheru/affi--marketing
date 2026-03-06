@@ -148,19 +148,22 @@ export const clearApiToken = () => {
 // ==================== 类型定义 ====================
 
 export interface Product {
-  id: string
+  id: number
   asin: string
   title: string
-  status: 'active' | 'pending' | 'inactive'
+  category?: string
   price?: number
-  image_url?: string
-  description?: string
-  created_at: string
-  updated_at?: string
+  rating?: number
+  reviewCount?: number
+  imageUrl?: string
+  status?: string
+  potentialScore?: number
+  createdAt: string
+  updatedAt: string
 }
 
 export interface CreateProductDto {
-  ASIN: string
+  asin: string
   title: string
   category?: string
   price?: number
@@ -181,45 +184,45 @@ export interface UpdateProductDto {
 }
 
 export interface ProductListResponse {
-  Products: Product[]
-  Total: number
-  Page: number
-  PageSize: number
+  products: Product[]
+  total: number
+  page: number
+  pageSize: number
 }
 
 export interface Material {
-  id: string
+  id: number
   name: string
   type: 'image' | 'video' | 'document'
   url: string
   size: number
-  created_at: string
+  createdAt: string
 }
 
 export interface MaterialListResponse {
-  Materials: Material[]
-  Total: number
-  Page: number
-  PageSize: number
+  materials: Material[]
+  total: number
+  page: number
+  pageSize: number
 }
 
 export interface ContentItem {
-  id: string
+  id: number
   title: string
   type: 'article' | 'review' | 'comparison'
   status: 'draft' | 'published' | 'review'
-  product_id?: string
-  product_asin?: string
+  productId?: number
+  productAsin?: string
   content: string
-  created_at: string
-  updated_at?: string
-  published_at?: string
+  createdAt: string
+  updatedAt?: string
+  publishedAt?: string
 }
 
 export interface CreateContentDto {
   title: string
   type: 'article' | 'review' | 'comparison'
-  product_id?: string
+  productId?: number
   content: string
 }
 
@@ -230,22 +233,21 @@ export interface UpdateContentDto {
 }
 
 export interface ContentListResponse {
-  Contents: ContentItem[]
-  Total: number
-  Page: number
-  PageSize: number
+  contents: ContentItem[]
+  total: number
+  page: number
+  pageSize: number
 }
 
 export interface PublishTask {
-  id: string
-  title: string
-  content_id: string
-  platform: 'blog' | 'twitter' | 'facebook' | 'instagram'
-  status: 'pending' | 'publishing' | 'completed' | 'failed'
-  scheduled_at?: string
-  published_at?: string
-  error_message?: string
-  created_at: string
+  id: number
+  contentId: number
+  platforms: string
+  status: string
+  results: string
+  errorMsg: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface CreatePublishDto {
@@ -261,10 +263,7 @@ export interface PublishResult {
 }
 
 export interface PublishTaskListResponse {
-  Tasks: PublishTask[]
-  Total: number
-  Page: number
-  PageSize: number
+  queue: PublishTask[]
 }
 
 // ==================== 产品 API ====================

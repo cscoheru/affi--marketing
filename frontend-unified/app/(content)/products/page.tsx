@@ -32,7 +32,7 @@ export default function ProductsPage() {
     setLoading(true)
     try {
       const response = await productsApi.list({ page: 1, pageSize: 10, search: search || undefined })
-      setProducts(response.Products)
+      setProducts(response.products)
     } catch (error) {
       toast({
         title: '错误',
@@ -58,7 +58,7 @@ export default function ProductsPage() {
     setSubmitting(true)
     try {
       const createData = {
-        ASIN: data.asin,
+        asin: data.asin,
         title: data.title,
         price: data.price ? parseFloat(data.price) : 0,
         imageUrl: data.image_url || '',
@@ -160,8 +160,8 @@ export default function ProductsPage() {
                 asin: editingProduct.asin,
                 title: editingProduct.title,
                 price: editingProduct.price?.toString(),
-                image_url: editingProduct.image_url,
-                description: editingProduct.description,
+                image_url: editingProduct.imageUrl,
+                description: editingProduct.category,
               } : undefined}
               onSubmit={editingProduct ? handleUpdate : handleCreate}
               onCancel={handleCloseDialog}
@@ -209,9 +209,9 @@ export default function ProductsPage() {
                     <TableCell className="font-mono">{product.asin}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        {product.image_url && (
+                        {product.imageUrl && (
                           <img
-                            src={product.image_url}
+                            src={product.imageUrl}
                             alt={product.title}
                             className="w-10 h-10 rounded object-cover"
                             onError={(e) => {
@@ -227,10 +227,10 @@ export default function ProductsPage() {
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={product.status === 'active' ? 'default' : 'secondary'}
+                        variant={product.status === 'covered' ? 'default' : 'secondary'}
                       >
-                        {product.status === 'active' ? '活跃' :
-                         product.status === 'pending' ? '待审核' : '停用'}
+                        {product.status === 'covered' ? '已覆盖' :
+                         product.status === 'researching' ? '调研中' : product.status || '未知'}
                       </Badge>
                     </TableCell>
                     <TableCell>

@@ -64,7 +64,7 @@ export default function MaterialsPage() {
       if (typeFilter !== 'all') params.type = typeFilter
 
       const response = await materialsApi.list(params)
-      setMaterials(response.Materials)
+      setMaterials(response.materials)
     } catch (error) {
       toast({
         title: '错误',
@@ -242,7 +242,7 @@ export default function MaterialsPage() {
                     </TableCell>
                     <TableCell>{formatFileSize(material.size)}</TableCell>
                     <TableCell>
-                      {new Date(material.created_at).toLocaleDateString('zh-CN')}
+                      {new Date(material.createdAt).toLocaleDateString('zh-CN')}
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">

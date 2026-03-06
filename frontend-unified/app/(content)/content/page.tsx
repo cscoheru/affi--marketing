@@ -58,7 +58,7 @@ export default function ContentPage() {
       if (activeTab !== 'all') params.type = activeTab
 
       const response = await contentApi.list(params)
-      setContents(response.Contents)
+      setContents(response.contents)
     } catch (error) {
       toast({
         title: '错误',
@@ -344,7 +344,7 @@ export default function ContentPage() {
                              content.type === 'review' ? '评测' : '对比'}
                           </Badge>
                         </TableCell>
-                        <TableCell className="font-mono">{content.product_asin || '-'}</TableCell>
+                        <TableCell className="font-mono">{content.productAsin || '-'}</TableCell>
                         <TableCell>
                           <Badge
                             variant={content.status === 'published' ? 'default' : 'secondary'}
@@ -353,7 +353,7 @@ export default function ContentPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {new Date(content.created_at).toLocaleDateString('zh-CN')}
+                          {new Date(content.createdAt).toLocaleDateString('zh-CN')}
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
