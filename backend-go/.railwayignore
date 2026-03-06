@@ -1,3 +1,0 @@
-# Force Railway to ignore cache
-*.cache
-go.sum
