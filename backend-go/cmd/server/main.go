@@ -24,6 +24,7 @@ import (
 	"github.com/zenconsult/affi-marketing/internal/controller/content"
 	"github.com/zenconsult/affi-marketing/internal/controller/ai"
 	"github.com/zenconsult/affi-marketing/internal/controller/health"
+	"github.com/zenconsult/affi-marketing/internal/controller/public"
 	"github.com/zenconsult/affi-marketing/pkg/cache"
 	"github.com/zenconsult/affi-marketing/pkg/database"
 	"github.com/zenconsult/affi-marketing/pkg/logger"
@@ -165,6 +166,22 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 
 	// 获取数据库实例
 	db := database.Get()
+
+	// 公开 API 路由组（无需认证）
+	publicAPI := router.Group("/api/public")
+	publicAPI.Use(middleware.Logging(logger.L()))
+	{
+		// 公开博客 API
+		blogController := public.NewBlogController(db)
+		blogGroup := publicAPI.Group("/blog")
+		{
+			blogGroup.GET("/posts", blogController.GetPosts)
+			blogGroup.GET("/posts/:slug", blogController.GetPostBySlug)
+			blogGroup.GET("/categories", blogController.GetCategories)
+			blogGroup.GET("/featured", blogController.GetFeaturedPosts)
+			blogGroup.GET("/sitemap.xml", blogController.GetSitemap)
+		}
+	}
 
 	// API v1 路由组 - 应用日志中间件
 	v1 := router.Group("/api/v1")
