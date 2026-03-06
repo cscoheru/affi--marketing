@@ -253,7 +253,7 @@ export default function ContentPage() {
                 <>
                   <div>
                     <Label htmlFor="type">类型</Label>
-                    <Select name="type" defaultValue="article" required>
+                    <Select name="type" defaultValue="review" required>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
