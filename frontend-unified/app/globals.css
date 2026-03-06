@@ -49,48 +49,75 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Dark theme via class (manual toggle) */
+.dark {
+  /* Base colors */
+  --color-background: #0a0a0a;
+  --color-foreground: #ededed;
+
+  /* Muted */
+  --color-muted: #262626;
+  --color-muted-foreground: #a3a3a3;
+
+  /* Card */
+  --color-card: #0a0a0a;
+  --color-card-foreground: #ededed;
+
+  /* Popover */
+  --color-popover: #0a0a0a;
+  --color-popover-foreground: #ededed;
+
+  /* Border */
+  --color-border: #262626;
+  --color-input: #262626;
+
+  /* Primary */
+  --color-primary: #fafafa;
+  --color-primary-foreground: #171717;
+
+  /* Secondary */
+  --color-secondary: #262626;
+  --color-secondary-foreground: #fafafa;
+
+  /* Accent */
+  --color-accent: #262626;
+  --color-accent-foreground: #fafafa;
+
+  /* Destructive */
+  --color-destructive: #dc2626;
+  --color-destructive-foreground: #fafafa;
+
+  /* Ring */
+  --color-ring: #d4d4d4;
+
+  /* Sidebar */
+  --color-sidebar: #171717;
+  --color-sidebar-foreground: #ededed;
+  --color-sidebar-border: #262626;
+}
+
+/* Fallback: system preference when no class is set */
 @media (prefers-color-scheme: dark) {
-  @theme inline {
-    /* Base colors */
+  :not(.light):not(.dark) {
     --color-background: #0a0a0a;
     --color-foreground: #ededed;
-
-    /* Muted */
     --color-muted: #262626;
     --color-muted-foreground: #a3a3a3;
-
-    /* Card */
     --color-card: #0a0a0a;
     --color-card-foreground: #ededed;
-
-    /* Popover */
     --color-popover: #0a0a0a;
     --color-popover-foreground: #ededed;
-
-    /* Border */
     --color-border: #262626;
     --color-input: #262626;
-
-    /* Primary */
     --color-primary: #fafafa;
     --color-primary-foreground: #171717;
-
-    /* Secondary */
     --color-secondary: #262626;
     --color-secondary-foreground: #fafafa;
-
-    /* Accent */
     --color-accent: #262626;
     --color-accent-foreground: #fafafa;
-
-    /* Destructive */
     --color-destructive: #dc2626;
     --color-destructive-foreground: #fafafa;
-
-    /* Ring */
     --color-ring: #d4d4d4;
-
-    /* Sidebar */
     --color-sidebar: #171717;
     --color-sidebar-foreground: #ededed;
     --color-sidebar-border: #262626;

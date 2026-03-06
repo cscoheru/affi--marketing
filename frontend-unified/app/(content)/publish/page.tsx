@@ -110,7 +110,7 @@ export default function PublishPage() {
       // 演示数据
       setApprovedContents([
         { id: 1, slug: 'sony-wh1000xm4-review', asin: 'B08N5KWB9H', title: 'Sony WH-1000XM4 深度评测', type: 'review', content: '', excerpt: '', seoTitle: '', seoDescription: '', seoKeywords: '', status: 'approved', aiGenerated: true, aiModel: 'qwen', humanReviewed: true, reviewedBy: 1, reviewComment: '', wordCount: 2345, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: 2, slug: 'best-noise-cancelling-headphones-2024', asin: '', title: '2024年最佳降噪耳机指南', type: 'guide', content: '', excerpt: '', seoTitle: '', seoDescription: '', seoKeywords: '', status: 'approved', aiGenerated: false, humanReviewed: false, reviewedBy: undefined, reviewComment: '', wordCount: 3456, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: 2, slug: 'best-noise-cancelling-headphones-2024', asin: '', title: '2024年最佳降噪耳机指南', type: 'guide', content: '', excerpt: '', seoTitle: '', seoDescription: '', seoKeywords: '', status: 'approved', aiGenerated: false, aiModel: '', humanReviewed: false, reviewedBy: 0, reviewComment: '', wordCount: 3456, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
       ])
     }
   }

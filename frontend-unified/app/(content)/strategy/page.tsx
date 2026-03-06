@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
-import { marketsApi, type MarketOpportunity, type MarketStatus } from '@/lib/api'
+import { marketsApi, type MarketOpportunity, type MarketStatus, type AIRecommendedMarket } from '@/lib/api'
 import {
   Sparkles,
   RefreshCw,
@@ -91,23 +91,6 @@ const statusConfig: Record<MarketStatus, {
     description: '已停止推广',
     nextStatus: ['watching']
   }
-}
-
-// AI推荐市场类型
-interface AIRecommendedMarket {
-  asin: string
-  title: string
-  category?: string
-  price: string
-  rating: string
-  reviewCount?: number
-  imageUrl?: string
-  aiScore: number
-  aiReason: string
-  marketTrend: 'rising' | 'stable' | 'declining'
-  competitionLevel: 'high' | 'medium' | 'low'
-  marketSize: 'large' | 'medium' | 'small'
-  contentPotential: 'high' | 'medium' | 'low'
 }
 
 export default function StrategyPage() {
@@ -216,7 +199,6 @@ export default function StrategyPage() {
     {
       asin: 'B08N5KWB9H',
       title: 'Sony WH-1000XM4 无线降噪耳机',
-      category: 'Electronics',
       price: '349.99',
       rating: '4.7',
       reviewCount: 45230,
@@ -225,13 +207,11 @@ export default function StrategyPage() {
       aiReason: '高评分、高销量、适中竞争、利润空间大',
       marketTrend: 'rising',
       competitionLevel: 'medium',
-      marketSize: 'large',
-      contentPotential: 'high'
+      url: 'https://www.amazon.com/dp/B08N5KWB9H'
     },
     {
       asin: 'B0CHX2F5QT',
       title: 'Anker 便携充电宝 26800mAh',
-      category: 'Electronics',
       price: '65.99',
       rating: '4.8',
       reviewCount: 128000,
@@ -240,13 +220,11 @@ export default function StrategyPage() {
       aiReason: '价格亲民、评价极高、刚需产品、转化率好',
       marketTrend: 'rising',
       competitionLevel: 'low',
-      marketSize: 'medium',
-      contentPotential: 'high'
+      url: 'https://www.amazon.com/dp/B0CHX2F5QT'
     },
     {
       asin: 'B09JF3P3L6',
       title: 'Kindle Paperwhite 5代',
-      category: 'Electronics',
       price: '139.99',
       rating: '4.6',
       reviewCount: 23450,
@@ -255,8 +233,7 @@ export default function StrategyPage() {
       aiReason: '品牌认知度高、用户忠诚度高、适合长期内容',
       marketTrend: 'stable',
       competitionLevel: 'high',
-      marketSize: 'medium',
-      contentPotential: 'medium'
+      url: 'https://www.amazon.com/dp/B09JF3P3L6'
     }
   ]
 
@@ -287,7 +264,6 @@ export default function StrategyPage() {
       await marketsApi.create({
         asin: market.asin,
         title: market.title,
-        category: market.category,
         status: 'watching',
       })
       toast({ title: '成功', description: `${market.title} 已添加到市场库` })
@@ -334,7 +310,7 @@ export default function StrategyPage() {
   const handleDelete = async (asin: string) => {
     if (!confirm('确定要删除这个市场机会吗？')) return
     try {
-      await marketsApi.delete?.(asin)
+      await marketsApi.delete(asin)
       toast({ title: '成功', description: '市场已删除' })
       fetchMarkets()
     } catch {
@@ -603,7 +579,6 @@ export default function StrategyPage() {
                             <span className="font-mono">{market.asin}</span>
                             <span>${market.price}</span>
                             <span>⭐ {market.rating}</span>
-                            {market.category && <Badge variant="outline">{market.category}</Badge>}
                           </div>
                         </div>
                         <Badge className="text-lg px-3 py-1" variant={market.aiScore >= 85 ? 'default' : 'secondary'}>
@@ -615,9 +590,7 @@ export default function StrategyPage() {
                         {market.aiReason}
                       </div>
                       <div className="mt-2 flex items-center gap-3 text-xs">
-                        <span>市场: {market.marketSize}</span>
                         <span>竞争: {market.competitionLevel}</span>
-                        <span>内容潜力: {market.contentPotential}</span>
                         <span>趋势: {getTrendIcon(market.marketTrend)}</span>
                       </div>
                       <div className="mt-3 flex gap-2">

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { useUIStore, useAuthStore } from '@/lib/store'
+import { useUIStore, useAuthStore, useThemeStore } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -14,6 +14,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu'
 
 interface NavItem {
@@ -50,6 +55,7 @@ export function UnifiedSidebar() {
   const router = useRouter()
   const { sidebarCollapsed, toggleSidebar } = useUIStore()
   const { user, logout } = useAuthStore()
+  const { theme, setTheme } = useThemeStore()
 
   // 按类别分组
   const groupedItems = navItems.reduce((acc, item) => {
@@ -61,6 +67,19 @@ export function UnifiedSidebar() {
   const handleLogout = () => {
     logout()
     router.push('/login')
+  }
+
+  // 主题图标
+  const getThemeIcon = () => {
+    if (theme === 'light') return '☀️'
+    if (theme === 'dark') return '🌙'
+    return '💻'
+  }
+
+  const getThemeLabel = () => {
+    if (theme === 'light') return '白天模式'
+    if (theme === 'dark') return '夜间模式'
+    return '跟随系统'
   }
 
   return (
@@ -124,6 +143,41 @@ export function UnifiedSidebar() {
           </div>
         ))}
       </ScrollArea>
+
+      {/* 主题切换区 */}
+      <div className="border-t p-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className={cn(
+                "w-full justify-start",
+                sidebarCollapsed && "justify-center px-2"
+              )}
+            >
+              <span className="text-lg">{getThemeIcon()}</span>
+              {!sidebarCollapsed && (
+                <span className="ml-3">{getThemeLabel()}</span>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuLabel>主题设置</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuRadioGroup value={theme} onValueChange={(value) => setTheme(value as 'light' | 'dark' | 'system')}>
+              <DropdownMenuRadioItem value="light">
+                ☀️ 白天模式
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="dark">
+                🌙 夜间模式
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="system">
+                💻 跟随系统
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
       {/* 用户信息区 */}
       <div className="border-t p-4">

@@ -327,6 +327,21 @@ export interface MarketListResponse {
   pageSize: number
 }
 
+// AI推荐市场类型（与后端 AIRecommendedMarket 一致）
+export interface AIRecommendedMarket {
+  asin: string
+  title: string
+  price: string
+  imageUrl: string
+  rating: string
+  reviewCount: number
+  aiScore: number
+  aiReason: string
+  marketTrend: 'rising' | 'stable' | 'declining'
+  competitionLevel: 'high' | 'medium' | 'low'
+  url: string
+}
+
 export interface CreateMarketDto {
   asin: string
   title?: string
@@ -593,10 +608,13 @@ export const marketsApi = {
     api.post<MarketOpportunity>(`/api/v1/markets/${asin}/status`, { status }),
 
   aiRecommend: () =>
-    api.get<MarketOpportunity[]>('/api/v1/markets/ai-recommend'),
+    api.get<AIRecommendedMarket[]>('/api/v1/markets/ai-recommend'),
 
   getProducts: (asin: string) =>
     api.get<ProductContent[]>(`/api/v1/markets/${asin}/products`),
+
+  delete: (asin: string) =>
+    api.delete(`/api/v1/markets/${asin}`),
 }
 
 // ==================== 产品中心 API（✅ 后端已重构，可用）====================

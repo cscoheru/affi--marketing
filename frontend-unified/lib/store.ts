@@ -1,5 +1,26 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import { updateApiToken, clearApiToken } from './api'
+
+// 主题状态
+type Theme = 'light' | 'dark' | 'system'
+
+interface ThemeState {
+  theme: Theme
+  setTheme: (theme: Theme) => void
+}
+
+export const useThemeStore = create<ThemeState>()(
+  persist(
+    (set) => ({
+      theme: 'system',
+      setTheme: (theme) => set({ theme }),
+    }),
+    {
+      name: 'theme-storage',
+    }
+  )
+)
 
 // 用户状态
 interface User {
