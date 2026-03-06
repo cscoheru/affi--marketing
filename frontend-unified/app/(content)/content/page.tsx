@@ -154,7 +154,7 @@ export default function ContentPage() {
   }
 
   // 删除内容
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string | number) => {
     if (!confirm('确定要删除这个内容吗？')) return
 
     try {
@@ -174,7 +174,7 @@ export default function ContentPage() {
   }
 
   // 发布内容
-  const handlePublish = async (id: string) => {
+  const handlePublish = async (id: string | number) => {
     try {
       await contentApi.publish(id)
       toast({

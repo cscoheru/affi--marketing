@@ -117,7 +117,7 @@ export default function PublishPage() {
   }
 
   // 执行发布
-  const handleExecute = async (id: string) => {
+  const handleExecute = async (id: string | number) => {
     setExecuting(id)
     try {
       await publishApi.execute(id)
@@ -138,7 +138,7 @@ export default function PublishPage() {
   }
 
   // 取消发布
-  const handleCancel = async (id: string) => {
+  const handleCancel = async (id: string | number) => {
     if (!confirm('确定要取消这个发布任务吗？')) return
 
     try {

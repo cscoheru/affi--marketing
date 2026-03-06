@@ -118,7 +118,7 @@ export default function ProductsPage() {
   }
 
   // 删除产品
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string | number) => {
     if (!confirm('确定要删除这个产品吗？')) return
 
     try {

@@ -133,7 +133,7 @@ export default function MaterialsPage() {
   }
 
   // 处理删除
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string | number) => {
     if (!confirm('确定要删除这个素材吗？')) return
 
     try {
