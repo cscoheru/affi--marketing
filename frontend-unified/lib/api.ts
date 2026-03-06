@@ -282,16 +282,16 @@ export const productsApi = {
   list: (params?: { page?: number; pageSize?: number; search?: string }) =>
     api.get<ProductListResponse>('/api/v1/products', params),
 
-  get: (id: string) =>
+  get: (id: string | number) =>
     api.get<Product>(`/api/v1/products/${id}`),
 
   create: (data: CreateProductDto) =>
     api.post<Product>('/api/v1/products', data),
 
-  update: (id: string, data: UpdateProductDto) =>
+  update: (id: string | number, data: UpdateProductDto) =>
     api.put<Product>(`/api/v1/products/${id}`, data),
 
-  delete: (id: string) =>
+  delete: (id: string | number) =>
     api.delete<void>(`/api/v1/products/${id}`),
 }
 
@@ -304,10 +304,10 @@ export const materialsApi = {
   upload: (formData: FormData) =>
     api.postForm<Material>('/api/v1/materials/upload', formData),
 
-  delete: (id: string) =>
+  delete: (id: string | number) =>
     api.delete<void>(`/api/v1/materials/${id}`),
 
-  getUrl: (id: string) => `${API_BASE}/api/v1/materials/${id}/download`,
+  getUrl: (id: string | number) => `${API_BASE}/api/v1/materials/${id}/download`,
 }
 
 // ==================== 内容 API ====================
@@ -316,19 +316,19 @@ export const contentApi = {
   list: (params?: { page?: number; pageSize?: number; status?: string; type?: string }) =>
     api.get<ContentListResponse>('/api/v1/contents', params),
 
-  get: (id: string) =>
+  get: (id: string | number) =>
     api.get<ContentItem>(`/api/v1/contents/${id}`),
 
   create: (data: CreateContentDto) =>
     api.post<ContentItem>('/api/v1/contents', data),
 
-  update: (id: string, data: UpdateContentDto) =>
+  update: (id: string | number, data: UpdateContentDto) =>
     api.put<ContentItem>(`/api/v1/contents/${id}`, data),
 
-  delete: (id: string) =>
+  delete: (id: string | number) =>
     api.delete<void>(`/api/v1/contents/${id}`),
 
-  publish: (id: string) =>
+  publish: (id: string | number) =>
     api.post<ContentItem>(`/api/v1/contents/${id}/publish`),
 }
 
@@ -341,9 +341,9 @@ export const publishApi = {
   create: (data: CreatePublishDto) =>
     api.post<PublishTask>('/api/v1/publish', data),
 
-  execute: (id: string) =>
+  execute: (id: string | number) =>
     api.post<PublishResult>(`/api/v1/publish/${id}/execute`),
 
-  cancel: (id: string) =>
+  cancel: (id: string | number) =>
     api.post<void>(`/api/v1/publish/${id}/cancel`),
 }
