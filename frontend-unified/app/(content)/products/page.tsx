@@ -58,11 +58,10 @@ export default function ProductsPage() {
     setSubmitting(true)
     try {
       const createData = {
-        asin: data.asin,
+        ASIN: data.asin,
         title: data.title,
-        price: data.price ? parseFloat(data.price) : undefined,
-        image_url: data.image_url || undefined,
-        description: data.description || undefined,
+        price: data.price ? parseFloat(data.price) : 0,
+        imageUrl: data.image_url || '',
       }
       await productsApi.create(createData)
       toast({

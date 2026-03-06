@@ -160,19 +160,24 @@ export interface Product {
 }
 
 export interface CreateProductDto {
-  asin: string
+  ASIN: string
   title: string
+  category?: string
   price?: number
-  image_url?: string
-  description?: string
+  rating?: number
+  reviewCount?: number
+  imageUrl?: string
+  status?: string
 }
 
 export interface UpdateProductDto {
   title?: string
-  status?: 'active' | 'pending' | 'inactive'
+  category?: string
   price?: number
-  image_url?: string
-  description?: string
+  rating?: number
+  reviewCount?: number
+  imageUrl?: string
+  status?: string
 }
 
 export interface ProductListResponse {
