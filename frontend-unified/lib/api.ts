@@ -313,7 +313,7 @@ export const materialsApi = {
 // ==================== 内容 API ====================
 
 export const contentApi = {
-  list: (params?: { page?: number; pageSize?: number; status?: string; type?: string }) =>
+  list: (params?: { page?: number; size?: number; status?: string; type?: string }) =>
     api.get<ContentListResponse>('/api/v1/contents', params),
 
   get: (id: string | number) =>
