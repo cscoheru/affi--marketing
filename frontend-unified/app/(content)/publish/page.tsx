@@ -118,7 +118,7 @@ export default function PublishPage() {
 
   // 执行发布
   const handleExecute = async (id: string | number) => {
-    setExecuting(id)
+    setExecuting(String(id))
     try {
       await publishApi.execute(id)
       toast({
