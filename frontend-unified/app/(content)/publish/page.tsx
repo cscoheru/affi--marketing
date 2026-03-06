@@ -53,7 +53,7 @@ export default function PublishPage() {
       if (activeTab !== 'all') params.status = activeTab
 
       const response = await publishApi.list(params)
-      setTasks(response.data.items)
+      setTasks(response.Tasks)
     } catch (error) {
       toast({
         title: '错误',
@@ -69,7 +69,7 @@ export default function PublishPage() {
   const fetchContents = async () => {
     try {
       const response = await contentApi.list({ status: 'published', pageSize: 100 })
-      setContents(response.data.items)
+      setContents(response.Contents)
     } catch (error) {
       console.error('Failed to fetch contents:', error)
     }

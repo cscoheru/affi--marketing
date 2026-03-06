@@ -58,7 +58,7 @@ export default function ContentPage() {
       if (activeTab !== 'all') params.type = activeTab
 
       const response = await contentApi.list(params)
-      setContents(response.data.items)
+      setContents(response.Contents)
     } catch (error) {
       toast({
         title: '错误',

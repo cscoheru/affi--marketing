@@ -64,7 +64,7 @@ export default function MaterialsPage() {
       if (typeFilter !== 'all') params.type = typeFilter
 
       const response = await materialsApi.list(params)
-      setMaterials(response.data.items)
+      setMaterials(response.Materials)
     } catch (error) {
       toast({
         title: '错误',

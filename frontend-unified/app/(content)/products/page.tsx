@@ -32,7 +32,7 @@ export default function ProductsPage() {
     setLoading(true)
     try {
       const response = await productsApi.list({ page: 1, pageSize: 10, search: search || undefined })
-      setProducts(response.data.items)
+      setProducts(response.Products)
     } catch (error) {
       toast({
         title: '错误',

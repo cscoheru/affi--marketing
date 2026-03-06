@@ -176,10 +176,10 @@ export interface UpdateProductDto {
 }
 
 export interface ProductListResponse {
-  items: Product[]
-  total: number
-  page: number
-  size: number
+  Products: Product[]
+  Total: number
+  Page: number
+  PageSize: number
 }
 
 export interface Material {
@@ -192,10 +192,10 @@ export interface Material {
 }
 
 export interface MaterialListResponse {
-  items: Material[]
-  total: number
-  page: number
-  size: number
+  Materials: Material[]
+  Total: number
+  Page: number
+  PageSize: number
 }
 
 export interface ContentItem {
@@ -225,10 +225,10 @@ export interface UpdateContentDto {
 }
 
 export interface ContentListResponse {
-  items: ContentItem[]
-  total: number
-  page: number
-  size: number
+  Contents: ContentItem[]
+  Total: number
+  Page: number
+  PageSize: number
 }
 
 export interface PublishTask {
@@ -256,10 +256,10 @@ export interface PublishResult {
 }
 
 export interface PublishTaskListResponse {
-  items: PublishTask[]
-  total: number
-  page: number
-  size: number
+  Tasks: PublishTask[]
+  Total: number
+  Page: number
+  PageSize: number
 }
 
 // ==================== 产品 API ====================
