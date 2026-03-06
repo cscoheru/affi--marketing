@@ -291,6 +291,215 @@ export interface PublishTaskListResponse {
   queue: PublishTask[]
 }
 
+// ==================== 新类型定义（内容企业系统）====================
+
+// 市场机会状态
+export type MarketStatus = 'watching' | 'targeting' | 'active' | 'saturated' | 'exited'
+
+// 市场机会（原 Amazon 产品，现作为"市场"概念）
+export interface MarketOpportunity {
+  id: number
+  asin: string
+  title: string
+  category?: string
+  price?: string          // ✅ string 类型，后端 decimal 序列化为 string
+  rating?: string         // ✅ string 类型
+  reviewCount?: number
+  imageUrl?: string
+  status: MarketStatus
+  marketSize?: 'large' | 'medium' | 'small'
+  competitionLevel?: 'high' | 'medium' | 'low'
+  contentPotential?: 'high' | 'medium' | 'low'
+  aiScore?: number
+  contentCount: number
+  totalClicks: number
+  totalConversions: number
+  totalRevenue: string    // ✅ string 类型
+  lastSyncedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface MarketListResponse {
+  markets: MarketOpportunity[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+export interface CreateMarketDto {
+  asin: string
+  title?: string
+  category?: string
+  status?: MarketStatus
+}
+
+export interface UpdateMarketDto {
+  title?: string
+  category?: string
+  status?: MarketStatus
+  marketSize?: 'large' | 'medium' | 'small'
+  competitionLevel?: 'high' | 'medium' | 'low'
+  contentPotential?: 'high' | 'medium' | 'low'
+}
+
+// 产品（内容）状态
+export type ProductStatus = 'draft' | 'review' | 'approved' | 'published' | 'archived'
+export type ProductType = 'review' | 'guide' | 'tutorial' | 'list' | 'news'
+
+// 产品（重新定义为内容）
+export interface ProductContent {
+  id: number
+  slug: string
+  title: string
+  type: ProductType
+  content: string
+  excerpt?: string
+  seoTitle?: string
+  seoDescription?: string
+  seoKeywords?: string
+  status: ProductStatus
+  wordCount: number
+  aiGenerated: boolean
+  aiModel?: string
+  reviewedBy?: number
+  reviewComment?: string
+  reviewedAt?: string
+  publishedAt?: string
+  createdAt: string
+  updatedAt: string
+  markets?: MarketOpportunity[]
+  // 表现数据（从 AnalyticsController 获取）
+  views?: number
+  clicks?: number
+  conversions?: number
+  revenue?: string
+}
+
+export interface ProductContentListResponse {
+  products: ProductContent[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+export interface CreateProductContentDto {
+  slug: string
+  title: string
+  type: ProductType
+  content: string
+  excerpt?: string
+  seoTitle?: string
+  seoDescription?: string
+  seoKeywords?: string
+  marketIds?: number[]
+}
+
+export interface UpdateProductContentDto {
+  title?: string
+  type?: ProductType
+  content?: string
+  excerpt?: string
+  seoTitle?: string
+  seoDescription?: string
+  seoKeywords?: string
+  status?: ProductStatus
+}
+
+// AI 生成内容请求
+export interface GenerateContentDto {
+  marketId: number
+  type: ProductType
+  tone?: string
+  length?: number
+}
+
+// 发布平台
+export interface PublishPlatform {
+  id: number
+  name: string
+  type: string
+  config: string
+  status: 'connected' | 'disconnected' | 'error'
+  lastSync?: string
+  createdAt: string
+}
+
+export interface PlatformListResponse {
+  platforms: PublishPlatform[]
+}
+
+export interface AddPlatformDto {
+  name: string
+  type: string
+  config: Record<string, unknown>
+}
+
+// 发布任务（营销中心）
+export interface MarketingTask {
+  id: number
+  productId: number
+  platformId: number
+  platformName: string
+  status: 'pending' | 'publishing' | 'published' | 'failed'
+  publishedUrl?: string
+  errorMsg?: string
+  scheduledAt?: string
+  publishedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface MarketingTaskListResponse {
+  tasks: MarketingTask[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+export interface CreateMarketingTaskDto {
+  productId: number
+  platformId: number
+  scheduledAt?: string
+}
+
+export interface BatchPublishDto {
+  productIds: number[]
+  platformIds: number[]
+}
+
+// 数据分析响应类型
+export interface AnalyticsOverview {
+  totalClicks: number
+  totalConversions: number
+  totalRevenue: string
+  conversionRate: string
+  totalContent: number
+  activeMarkets: number
+  pendingReview: number
+}
+
+export interface ContentPerformance {
+  productId: number
+  productTitle: string
+  views: number
+  clicks: number
+  conversions: number
+  revenue: string
+  conversionRate: string
+}
+
+export interface AnalyticsTrend {
+  date: string
+  clicks: number
+  conversions: number
+  revenue: string
+}
+
+export interface AnalyticsTrendResponse {
+  trends: AnalyticsTrend[]
+}
+
 // ==================== 产品 API ====================
 
 export const productsApi = {
@@ -363,4 +572,114 @@ export const publishApi = {
 
   retry: (id: string | number) =>
     api.post<{ taskId: number; status: string; message: string }>(`/api/v1/publish/queue/${id}/retry`),
+}
+
+// ==================== 市场战略 API（✅ 后端已就绪）====================
+
+export const marketsApi = {
+  list: (params?: { page?: number; pageSize?: number; status?: MarketStatus; search?: string }) =>
+    api.get<MarketListResponse>('/api/v1/markets', params),
+
+  get: (asin: string) =>
+    api.get<MarketOpportunity>(`/api/v1/markets/${asin}`),
+
+  create: (data: CreateMarketDto) =>
+    api.post<MarketOpportunity>('/api/v1/markets', data),
+
+  fetch: (asin: string) =>
+    api.post<MarketOpportunity>('/api/v1/markets/fetch', { asin }),
+
+  updateStatus: (asin: string, status: MarketStatus) =>
+    api.post<MarketOpportunity>(`/api/v1/markets/${asin}/status`, { status }),
+
+  aiRecommend: () =>
+    api.get<MarketOpportunity[]>('/api/v1/markets/ai-recommend'),
+
+  getProducts: (asin: string) =>
+    api.get<ProductContent[]>(`/api/v1/markets/${asin}/products`),
+}
+
+// ==================== 产品中心 API（✅ 后端已重构，可用）====================
+
+export const newProductsApi = {
+  list: (params?: { page?: number; pageSize?: number; status?: ProductStatus; type?: ProductType; search?: string }) =>
+    api.get<ProductContentListResponse>('/api/v1/products', params),
+
+  get: (id: number) =>
+    api.get<ProductContent>(`/api/v1/products/${id}`),
+
+  create: (data: CreateProductContentDto) =>
+    api.post<ProductContent>('/api/v1/products', data),
+
+  update: (id: number, data: UpdateProductContentDto) =>
+    api.put<ProductContent>(`/api/v1/products/${id}`, data),
+
+  delete: (id: number) =>
+    api.delete<void>(`/api/v1/products/${id}`),
+
+  review: (id: number, action: 'approve' | 'reject' | 'revision', comment?: string) =>
+    api.post<ProductContent>(`/api/v1/products/${id}/review`, { action, comment }),
+
+  linkMarkets: (id: number, marketIds: number[]) =>
+    api.post<void>(`/api/v1/products/${id}/markets`, { marketIds }),
+
+  generate: (data: GenerateContentDto) =>
+    api.post<ProductContent>('/api/v1/products/generate', data),
+}
+
+// ==================== 营销中心 API（✅ 使用 /publish 路径）====================
+
+export const marketingApi = {
+  // 平台管理
+  listPlatforms: () =>
+    api.get<PlatformListResponse>('/api/v1/publish/platforms'),
+
+  addPlatform: (data: AddPlatformDto) =>
+    api.post<PublishPlatform>('/api/v1/publish/platforms', data),
+
+  testPlatform: (id: number) =>
+    api.post<{ success: boolean; message: string }>(`/api/v1/publish/platforms/${id}/test`),
+
+  // 发布任务
+  listTasks: (params?: { page?: number; pageSize?: number; status?: string }) =>
+    api.get<MarketingTaskListResponse>('/api/v1/publish/tasks', params),
+
+  createTask: (data: CreateMarketingTaskDto) =>
+    api.post<MarketingTask>('/api/v1/publish/tasks', data),
+
+  batchPublish: (data: BatchPublishDto) =>
+    api.post<{ tasks: MarketingTask[]; success: number; failed: number }>('/api/v1/publish/tasks/batch', data),
+
+  retryTask: (id: number) =>
+    api.post<MarketingTask>(`/api/v1/publish/tasks/${id}/retry`),
+}
+
+// ==================== 数据分析 API ====================
+
+export const analyticsApi = {
+  overview: () =>
+    api.get<AnalyticsOverview>('/api/v1/analytics/stats'),
+
+  products: () =>
+    api.get<ContentPerformance[]>('/api/v1/analytics/content-performance'),
+
+  trends: (params?: { startDate?: string; endDate?: string }) =>
+    api.get<AnalyticsTrendResponse>('/api/v1/analytics/trends', params),
+
+  // ⚠️ 以下端点后端暂未实现，使用演示数据
+  markets: () =>
+    Promise.resolve({
+      markets: [
+        { asin: 'B0XXXXX', title: 'Demo Market 1', clicks: 1234, conversions: 45, revenue: '1234.56' },
+        { asin: 'B0YYYYY', title: 'Demo Market 2', clicks: 987, conversions: 32, revenue: '987.65' },
+      ]
+    }),
+
+  platforms: () =>
+    Promise.resolve({
+      platforms: [
+        { name: 'Medium', published: 45, clicks: 567, conversions: 12 },
+        { name: 'Blogger', published: 32, clicks: 234, conversions: 8 },
+      ]
+    }),
 }
