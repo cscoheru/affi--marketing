@@ -73,6 +73,8 @@ func (c *ProductsController) RegisterRoutes(router *gin.RouterGroup) {
 		products.PUT("/:asin", c.Update)
 		products.DELETE("/:asin", c.Delete)
 		products.POST("/:asin/status", c.UpdateStatus)
+		products.GET("/ai-recommend", c.AIRecommend)     // AI推荐选品
+		products.POST("/fetch", c.FetchProduct)         // 采集产品信息
 	}
 }
 
@@ -304,5 +306,131 @@ func (c *ProductsController) UpdateStatus(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Status updated successfully",
 		"status":   req.Status,
+	})
+}
+
+// AIRecommendRequest AI推荐请求
+type AIRecommendRequest struct {
+	Category string `form:"category"`
+	Limit    int    `form:"limit" binding:"min=1,max=20"`
+}
+
+// AIRecommendedProduct AI推荐产品响应
+type AIRecommendedProduct struct {
+	ASIN             string  `json:"asin"`
+	Title            string  `json:"title"`
+	Price            float64 `json:"price"`
+	ImageURL         string  `json:"imageUrl"`
+	Rating           float64 `json:"rating"`
+	ReviewCount      int     `json:"reviewCount"`
+	AIScore          int     `json:"aiScore"`
+	AIReason         string  `json:"aiReason"`
+	MarketTrend      string  `json:"marketTrend"`
+	CompetitionLevel string  `json:"competitionLevel"`
+	URL              string  `json:"url"`
+}
+
+// AIRecommend AI推荐选品
+func (c *ProductsController) AIRecommend(ctx *gin.Context) {
+	var req AIRecommendRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 默认参数
+	if req.Limit == 0 {
+		req.Limit = 10
+	}
+	if req.Category == "" {
+		req.Category = "all"
+	}
+
+	// TODO: 接入Amazon Product Advertising API
+	// 目前返回模拟数据（基于实际市场趋势）
+	mockProducts := []AIRecommendedProduct{
+		{
+			ASIN:             "B08N5KWB9H",
+			Title:            "Sony WH-1000XM4 无线降噪耳机",
+			Price:            349.99,
+			ImageURL:         "https://m.media-amazon.com/images/I/71L2K9m9URL._AC_SL1500_.jpg",
+			Rating:           4.7,
+			ReviewCount:      45230,
+			AIScore:          92,
+			AIReason:         "高评分(4.7)、高销量(45K+评论)、降噪耳机品类领先者、利润空间约$80",
+			MarketTrend:      "rising",
+			CompetitionLevel: "medium",
+			URL:              "https://www.amazon.com/dp/B08N5KWB9H",
+		},
+		{
+			ASIN:             "B0BDHB9Y8M",
+			Title:            "Apple AirPods Pro (2代)",
+			Price:            249.00,
+			ImageURL:         "https://m.media-amazon.com/images/I/71E0PH8YIDL._AC_SL1500_.jpg",
+			Rating:           4.6,
+			ReviewCount:      89450,
+			AIScore:          85,
+			AIReason:         "品牌效应强、高复购率、适合内容创作、但竞争激烈",
+			MarketTrend:      "stable",
+			CompetitionLevel: "high",
+			URL:              "https://www.amazon.com/dp/B0BDHB9Y8M",
+		},
+		{
+			ASIN:             "B0CHX2F5QT",
+			Title:            "Anker 便携充电宝 26800mAh",
+			Price:            65.99,
+			ImageURL:         "https://m.media-amazon.com/images/I/71E0PH8YIDL._AC_SL1500_.jpg",
+			Rating:           4.8,
+			ReviewCount:      128000,
+			AIScore:          88,
+			AIReason:         "价格亲民($65)、超高评分(4.8)、刚需产品、转化率高、竞争度低",
+			MarketTrend:      "rising",
+			CompetitionLevel: "low",
+			URL:              "https://www.amazon.com/dp/B0CHX2F5QT",
+		},
+	}
+
+	// 限制数量
+	if req.Limit < len(mockProducts) {
+		mockProducts = mockProducts[:req.Limit]
+	}
+
+	logger.Info("AI recommendation request", zap.String("category", req.Category), zap.Int("limit", req.Limit))
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"products": mockProducts,
+	})
+}
+
+// FetchProductRequest 采集产品请求
+type FetchProductRequest struct {
+	ASIN string `json:"asin" binding:"required"`
+}
+
+// FetchProduct 采集产品信息（从Amazon API获取）
+func (c *ProductsController) FetchProduct(ctx *gin.Context) {
+	var req FetchProductRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// TODO: 调用Amazon Product Advertising API获取产品详情
+	// 目前返回模拟数据
+	logger.Info("Fetch product request", zap.String("asin", req.ASIN))
+
+	// 模拟产品数据（实际应从Amazon API获取）
+	product := gin.H{
+		"asin":       req.ASIN,
+		"title":      "Product " + req.ASIN,
+		"price":      99.99,
+		"imageUrl":   "https://m.media-amazon.com/images/I/71E0PH8YIDL._AC_SL1500_.jpg",
+		"rating":     4.5,
+		"reviewCount": 1000,
+		"status":     "pending",
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"product": product,
 	})
 }
