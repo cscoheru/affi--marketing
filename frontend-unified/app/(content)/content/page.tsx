@@ -26,6 +26,8 @@ import {
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { contentApi, type ContentItem } from '@/lib/api'
+import { useBlogStore } from '@/lib/blog/store'
+import { RefreshCw, ArrowRight } from 'lucide-react'
 
 const contentTypes = [
   { value: 'review', label: '评测' },
@@ -50,13 +52,20 @@ export default function ContentPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingContent, setEditingContent] = useState<ContentItem | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [syncing, setSyncing] = useState<number | null>(null)
+  const [batchSyncing, setBatchSyncing] = useState(false)
   const { toast } = useToast()
+  const { syncFromContent, syncAllPendingContent, fetchSyncStatus, articles } = useBlogStore()
 
   // 获取内容列表
   const fetchContents = async () => {
     setLoading(true)
     try {
-      const params: any = { page: 1, size: 10, status: 'draft' }
+      const params: { page: number; size: number; status: string; search?: string; type?: string } = {
+        page: 1,
+        size: 10,
+        status: 'draft',
+      }
       if (search) params.search = search
       if (activeTab !== 'all') params.type = activeTab
 
@@ -75,6 +84,7 @@ export default function ContentPage() {
 
   useEffect(() => {
     fetchContents()
+    fetchSyncStatus()
   }, [activeTab])
 
   // 搜索处理
@@ -137,7 +147,7 @@ export default function ContentPage() {
 
     setSubmitting(true)
     try {
-      const data: any = {}
+      const data: { title?: string; status?: 'draft' | 'published' | 'review'; content?: string } = {}
       const title = formData.get('title') as string
       const status = formData.get('status') as string
       const content = formData.get('content') as string
@@ -221,15 +231,81 @@ export default function ContentPage() {
     setEditingContent(null)
   }
 
+  // 检查内容是否已同步到博客
+  const isSyncedToBlog = (contentId: number) => {
+    return articles.some(a => a.contentItemId === contentId)
+  }
+
+  // 同步单个内容到博客
+  const handleSyncToBlog = async (contentId: number) => {
+    setSyncing(contentId)
+    try {
+      await syncFromContent(contentId)
+      toast({
+        title: '同步成功',
+        description: '内容已同步到博客草稿',
+      })
+      fetchSyncStatus()
+    } catch (error) {
+      toast({
+        title: '同步失败',
+        description: error instanceof Error ? error.message : '同步到博客失败',
+        variant: 'destructive',
+      })
+    } finally {
+      setSyncing(null)
+    }
+  }
+
+  // 批量同步所有已审核通过的内容
+  const handleBatchSync = async () => {
+    setBatchSyncing(true)
+    try {
+      const result = await syncAllPendingContent()
+      toast({
+        title: '批量同步完成',
+        description: `成功同步 ${result.synced} 篇，失败 ${result.failed} 篇`,
+      })
+      fetchSyncStatus()
+    } catch (error) {
+      toast({
+        title: '批量同步失败',
+        description: error instanceof Error ? error.message : '批量同步失败',
+        variant: 'destructive',
+      })
+    } finally {
+      setBatchSyncing(false)
+    }
+  }
+
   // 过滤后的内容
   const filteredContents = contents.filter(c =>
     activeTab === 'all' || c.type === activeTab
   )
 
+  // 获取待同步数量（已审核通过但未同步的内容）
+  const pendingSyncCount = contents.filter(c =>
+    c.status === 'approved' && !isSyncedToBlog(c.id)
+  ).length
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">内容管理</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold">内容管理</h1>
+          {pendingSyncCount > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBatchSync}
+              disabled={batchSyncing}
+              className="gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${batchSyncing ? 'animate-spin' : ''}`} />
+              同步 {pendingSyncCount} 篇到博客
+            </Button>
+          )}
+        </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => setEditingContent(null)}>创建内容</Button>
@@ -354,6 +430,7 @@ export default function ContentPage() {
                       <TableHead>类型</TableHead>
                       <TableHead>产品</TableHead>
                       <TableHead>状态</TableHead>
+                      <TableHead>博客同步</TableHead>
                       <TableHead>创建时间</TableHead>
                       <TableHead>操作</TableHead>
                     </TableRow>
@@ -377,6 +454,30 @@ export default function ContentPage() {
                           >
                             {statusLabels[content.status] || content.status}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {isSyncedToBlog(content.id) ? (
+                            <Badge variant="outline" className="gap-1">
+                              <span>已同步</span>
+                            </Badge>
+                          ) : content.status === 'approved' ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleSyncToBlog(content.id)}
+                              disabled={syncing === content.id}
+                              className="gap-1"
+                            >
+                              {syncing === content.id ? (
+                                <RefreshCw className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <ArrowRight className="h-3 w-3" />
+                              )}
+                              同步
+                            </Button>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">-</span>
+                          )}
                         </TableCell>
                         <TableCell>
                           {new Date(content.createdAt).toLocaleDateString('zh-CN')}

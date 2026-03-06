@@ -2,18 +2,18 @@ import type { Article, Category, Comment } from './types'
 
 // 示例分类 - 映射到后端类型
 export const sampleCategories: Category[] = [
-  { id: '1', slug: 'review', name: '评测', description: '深度产品分析和测评', color: 'bg-pink-500' },
-  { id: '2', slug: 'blog', name: '文章', description: '营销文章和策略', color: 'bg-green-500' },
-  { id: '3', slug: 'guide', name: '指南', description: '实用指南和教程', color: 'bg-indigo-500' },
-  { id: '4', slug: 'science', name: '科普', description: '知识科普', color: 'bg-blue-500' },
-  { id: '5', slug: 'social', name: '社媒', description: '社交媒体策略', color: 'bg-yellow-500' },
+  { id: '1', slug: 'review', name: '评测', description: '深度产品分析和测评', color: 'bg-pink-500', order: 0, createdAt: new Date('2024-01-01'), updatedAt: new Date('2024-01-01') },
+  { id: '2', slug: 'blog', name: '文章', description: '营销文章和策略', color: 'bg-green-500', order: 1, createdAt: new Date('2024-01-01'), updatedAt: new Date('2024-01-01') },
+  { id: '3', slug: 'guide', name: '指南', description: '实用指南和教程', color: 'bg-indigo-500', order: 2, createdAt: new Date('2024-01-01'), updatedAt: new Date('2024-01-01') },
+  { id: '4', slug: 'science', name: '科普', description: '知识科普', color: 'bg-blue-500', order: 3, createdAt: new Date('2024-01-01'), updatedAt: new Date('2024-01-01') },
+  { id: '5', slug: 'social', name: '社媒', description: '社交媒体策略', color: 'bg-yellow-500', order: 4, createdAt: new Date('2024-01-01'), updatedAt: new Date('2024-01-01') },
 ]
 
 // 示例作者
 const sampleAuthors = [
-  { id: '1', name: '张明', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=zhang' },
-  { id: '2', name: '李华', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=li' },
-  { id: '3', name: '王芳', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=wang' },
+  { id: '1', name: '张明', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=zhang', userId: 'user-1', role: 'admin' as const },
+  { id: '2', name: '李华', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=li', userId: 'user-2', role: 'editor' as const },
+  { id: '3', name: '王芳', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=wang', userId: 'user-3', role: 'author' as const },
 ]
 
 // 示例评论
@@ -24,7 +24,9 @@ const sampleComments: Comment[] = [
     author: sampleAuthors[1],
     content: '非常棒的文章！对我帮助很大。',
     createdAt: new Date('2024-01-10'),
+    updatedAt: new Date('2024-01-10'),
     likes: 5,
+    status: 'approved',
     replies: [
       {
         id: 'c1-1',
@@ -32,7 +34,9 @@ const sampleComments: Comment[] = [
         author: sampleAuthors[2],
         content: '同意，写得很清晰易懂。',
         createdAt: new Date('2024-01-11'),
+        updatedAt: new Date('2024-01-11'),
         likes: 2,
+        status: 'approved',
         parentId: 'c1',
       },
     ],
@@ -43,7 +47,9 @@ const sampleComments: Comment[] = [
     author: sampleAuthors[2],
     content: '期待更多这样的内容！',
     createdAt: new Date('2024-01-12'),
+    updatedAt: new Date('2024-01-12'),
     likes: 3,
+    status: 'approved',
   },
 ]
 
@@ -264,3 +270,7 @@ useEffect(() => {
     metaDescription: '系统学习 React Hooks 的使用方法。',
   },
 ]
+
+// 别名导出，用于store
+export const mockArticles = sampleArticles
+export const categories = sampleCategories

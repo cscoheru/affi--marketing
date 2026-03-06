@@ -93,7 +93,7 @@ export default function ProductsPage() {
 
     setSubmitting(true)
     try {
-      const updateData: any = {}
+      const updateData: { title?: string; price?: number; imageUrl?: string; category?: string } = {}
       if (data.title) updateData.title = data.title
       if (data.price) updateData.price = parseFloat(data.price!)
       if (data.image_url) updateData.imageUrl = data.image_url

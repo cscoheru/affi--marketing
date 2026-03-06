@@ -42,7 +42,7 @@ export default function LoginPage() {
       } else {
         router.push('/dashboard')
       }
-    } catch (err) {
+    } catch {
       setError('登录失败，请检查用户名和密码')
     } finally {
       setLoading(false)

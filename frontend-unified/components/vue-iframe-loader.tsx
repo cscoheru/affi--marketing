@@ -10,7 +10,7 @@ interface VueIframeLoaderProps {
 
 declare global {
   interface Window {
-    __vueIframeListeners?: Map<string, (data: any) => void>
+    __vueIframeListeners?: Map<string, (data: unknown) => void>
   }
 }
 

@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuthStore } from '@/lib/store'
 
@@ -48,14 +49,14 @@ export default function DashboardPage() {
               <div className="flex items-center gap-4">
                 <div className="h-2 w-2 rounded-full bg-green-500"></div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">实验 "产品页测试" 已完成</p>
+                  <p className="text-sm font-medium">实验 &quot;产品页测试&quot; 已完成</p>
                   <p className="text-xs text-muted-foreground">2 小时前</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
                 <div className="h-2 w-2 rounded-full bg-blue-500"></div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium">新插件 "AI 分析" 已启用</p>
+                  <p className="text-sm font-medium">新插件 &quot;AI 分析&quot; 已启用</p>
                   <p className="text-xs text-muted-foreground">昨天</p>
                 </div>
               </div>
@@ -76,7 +77,7 @@ export default function DashboardPage() {
             <CardDescription>常用功能快捷入口</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <a href="/experiments" className="block p-3 rounded-lg hover:bg-accent transition">
+            <Link href="/experiments" className="block p-3 rounded-lg hover:bg-accent transition">
               <div className="flex items-center gap-3">
                 <span>🧪</span>
                 <div>
@@ -84,8 +85,8 @@ export default function DashboardPage() {
                   <p className="text-xs text-muted-foreground">开始新的 A/B 测试</p>
                 </div>
               </div>
-            </a>
-            <a href="/plugins" className="block p-3 rounded-lg hover:bg-accent transition">
+            </Link>
+            <Link href="/plugins" className="block p-3 rounded-lg hover:bg-accent transition">
               <div className="flex items-center gap-3">
                 <span>🔌</span>
                 <div>
@@ -93,16 +94,25 @@ export default function DashboardPage() {
                   <p className="text-xs text-muted-foreground">启用或配置插件</p>
                 </div>
               </div>
-            </a>
-            <a href="/analytics" className="block p-3 rounded-lg hover:bg-accent transition">
+            </Link>
+            <Link href="/analytics" className="block p-3 rounded-lg hover:bg-accent transition">
               <div className="flex items-center gap-3">
                 <span>📈</span>
                 <div>
                   <p className="text-sm font-medium">查看分析</p>
-                  <p className="text-xs text-muted-foreground">查看详细数据报告</p>
+                  <p className="text-xs text-muted-foreground">数据分析与报告</p>
                 </div>
               </div>
-            </a>
+            </Link>
+            <Link href="/products" className="block p-3 rounded-lg hover:bg-accent transition">
+              <div className="flex items-center gap-3">
+                <span>📦</span>
+                <div>
+                  <p className="text-sm font-medium">管理产品</p>
+                  <p className="text-xs text-muted-foreground">添加和编辑产品信息</p>
+                </div>
+              </div>
+            </Link>
           </CardContent>
         </Card>
       </div>

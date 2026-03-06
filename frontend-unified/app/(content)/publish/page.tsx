@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -15,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { RefreshCw } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { publishApi, type PublishTask, type ContentItem } from '@/lib/api'
 import { contentApi } from '@/lib/api'
@@ -49,7 +49,10 @@ export default function PublishPage() {
   const fetchTasks = async () => {
     setLoading(true)
     try {
-      const params: any = { page: 1, pageSize: 10 }
+      const params: { page: number; pageSize: number; status?: string } = {
+        page: 1,
+        pageSize: 10,
+      }
       if (activeTab !== 'all') params.status = activeTab
 
       const response = await publishApi.list(params)
@@ -65,25 +68,20 @@ export default function PublishPage() {
     }
   }
 
-  // 获取可发布内容列表
+  // 获取内容列表（用于创建任务时选择）
   const fetchContents = async () => {
     try {
-      const response = await contentApi.list({ status: 'published', size: 100 })
+      const response = await contentApi.list({ page: 1, size: 100 })
       setContents(response.contents)
-    } catch (error) {
-      console.error('Failed to fetch contents:', error)
+    } catch {
+      // 忽略错误，内容列表加载失败不影响主功能
     }
   }
 
   useEffect(() => {
     fetchTasks()
+    fetchContents()
   }, [activeTab])
-
-  useEffect(() => {
-    if (dialogOpen) {
-      fetchContents()
-    }
-  }, [dialogOpen])
 
   // 创建发布任务
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -95,7 +93,6 @@ export default function PublishPage() {
       const contentId = Number(formData.get('content_id'))
       const platform = formData.get('platform') as string
 
-      // 调用发布 API
       await publishApi.submit({
         contentId,
         platforms: [platform],
@@ -103,14 +100,14 @@ export default function PublishPage() {
 
       toast({
         title: '成功',
-        description: '发布任务已创建，正在后台执行',
+        description: '发布任务已创建',
       })
       setDialogOpen(false)
       fetchTasks()
     } catch {
       toast({
         title: '错误',
-        description: '创建发布任务失败，请确保内容已审核通过',
+        description: '创建发布任务失败',
         variant: 'destructive',
       })
     } finally {
@@ -269,8 +266,21 @@ export default function PublishPage() {
                             {statusConfig[task.status]?.label || task.status}
                           </Badge>
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          创建时间: {formatTime(task.createdAt)}
+                        <div className="flex items-center gap-3">
+                          <div className="text-sm text-muted-foreground">
+                            创建时间: {formatTime(task.createdAt)}
+                          </div>
+                          {(task.status === 'failed' || task.status === 'partial') && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleRetry(task.id)}
+                              disabled={executing === String(task.id)}
+                            >
+                              <RefreshCw className={`h-4 w-4 mr-1 ${executing === String(task.id) ? 'animate-spin' : ''}`} />
+                              重试
+                            </Button>
+                          )}
                         </div>
                       </div>
 

@@ -1,6 +1,6 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
-interface ApiResponse<T> {
+export interface ApiResponse<T> {
   success: boolean
   code: number
   message: string
@@ -8,7 +8,7 @@ interface ApiResponse<T> {
   timestamp: number
 }
 
-interface ApiError {
+export interface ApiError {
   message: string
   code?: number
 }
@@ -42,7 +42,7 @@ class ApiClient {
     return this.token
   }
 
-  private buildUrl(endpoint: string, params?: Record<string, any>): string {
+  private buildUrl(endpoint: string, params?: Record<string, string | number | boolean | undefined>): string {
     const url = new URL(`${this.baseUrl}${endpoint}`, typeof window !== 'undefined' ? window.location.origin : 'http://localhost')
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -57,7 +57,7 @@ class ApiClient {
   private async request<T>(
     endpoint: string,
     options: RequestInit = {},
-    params?: Record<string, any>
+    params?: Record<string, string | number | boolean | undefined>
   ): Promise<T> {
     const url = this.buildUrl(endpoint, params)
     const headers: Record<string, string> = {
@@ -83,7 +83,7 @@ class ApiClient {
   }
 
   // GET 请求
-  async get<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
+  async get<T>(endpoint: string, params?: Record<string, string | number | boolean | undefined>): Promise<T> {
     return this.request<T>(endpoint, { method: 'GET' }, params)
   }
 
@@ -124,8 +124,18 @@ class ApiClient {
     })
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: '请求失败' }))
-      throw new Error(error.message || '请求失败')
+      // 尝试解析错误响应
+      let errorMessage = '请求失败'
+      try {
+        const errorData = await response.json().catch(() => null)
+        if (errorData) {
+          errorMessage = errorData.message || errorData.error || errorMessage
+        }
+      } catch {
+        // 如果JSON解析失败，使用状态码生成消息
+        errorMessage = `请求失败 (${response.status})`
+      }
+      throw new Error(errorMessage)
     }
 
     return response.json()

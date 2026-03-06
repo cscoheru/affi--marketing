@@ -91,7 +91,7 @@ export default function ArticleDetailPage({ params }: PageProps) {
         <h1 className="text-2xl font-bold mb-4">文章未找到</h1>
         <p className="text-muted-foreground mb-8">抱歉，您请求的文章不存在或已被删除。</p>
         <Button asChild>
-          <Link href="/dashboard/blog">
+          <Link href="/blog">
             <ArrowLeft className="h-4 w-4 mr-2" />
             返回博客
           </Link>
@@ -107,13 +107,13 @@ export default function ArticleDetailPage({ params }: PageProps) {
         <Breadcrumb className="mb-6">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/dashboard/blog">博客</BreadcrumbLink>
+              <BreadcrumbLink href="/blog">博客</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator>
               <ChevronRight className="h-4 w-4" />
             </BreadcrumbSeparator>
             <BreadcrumbItem>
-              <BreadcrumbLink href={`/dashboard/blog/category/${currentArticle.category.slug}`}>
+              <BreadcrumbLink href={`/blog/category/${currentArticle.category.slug}`}>
                 {currentArticle.category.name}
               </BreadcrumbLink>
             </BreadcrumbItem>
@@ -201,7 +201,7 @@ export default function ArticleDetailPage({ params }: PageProps) {
             </Button>
           </div>
           <Button variant="ghost" asChild>
-            <Link href="/dashboard/blog">
+            <Link href="/blog">
               <ArrowLeft className="h-4 w-4 mr-2" />
               返回列表
             </Link>

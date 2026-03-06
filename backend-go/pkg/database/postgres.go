@@ -10,6 +10,7 @@ import (
 
 	"github.com/zenconsult/affi-marketing/internal/config"
 	"github.com/zenconsult/affi-marketing/internal/model"
+	contentModel "github.com/zenconsult/affi-marketing/internal/model/content"
 )
 
 var (
@@ -121,5 +122,16 @@ func AutoMigrate(db *gorm.DB) error {
 		&model.Experiment{},
 		&model.User{},
 		&model.APIKey{},
+		// Content automation models
+		&contentModel.Product{},
+		&contentModel.Material{},
+		&contentModel.Content{},
+		&contentModel.PublishTask{},
+		&contentModel.MaterialCollectTask{},
+		&contentModel.ContentGenerateTask{},
+		&contentModel.ProductAIInfo{},
+		&contentModel.MaterialAIReview{},
+		&contentModel.ContentGenerationJob{},
+		&contentModel.ContentWorkflow{},
 	)
 }

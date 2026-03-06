@@ -24,7 +24,7 @@ interface PageProps {
 
 export default function CategoryPage({ params }: PageProps) {
   const { slug } = use(params)
-  const { categories, fetchArticles, articles, loading, setFilters, getFilteredArticles } = useBlogStore()
+  const { categories, fetchArticles, loading, setFilters, getFilteredArticles } = useBlogStore()
   const [displayCount, setDisplayCount] = useState(12)
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export default function CategoryPage({ params }: PageProps) {
         <h1 className="text-2xl font-bold mb-4">分类未找到</h1>
         <p className="text-muted-foreground mb-8">抱歉，您请求的分类不存在。</p>
         <Button asChild>
-          <Link href="/dashboard/blog">
+          <Link href="/blog">
             <ChevronRight className="h-4 w-4 mr-2" />
             返回博客
           </Link>
@@ -71,7 +71,7 @@ export default function CategoryPage({ params }: PageProps) {
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/dashboard/blog">博客</BreadcrumbLink>
+            <BreadcrumbLink href="/blog">博客</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator>
             <ChevronRight className="h-4 w-4" />

@@ -30,8 +30,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
+function formatFileSize(bytes: number | undefined | null): string {
+  if (bytes === undefined || bytes === null || isNaN(bytes) || bytes === 0) return '未知大小'
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
@@ -59,7 +59,10 @@ export default function MaterialsPage() {
   const fetchMaterials = async () => {
     setLoading(true)
     try {
-      const params: any = { page: 1, pageSize: 10 }
+      const params: { page: number; pageSize: number; search?: string; type?: string } = {
+        page: 1,
+        pageSize: 10,
+      }
       if (search) params.search = search
       if (typeFilter !== 'all') params.type = typeFilter
 
@@ -242,7 +245,9 @@ export default function MaterialsPage() {
                     </TableCell>
                     <TableCell>{formatFileSize(material.size)}</TableCell>
                     <TableCell>
-                      {new Date(material.createdAt).toLocaleDateString('zh-CN')}
+                      {material.createdAt
+                        ? new Date(material.createdAt).toLocaleDateString('zh-CN')
+                        : '未知日期'}
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">

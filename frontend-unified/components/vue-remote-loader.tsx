@@ -5,12 +5,28 @@ import { useEffect, useRef, useState } from 'react'
 interface VueRemoteLoaderProps {
   remoteUrl: string
   exposedModule: string
-  props?: Record<string, any>
+  props?: Record<string, unknown>
+}
+
+interface FederationSharedScope {
+  [key: string]: {
+    version: string
+    get: () => unknown
+    loaded?: boolean
+  }
+}
+
+interface FederationModule {
+  get: (module: string) => Promise<unknown>
+  init?: (sharedScope: FederationSharedScope) => Promise<void>
+  dynamicLoadingCss?: (options: unknown[], isFn: boolean, moduleId: string) => void
 }
 
 declare global {
   interface Window {
-    __federation_shared__?: any
+    __federation_shared__?: {
+      default?: FederationSharedScope
+    } & FederationSharedScope
   }
 }
 
@@ -25,7 +41,7 @@ export function VueRemoteLoader({
 
   useEffect(() => {
     let mounted = true
-    let vueInstance: any = null
+    let vueInstance: unknown = null
 
     async function loadRemoteComponent() {
       try {
@@ -41,6 +57,7 @@ export function VueRemoteLoader({
 
         // Load Vue as shared dependency
         if (!defaultScope.vue) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const vueModule = await import('vue') as any
           const vue = vueModule.default || vueModule
           defaultScope.vue = {
@@ -57,7 +74,7 @@ export function VueRemoteLoader({
         // Dynamically import the remote entry
         // Use Function constructor to avoid bundler trying to resolve the path
         const dynamicImport = new Function('url', 'return import(url)')
-        const remoteModule = await dynamicImport(fullUrl)
+        const remoteModule = await dynamicImport(fullUrl) as FederationModule
 
         if (!remoteModule || !remoteModule.get) {
           throw new Error('Remote entry does not export a get function')
@@ -71,7 +88,7 @@ export function VueRemoteLoader({
         }
 
         // Load the exposed module
-        const moduleFactory = await remoteModule.get(`./${exposedModule}`)
+        const moduleFactory = await remoteModule.get(`./${exposedModule}`) as FederationSharedScope & { default: unknown; template?: unknown }
         const component = moduleFactory.default || moduleFactory
 
         if (!component) {
@@ -85,25 +102,27 @@ export function VueRemoteLoader({
 
         // Create and mount Vue app
         if (containerRef.current && mounted) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const vueModule = await import('vue') as any
           const createApp = vueModule.createApp
 
           vueInstance = createApp({
             render() {
               return typeof component === 'function'
-                ? component(props)
+                ? (component as (props: unknown) => unknown)(props)
                 : component
             }
           })
 
-          vueInstance.mount(containerRef.current)
+          ;(vueInstance as { mount: (el: HTMLElement) => void }).mount(containerRef.current)
         }
 
-        setLoading(false)
+        if (mounted) {
+          setLoading(false)
+        }
       } catch (err) {
         if (mounted) {
-          console.error('Failed to load remote Vue component:', err)
-          setError(err instanceof Error ? err.message : String(err))
+          setError(err instanceof Error ? err.message : 'Failed to load remote Vue component')
           setLoading(false)
         }
       }
@@ -113,35 +132,30 @@ export function VueRemoteLoader({
 
     return () => {
       mounted = false
-      if (vueInstance) {
-        vueInstance.unmount()
+      // Clean up Vue instance
+      if (vueInstance && typeof vueInstance === 'object' && vueInstance !== null) {
+        ;(vueInstance as { unmount: () => void }).unmount?.()
       }
     }
   }, [remoteUrl, exposedModule])
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center p-8 text-gray-600">
-        <div className="flex flex-col items-center gap-2">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
-          <div className="text-sm">Loading Vue component...</div>
+  return (
+    <div className="vue-remote-wrapper h-full w-full">
+      {loading && (
+        <div className="flex items-center justify-center p-8 text-muted-foreground">
+          <div className="flex flex-col items-center gap-2">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="text-sm">加载远程组件...</div>
+          </div>
         </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-        <div className="font-bold text-red-700">Error loading Vue component</div>
-        <div className="text-sm text-red-600 mt-2">{error}</div>
-        <div className="text-xs text-gray-500 mt-4 font-mono bg-gray-100 p-2 rounded">
-          <div>Remote URL: {remoteUrl}</div>
-          <div>Module: {exposedModule}</div>
+      )}
+      {error && (
+        <div className="p-4 bg-destructive/10 border border-destructive rounded-lg">
+          <div className="font-bold text-destructive">加载失败</div>
+          <div className="text-sm text-destructive/80 mt-2">{error}</div>
         </div>
-      </div>
-    )
-  }
-
-  return <div ref={containerRef} className="vue-remote-container w-full h-full" />
+      )}
+      <div ref={containerRef} className="vue-remote-container h-full w-full" />
+    </div>
+  )
 }
