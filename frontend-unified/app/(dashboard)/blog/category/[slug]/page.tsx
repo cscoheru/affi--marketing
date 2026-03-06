@@ -39,7 +39,7 @@ export default function CategoryPage({ params }: PageProps) {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="p-6">
         <Skeleton className="h-8 w-48 mb-8" />
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -52,13 +52,13 @@ export default function CategoryPage({ params }: PageProps) {
 
   if (!category) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center">
+      <div className="p-6 text-center py-16">
         <h1 className="text-2xl font-bold mb-4">分类未找到</h1>
         <p className="text-muted-foreground mb-8">抱歉，您请求的分类不存在。</p>
         <Button asChild>
-          <Link href="/blog">
+          <Link href="/dashboard/blog">
             <ChevronRight className="h-4 w-4 mr-2" />
-            返回博客首页
+            返回博客
           </Link>
         </Button>
       </div>
@@ -66,12 +66,12 @@ export default function CategoryPage({ params }: PageProps) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="p-6">
       {/* Breadcrumb */}
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/blog">博客</BreadcrumbLink>
+            <BreadcrumbLink href="/dashboard/blog">博客</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator>
             <ChevronRight className="h-4 w-4" />

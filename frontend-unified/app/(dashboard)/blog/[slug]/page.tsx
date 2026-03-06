@@ -12,7 +12,7 @@ import { CommentSection } from '@/components/blog/comment-section'
 import { ArticleCard } from '@/components/blog/article-card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -71,7 +71,7 @@ export default function ArticleDetailPage({ params }: PageProps) {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="p-6 max-w-4xl">
         <Skeleton className="h-8 w-64 mb-8" />
         <Skeleton className="h-80 w-full rounded-xl mb-8" />
         <Skeleton className="h-10 w-3/4 mb-4" />
@@ -87,13 +87,13 @@ export default function ArticleDetailPage({ params }: PageProps) {
 
   if (!currentArticle) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center">
+      <div className="p-6 text-center py-16">
         <h1 className="text-2xl font-bold mb-4">文章未找到</h1>
         <p className="text-muted-foreground mb-8">抱歉，您请求的文章不存在或已被删除。</p>
         <Button asChild>
-          <Link href="/blog">
+          <Link href="/dashboard/blog">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            返回博客首页
+            返回博客
           </Link>
         </Button>
       </div>
@@ -101,19 +101,19 @@ export default function ArticleDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="p-6">
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <Breadcrumb className="mb-6">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/blog">博客</BreadcrumbLink>
+              <BreadcrumbLink href="/dashboard/blog">博客</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator>
               <ChevronRight className="h-4 w-4" />
             </BreadcrumbSeparator>
             <BreadcrumbItem>
-              <BreadcrumbLink href={`/blog/category/${currentArticle.category.slug}`}>
+              <BreadcrumbLink href={`/dashboard/blog/category/${currentArticle.category.slug}`}>
                 {currentArticle.category.name}
               </BreadcrumbLink>
             </BreadcrumbItem>
@@ -201,7 +201,7 @@ export default function ArticleDetailPage({ params }: PageProps) {
             </Button>
           </div>
           <Button variant="ghost" asChild>
-            <Link href="/blog">
+            <Link href="/dashboard/blog">
               <ArrowLeft className="h-4 w-4 mr-2" />
               返回列表
             </Link>

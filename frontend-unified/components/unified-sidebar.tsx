@@ -40,9 +40,9 @@ const navItems: NavItem[] = [
   { id: 'content', label: '内容管理', icon: '✍️', path: '/content', type: 'react', category: '内容自动化' },
   { id: 'publish', label: '发布中心', icon: '📤', path: '/publish', type: 'react', category: '内容自动化' },
 
-  // SSG博客 - 公开访问
-  { id: 'blog', label: '博客首页', icon: '📝', path: '/blog', type: 'ssg', category: '博客' },
-  { id: 'blog-list', label: '文章列表', icon: '📚', path: '/blog/list', type: 'ssg', category: '博客' },
+  // 博客 - 集成到 Dashboard
+  { id: 'blog-home', label: '博客首页', icon: '📝', path: '/dashboard/blog', type: 'react', category: '博客' },
+  { id: 'blog-list', label: '文章列表', icon: '📚', path: '/dashboard/blog/manage', type: 'react', category: '博客' },
 ]
 
 export function UnifiedSidebar() {

@@ -24,7 +24,7 @@ export default function BlogHomePage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="p-6">
         <div className="space-y-8">
           <Skeleton className="h-80 w-full rounded-xl" />
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -38,52 +38,46 @@ export default function BlogHomePage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Hero Section */}
-      <section className="mb-12">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold tracking-tight mb-4">
-            Affi-Marketing 博客
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            探索联盟营销、SEO 优化、技术教程和产品测评的最新内容，助力您的数字营销之旅。
-          </p>
-        </div>
+    <div className="p-6">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight mb-2">博客</h1>
+        <p className="text-muted-foreground">
+          探索联盟营销、SEO 优化、技术教程和产品测评的最新内容
+        </p>
+      </div>
 
-        {/* Featured Article */}
-        {featuredArticle && (
-          <div className="relative">
-            <div className="absolute -top-3 left-4 z-10">
-              <span className="inline-flex items-center gap-1 bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-full">
-                <Sparkles className="h-3 w-3" />
-                精选文章
-              </span>
-            </div>
-            <ArticleCard article={featuredArticle} featured />
+      {/* Featured Article */}
+      {featuredArticle && (
+        <div className="relative mb-8">
+          <div className="absolute -top-3 left-4 z-10">
+            <span className="inline-flex items-center gap-1 bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-full">
+              <Sparkles className="h-3 w-3" />
+              精选文章
+            </span>
           </div>
-        )}
-      </section>
+          <ArticleCard article={featuredArticle} featured />
+        </div>
+      )}
 
       {/* Filters */}
-      <section className="mb-8 space-y-4">
+      <div className="mb-8 space-y-4">
         <CategoryFilter />
         <SearchSort />
-      </section>
+      </div>
 
       {/* Article Grid */}
-      <section className="mb-8">
-        {otherArticles.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {otherArticles.map((article) => (
-              <ArticleCard key={article.id} article={article} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <p className="text-muted-foreground">暂无匹配的文章</p>
-          </div>
-        )}
-      </section>
+      {otherArticles.length > 0 ? (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+          {otherArticles.map((article) => (
+            <ArticleCard key={article.id} article={article} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-16">
+          <p className="text-muted-foreground">暂无匹配的文章</p>
+        </div>
+      )}
 
       {/* Load More */}
       {hasMore && (
