@@ -97,7 +97,7 @@ func (c *AutomationController) CreateWorkflow(ctx *gin.Context) {
 	}
 
 	// 获取产品信息
-	var product content.Product
+	var product content.AmazonProduct
 	if err := c.db.First(&product, req.ProductID).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
 		return
@@ -341,7 +341,7 @@ func (c *AutomationController) GenerateContent(ctx *gin.Context) {
 	}
 
 	// 获取产品信息
-	var product content.Product
+	var product content.AmazonProduct
 	if err := c.db.First(&product, req.ProductID).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
 		return
@@ -519,7 +519,7 @@ func (c *AutomationController) RejectContent(ctx *gin.Context) {
 func (c *AutomationController) AnalyzeProduct(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	var product content.Product
+	var product content.AmazonProduct
 	if err := c.db.First(&product, id).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
 		return
@@ -631,7 +631,7 @@ func (c *AutomationController) callAIReviewMaterial(material *content.Material) 
 }
 
 // callAIAnalyzeProduct 调用AI服务分析产品
-func (c *AutomationController) callAIAnalyzeProduct(product *content.Product) (*content.ProductAIInfo, error) {
+func (c *AutomationController) callAIAnalyzeProduct(product *content.AmazonProduct) (*content.ProductAIInfo, error) {
 	payload := map[string]interface{}{
 		"product_title":   product.Title,
 		"product_asin":    product.ASIN,
@@ -690,7 +690,7 @@ func (c *AutomationController) callAIAnalyzeProduct(product *content.Product) (*
 }
 
 // executeGenerationJob 执行内容生成任务
-func (c *AutomationController) executeGenerationJob(job *content.ContentGenerationJob, product *content.Product, materials []content.Material) {
+func (c *AutomationController) executeGenerationJob(job *content.ContentGenerationJob, product *content.AmazonProduct, materials []content.Material) {
 	// 更新状态为处理中
 	now := time.Now()
 	c.db.Model(job).Updates(map[string]interface{}{

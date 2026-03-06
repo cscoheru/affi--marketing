@@ -15,25 +15,22 @@ export default function LoginPage() {
   const [password, setPassword] = useState('password')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
 
-  // Initialize auth on mount and redirect if already authenticated
+  // Initialize auth on mount
   useEffect(() => {
     initializeAuth()
+    // Small delay to ensure state is updated
+    const timer = setTimeout(() => {
+      setIsInitialized(true)
+    }, 50)
+    return () => clearTimeout(timer)
   }, [initializeAuth])
 
+  // Redirect if already authenticated (only after initialization)
   useEffect(() => {
+    if (!isInitialized) return
     if (isAuthenticated) {
-      router.push('/dashboard')
-    }
-  }, [isAuthenticated, router])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-
-    try {
-      await login(email, password)
       // Check if there's a saved redirect URL
       const redirectUrl = sessionStorage.getItem('redirect_after_login')
       if (redirectUrl && redirectUrl !== '/login') {
@@ -42,6 +39,17 @@ export default function LoginPage() {
       } else {
         router.push('/dashboard')
       }
+    }
+  }, [isAuthenticated, isInitialized, router])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    try {
+      await login(email, password)
+      // Redirect is handled by the useEffect above after state updates
     } catch {
       setError('登录失败，请检查用户名和密码')
     } finally {

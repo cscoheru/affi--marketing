@@ -177,7 +177,7 @@ func (c *ContentsController) Create(ctx *gin.Context) {
 	}
 
 	// 检查产品是否存在
-	var product content.Product
+	var product content.AmazonProduct
 	if err := c.db.Where("asin = ?", req.ASIN).First(&product).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
 		return
@@ -301,7 +301,7 @@ func (c *ContentsController) Generate(ctx *gin.Context) {
 	}
 
 	// 检查产品是否存在
-	var product content.Product
+	var product content.AmazonProduct
 	if err := c.db.Where("asin = ?", req.ASIN).First(&product).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
 		return
@@ -338,7 +338,7 @@ func (c *ContentsController) Generate(ctx *gin.Context) {
 }
 
 // runGenerateTask 后台执行生成任务
-func (c *ContentsController) runGenerateTask(taskID int, asin, contentType, aiModel string, product *content.Product) {
+func (c *ContentsController) runGenerateTask(taskID int, asin, contentType, aiModel string, product *content.AmazonProduct) {
 	// 更新任务状态为生成中
 	c.db.Model(&content.ContentGenerateTask{}).Where("id = ?", taskID).Updates(map[string]interface{}{
 		"status":   "generating",
@@ -405,7 +405,7 @@ func (c *ContentsController) runGenerateTask(taskID int, asin, contentType, aiMo
 }
 
 // callAIService 调用 AI 服务生成内容
-func (c *ContentsController) callAIService(product *content.Product, contentType, aiModel string) (string, error) {
+func (c *ContentsController) callAIService(product *content.AmazonProduct, contentType, aiModel string) (string, error) {
 	// 构建提示词
 	prompt := buildPrompt(product, contentType)
 	systemPrompt := "你是一个专业的内容创作者，擅长撰写产品评测和推荐文章。请基于产品信息生成高质量、有价值的内容。"
@@ -456,7 +456,7 @@ func (c *ContentsController) callAIService(product *content.Product, contentType
 }
 
 // buildPrompt 构建生成提示词
-func buildPrompt(product *content.Product, contentType string) string {
+func buildPrompt(product *content.AmazonProduct, contentType string) string {
 	contentTypeMap := map[string]string{
 		"review":  "深度评测",
 		"science": "科普文章",
@@ -493,7 +493,7 @@ func buildPrompt(product *content.Product, contentType string) string {
 }
 
 // generateTitle 生成内容标题
-func generateTitle(product *content.Product, contentType string) string {
+func generateTitle(product *content.AmazonProduct, contentType string) string {
 	contentTypeMap := map[string]string{
 		"review":  "深度评测",
 		"science": "科普分析",

@@ -1,0 +1,194 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - heading "Affi-Marketing" [level=1] [ref=e5]
+        - button "←" [ref=e6]
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - heading "控制台" [level=3] [ref=e11]
+          - list [ref=e12]:
+            - listitem [ref=e13]:
+              - link "📊 仪表板 Vue" [ref=e14] [cursor=pointer]:
+                - /url: /dashboard
+                - button "📊 仪表板 Vue" [ref=e15]:
+                  - generic [ref=e16]: 📊
+                  - generic [ref=e17]: 仪表板
+                  - generic [ref=e18]: Vue
+            - listitem [ref=e19]:
+              - link "🔬 实验管理 Vue" [ref=e20] [cursor=pointer]:
+                - /url: /experiments
+                - button "🔬 实验管理 Vue" [ref=e21]:
+                  - generic [ref=e22]: 🔬
+                  - generic [ref=e23]: 实验管理
+                  - generic [ref=e24]: Vue
+            - listitem [ref=e25]:
+              - link "🔌 插件市场 Vue" [ref=e26] [cursor=pointer]:
+                - /url: /plugins
+                - button "🔌 插件市场 Vue" [ref=e27]:
+                  - generic [ref=e28]: 🔌
+                  - generic [ref=e29]: 插件市场
+                  - generic [ref=e30]: Vue
+            - listitem [ref=e31]:
+              - link "📈 数据分析 Vue" [ref=e32] [cursor=pointer]:
+                - /url: /analytics
+                - button "📈 数据分析 Vue" [ref=e33]:
+                  - generic [ref=e34]: 📈
+                  - generic [ref=e35]: 数据分析
+                  - generic [ref=e36]: Vue
+            - listitem [ref=e37]:
+              - link "💰 佣金结算 Vue" [ref=e38] [cursor=pointer]:
+                - /url: /settlements
+                - button "💰 佣金结算 Vue" [ref=e39]:
+                  - generic [ref=e40]: 💰
+                  - generic [ref=e41]: 佣金结算
+                  - generic [ref=e42]: Vue
+        - generic [ref=e43]:
+          - heading "内容自动化" [level=3] [ref=e44]
+          - list [ref=e45]:
+            - listitem [ref=e46]:
+              - link "📦 产品管理" [ref=e47] [cursor=pointer]:
+                - /url: /products
+                - button "📦 产品管理" [ref=e48]:
+                  - generic [ref=e49]: 📦
+                  - generic [ref=e50]: 产品管理
+            - listitem [ref=e51]:
+              - link "📄 素材库" [ref=e52] [cursor=pointer]:
+                - /url: /materials
+                - button "📄 素材库" [ref=e53]:
+                  - generic [ref=e54]: 📄
+                  - generic [ref=e55]: 素材库
+            - listitem [ref=e56]:
+              - link "✍️ 内容管理" [ref=e57] [cursor=pointer]:
+                - /url: /content
+                - button "✍️ 内容管理" [ref=e58]:
+                  - generic [ref=e59]: ✍️
+                  - generic [ref=e60]: 内容管理
+            - listitem [ref=e61]:
+              - link "📤 发布中心" [ref=e62] [cursor=pointer]:
+                - /url: /publish
+                - button "📤 发布中心" [ref=e63]:
+                  - generic [ref=e64]: 📤
+                  - generic [ref=e65]: 发布中心
+        - generic [ref=e66]:
+          - heading "博客" [level=3] [ref=e67]
+          - list [ref=e68]:
+            - listitem [ref=e69]:
+              - link "📝 博客首页" [ref=e70] [cursor=pointer]:
+                - /url: /blog
+                - button "📝 博客首页" [ref=e71]:
+                  - generic [ref=e72]: 📝
+                  - generic [ref=e73]: 博客首页
+            - listitem [ref=e74]:
+              - link "📚 文章管理" [ref=e75] [cursor=pointer]:
+                - /url: /blog/admin
+                - button "📚 文章管理" [ref=e76]:
+                  - generic [ref=e77]: 📚
+                  - generic [ref=e78]: 文章管理
+            - listitem [ref=e79]:
+              - link "🏷️ 分类管理" [ref=e80] [cursor=pointer]:
+                - /url: /blog/admin/categories
+                - button "🏷️ 分类管理" [ref=e81]:
+                  - generic [ref=e82]: 🏷️
+                  - generic [ref=e83]: 分类管理
+            - listitem [ref=e84]:
+              - link "⚙️ 博客设置" [ref=e85] [cursor=pointer]:
+                - /url: /blog/admin/settings
+                - button "⚙️ 博客设置" [ref=e86]:
+                  - generic [ref=e87]: ⚙️
+                  - generic [ref=e88]: 博客设置
+      - button "管 管理员 demo@example.com" [ref=e90]:
+        - generic [ref=e92]: 管
+        - generic [ref=e93]:
+          - generic [ref=e94]: 管理员
+          - generic [ref=e95]: demo@example.com
+    - main [ref=e96]:
+      - generic [ref=e97]:
+        - generic [ref=e99]:
+          - heading "仪表板" [level=1] [ref=e100]
+          - paragraph [ref=e101]: 欢迎回来，管理员
+        - generic [ref=e102]:
+          - generic [ref=e103]:
+            - generic [ref=e104]:
+              - generic [ref=e105]: 总实验
+              - generic [ref=e106]: 🧪
+            - generic [ref=e107]:
+              - generic [ref=e108]: "12"
+              - paragraph [ref=e109]: +2 本月新增
+          - generic [ref=e110]:
+            - generic [ref=e111]:
+              - generic [ref=e112]: 活跃插件
+              - generic [ref=e113]: 🔌
+            - generic [ref=e114]:
+              - generic [ref=e115]: "5"
+              - paragraph [ref=e116]: 运行正常
+          - generic [ref=e117]:
+            - generic [ref=e118]:
+              - generic [ref=e119]: 本月点击
+              - generic [ref=e120]: 📊
+            - generic [ref=e121]:
+              - generic [ref=e122]: 1,234
+              - paragraph [ref=e123]: +15% 环比
+          - generic [ref=e124]:
+            - generic [ref=e125]:
+              - generic [ref=e126]: 本月收益
+              - generic [ref=e127]: 💰
+            - generic [ref=e128]:
+              - generic [ref=e129]: ¥3,456
+              - paragraph [ref=e130]: +8% 环比
+        - generic [ref=e131]:
+          - generic [ref=e132]:
+            - generic [ref=e133]:
+              - generic [ref=e134]: 最近活动
+              - generic [ref=e135]: 最近的实验和插件更新
+            - generic [ref=e137]:
+              - generic [ref=e140]:
+                - paragraph [ref=e141]: 实验 "产品页测试" 已完成
+                - paragraph [ref=e142]: 2 小时前
+              - generic [ref=e145]:
+                - paragraph [ref=e146]: 新插件 "AI 分析" 已启用
+                - paragraph [ref=e147]: 昨天
+              - generic [ref=e150]:
+                - paragraph [ref=e151]: 结算报告已生成
+                - paragraph [ref=e152]: 3 天前
+          - generic [ref=e153]:
+            - generic [ref=e154]:
+              - generic [ref=e155]: 快速操作
+              - generic [ref=e156]: 常用功能快捷入口
+            - generic [ref=e157]:
+              - link "🧪 创建新实验 开始新的 A/B 测试" [ref=e158] [cursor=pointer]:
+                - /url: /experiments
+                - generic [ref=e159]:
+                  - generic [ref=e160]: 🧪
+                  - generic [ref=e161]:
+                    - paragraph [ref=e162]: 创建新实验
+                    - paragraph [ref=e163]: 开始新的 A/B 测试
+              - link "🔌 管理插件 启用或配置插件" [ref=e164] [cursor=pointer]:
+                - /url: /plugins
+                - generic [ref=e165]:
+                  - generic [ref=e166]: 🔌
+                  - generic [ref=e167]:
+                    - paragraph [ref=e168]: 管理插件
+                    - paragraph [ref=e169]: 启用或配置插件
+              - link "📈 查看分析 数据分析与报告" [ref=e170] [cursor=pointer]:
+                - /url: /analytics
+                - generic [ref=e171]:
+                  - generic [ref=e172]: 📈
+                  - generic [ref=e173]:
+                    - paragraph [ref=e174]: 查看分析
+                    - paragraph [ref=e175]: 数据分析与报告
+              - link "📦 管理产品 添加和编辑产品信息" [ref=e176] [cursor=pointer]:
+                - /url: /products
+                - generic [ref=e177]:
+                  - generic [ref=e178]: 📦
+                  - generic [ref=e179]:
+                    - paragraph [ref=e180]: 管理产品
+                    - paragraph [ref=e181]: 添加和编辑产品信息
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e187] [cursor=pointer]:
+    - img [ref=e188]
+  - alert [ref=e191]
+```

@@ -55,14 +55,8 @@ func (c *PublishController) GetQueue(ctx *gin.Context) {
 		return
 	}
 
-	// 解析 results JSON
-	for i := range tasks {
-		if tasks[i].Results != "" {
-			var results map[string]interface{}
-			json.Unmarshal([]byte(tasks[i].Results), &results)
-			// 可以将 results 转换为更友好的格式
-		}
-	}
+	// 新的 PublishTask 模型没有 Results 字段，数据直接在结构体中
+	// 不需要额外解析
 
 	ctx.JSON(http.StatusOK, gin.H{"queue": tasks})
 }
@@ -76,7 +70,7 @@ func (c *PublishController) Submit(ctx *gin.Context) {
 	}
 
 	// 检查内容是否存在
-	var contentData content.Content
+	var contentData content.Product
 	if err := c.db.First(&contentData, req.ContentID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "Content not found"})
@@ -104,124 +98,111 @@ func (c *PublishController) Submit(ctx *gin.Context) {
 		return
 	}
 
-	// 创建发布任务
-	platformsJSON, _ := json.Marshal(req.Platforms)
-	task := content.PublishTask{
-		ContentID: req.ContentID,
-		Platforms: string(platformsJSON),
-		Status:    "pending",
-		Results:   "{}",
+	// 创建发布任务（新架构：每个平台一个任务）
+	var taskIDs []int
+	for _, platform := range req.Platforms {
+		task := content.PublishTask{
+			ProductID: req.ContentID, // ContentID 现在映射到 ProductID
+			Platform:  platform,     // 单个平台
+			Status:    "pending",
+		}
+
+		if err := c.db.Create(&task).Error; err != nil {
+			logger.Error("Failed to create publish task", zap.Error(err))
+			continue
+		}
+		taskIDs = append(taskIDs, task.ID)
 	}
 
-	if err := c.db.Create(&task).Error; err != nil {
-		logger.Error("Failed to create publish task", zap.Error(err))
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create publish task"})
+	if len(taskIDs) == 0 {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create any publish tasks"})
 		return
 	}
 
-	// 启动后台协程执行发布
-	go c.runPublishTask(task.ID, req.ContentID, req.Platforms, &contentData)
+	// 启动后台协程执行发布（为每个任务）
+	for _, platformName := range req.Platforms {
+		go c.runPublishTaskForPlatform(platformName, req.ContentID, &contentData)
+	}
 
-	logger.Info("Publish task created",
-		zap.Int("taskId", task.ID),
-		zap.Int("contentId", req.ContentID),
+	logger.Info("Publish tasks created",
+		zap.Int("taskId", taskIDs[0]),
+		zap.Int("productId", req.ContentID),
 		zap.Strings("platforms", req.Platforms))
 
 	ctx.JSON(http.StatusAccepted, gin.H{
-		"taskId":  task.ID,
+		"taskIds": taskIDs,
 		"status":  "pending",
-		"message": "Publish task started",
+		"message": "Publish tasks started",
 	})
 }
 
-// runPublishTask 后台执行发布任务
-func (c *PublishController) runPublishTask(taskID, contentID int, platforms []string, contentData *content.Content) {
-	// 更新任务状态
-	c.db.Model(&content.PublishTask{}).Where("id = ?", taskID).Updates(map[string]interface{}{
-		"status": "running",
-	})
+// runPublishTaskForPlatform 后台执行单个平台的发布任务
+func (c *PublishController) runPublishTaskForPlatform(platformName string, productID int, contentData *content.Product) {
+	// 查找该平台的任务
+	var task content.PublishTask
+	if err := c.db.Where("product_id = ? AND platform = ?", productID, platformName).First(&task).Error; err != nil {
+		logger.Error("Failed to find publish task", zap.Error(err), zap.String("platform", platformName))
+		return
+	}
 
-	results := make(map[string]interface{})
-	successCount := 0
-	failedCount := 0
+	// 更新任务状态为运行中
+	c.db.Model(&task).Update("status", "running")
 
-	// 逐个平台发布
-	for _, platformName := range platforms {
-		// 添加日志
-		c.createLog(nil, &platformName, "info", fmt.Sprintf("Starting publish to %s", platformName), nil)
+	// 添加日志
+	c.createLog(&task.ID, &platformName, "info", fmt.Sprintf("Starting publish to %s", platformName), nil)
 
-		// 模拟发布过程
-		// TODO: 实际实现中，这里应该调用各平台的 API
-		time.Sleep(1 * time.Second)
+	// 模拟发布过程
+	// TODO: 实际实现中，这里应该调用各平台的 API
+	time.Sleep(1 * time.Second)
 
-		// 模拟成功/失败
-		if platformName == "Blogger" {
-			results[platformName] = map[string]interface{}{
-				"status": "success",
-				"url":    fmt.Sprintf("https://blogger.example.com/%s", contentData.Slug),
-				"time":   time.Now().Format(time.RFC3339),
-			}
-			successCount++
+	var finalStatus string
+	var publishedURL string
+	var errorMessage string
 
-			c.createLog(nil, &platformName, "success", fmt.Sprintf("Successfully published to %s", platformName), nil)
-		} else if platformName == "Medium" {
-			results[platformName] = map[string]interface{}{
-				"status": "failed",
-				"error":  "Rate limit exceeded",
-			}
-			failedCount++
+	// 模拟成功/失败
+	if platformName == "Blogger" {
+		finalStatus = "success"
+		publishedURL = fmt.Sprintf("https://blogger.example.com/%s", contentData.Slug)
+		c.createLog(&task.ID, &platformName, "success", fmt.Sprintf("Successfully published to %s", platformName), nil)
+	} else if platformName == "Medium" {
+		finalStatus = "failed"
+		errorMessage = "Rate limit exceeded"
+		c.createLog(&task.ID, &platformName, "error", "Failed to publish to Medium: Rate limit exceeded", nil)
+	} else {
+		finalStatus = "success"
+		publishedURL = fmt.Sprintf("https://%s.example.com/%s", platformName, contentData.Slug)
+		c.createLog(&task.ID, &platformName, "success", fmt.Sprintf("Successfully published to %s", platformName), nil)
+	}
 
-			c.createLog(nil, &platformName, "error", "Failed to publish to Medium: Rate limit exceeded", nil)
-		} else {
-			results[platformName] = map[string]interface{}{
-				"status": "success",
-				"url":    fmt.Sprintf("https://%s.example.com/%s", platformName, contentData.Slug),
-				"time":   time.Now().Format(time.RFC3339),
-			}
-			successCount++
+	// 更新任务状态（使用新的模型结构）
+	updates := map[string]interface{}{
+		"status":         finalStatus,
+		"published_url":  publishedURL,
+		"error_message":  errorMessage,
+	}
 
-			c.createLog(nil, &platformName, "success", fmt.Sprintf("Successfully published to %s", platformName), nil)
+	c.db.Model(&task).Updates(updates)
+
+	// 如果成功，检查是否所有平台的任务都完成了
+	if finalStatus == "success" {
+		// 检查该产品是否还有其他待处理的任务
+		var pendingCount int64
+		c.db.Model(&content.PublishTask{}).Where("product_id = ? AND status IN ?", productID, []string{"pending", "running"}).Count(&pendingCount)
+
+		// 如果没有待处理的任务了，更新产品状态为已发布
+		if pendingCount == 0 {
+			now := time.Now()
+			c.db.Model(&content.Product{}).Where("id = ?", productID).Updates(map[string]interface{}{
+				"status":      "published",
+				"published_at": &now,
+			})
 		}
 	}
 
-	// 确定最终状态
-	var finalStatus string
-	if successCount == len(platforms) {
-		finalStatus = "success"
-	} else if failedCount == len(platforms) {
-		finalStatus = "failed"
-	} else {
-		finalStatus = "partial"
-	}
-
-	resultsJSON, _ := json.Marshal(results)
-
-	// 更新任务状态
-	updates := map[string]interface{}{
-		"status":  finalStatus,
-		"results": string(resultsJSON),
-	}
-
-	if finalStatus == "failed" {
-		updates["error_msg"] = "All platforms failed"
-	}
-
-	c.db.Model(&content.PublishTask{}).Where("id = ?", taskID).Updates(updates)
-
-	// 如果全部成功，更新内容状态
-	if finalStatus == "success" {
-		now := time.Now()
-		c.db.Model(&content.Content{}).Where("id = ?", contentID).Updates(map[string]interface{}{
-			"status":      "published",
-			"published_at": &now,
-		})
-	}
-
 	logger.Info("Publish task completed",
-		zap.Int("taskId", taskID),
-		zap.String("status", finalStatus),
-		zap.Int("success", successCount),
-		zap.Int("failed", failedCount))
+		zap.Int("taskId", task.ID),
+		zap.String("platform", platformName),
+		zap.String("status", finalStatus))
 }
 
 // Retry 重试发布任务
@@ -243,28 +224,29 @@ func (c *PublishController) Retry(ctx *gin.Context) {
 		return
 	}
 
-	if task.Status != "failed" && task.Status != "partial" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Can only retry failed or partial tasks"})
+	// 新架构：每个任务对应单个平台，只能重试失败的任务
+	if task.Status != "failed" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Can only retry failed tasks"})
+		return
+	}
+
+	// 获取产品内容
+	var contentData content.Product
+	if err := c.db.First(&contentData, task.ProductID).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
 		return
 	}
 
 	// 重置任务状态
 	c.db.Model(&task).Updates(map[string]interface{}{
-		"status":  "pending",
-		"results": "{}",
-		"error_msg": "",
+		"status":        "pending",
+		"error_message": "",
 	})
 
 	// 重新启动发布任务
-	var platforms []string
-	json.Unmarshal([]byte(task.Platforms), &platforms)
+	go c.runPublishTaskForPlatform(task.Platform, task.ProductID, &contentData)
 
-	var contentData content.Content
-	c.db.First(&contentData, task.ContentID)
-
-	go c.runPublishTask(task.ID, task.ContentID, platforms, &contentData)
-
-	logger.Info("Publish task retry initiated", zap.Int("taskId", taskID))
+	logger.Info("Publish task retry initiated", zap.Int("taskId", taskID), zap.String("platform", task.Platform))
 
 	ctx.JSON(http.StatusAccepted, gin.H{
 		"taskId":  task.ID,
