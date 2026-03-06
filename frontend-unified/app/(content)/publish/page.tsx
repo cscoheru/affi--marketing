@@ -158,9 +158,9 @@ export default function PublishPage() {
   }
 
   // 获取内容标题
-  const getContentTitle = (contentId: string) => {
+  const getContentTitle = (contentId: string | number) => {
     const content = contents.find(c => c.id === contentId)
-    return content?.title || contentId
+    return content?.title || String(contentId)
   }
 
   // 格式化时间
