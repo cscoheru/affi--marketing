@@ -22,17 +22,17 @@ import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 
 const platforms = [
-  { value: 'blog', label: '博客' },
-  { value: 'twitter', label: 'Twitter' },
-  { value: 'facebook', label: 'Facebook' },
-  { value: 'instagram', label: 'Instagram' },
+  { value: 'Blogger', label: 'Blogger' },
+  { value: 'Medium', label: 'Medium' },
+  { value: 'WordPress', label: 'WordPress' },
 ]
 
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
-  pending: { label: '待发布', variant: 'secondary' },
-  processing: { label: '处理中', variant: 'outline' },
+  pending: { label: '等待中', variant: 'secondary' },
+  running: { label: '执行中', variant: 'outline' },
   success: { label: '成功', variant: 'default' },
   failed: { label: '失败', variant: 'destructive' },
+  partial: { label: '部分成功', variant: 'outline' },
 }
 
 export default function PublishPage() {
@@ -92,23 +92,25 @@ export default function PublishPage() {
 
     setSubmitting(true)
     try {
-      const data = {
-        content_id: formData.get('content_id') as string,
-        platform: formData.get('platform') as 'blog' | 'twitter' | 'facebook' | 'instagram',
-        scheduled_at: formData.get('scheduled_at') as string || undefined,
-      }
+      const contentId = Number(formData.get('content_id'))
+      const platform = formData.get('platform') as string
 
-      await publishApi.create(data)
+      // 调用发布 API
+      await publishApi.submit({
+        contentId,
+        platforms: [platform],
+      })
+
       toast({
         title: '成功',
-        description: '发布任务已创建',
+        description: '发布任务已创建，正在后台执行',
       })
       setDialogOpen(false)
       fetchTasks()
-    } catch (error) {
+    } catch {
       toast({
         title: '错误',
-        description: error instanceof Error ? error.message : '创建发布任务失败',
+        description: '创建发布任务失败，请确保内容已审核通过',
         variant: 'destructive',
       })
     } finally {
@@ -116,44 +118,24 @@ export default function PublishPage() {
     }
   }
 
-  // 执行发布
-  const handleExecute = async (id: string | number) => {
+  // 重试发布任务
+  const handleRetry = async (id: number) => {
     setExecuting(String(id))
     try {
-      await publishApi.execute(id)
+      await publishApi.retry(id)
       toast({
         title: '成功',
-        description: '发布任务已开始执行',
+        description: '发布任务已重新启动',
       })
       fetchTasks()
-    } catch (error) {
+    } catch {
       toast({
         title: '错误',
-        description: error instanceof Error ? error.message : '执行发布任务失败',
+        description: '重试发布任务失败',
         variant: 'destructive',
       })
     } finally {
       setExecuting(null)
-    }
-  }
-
-  // 取消发布
-  const handleCancel = async (id: string | number) => {
-    if (!confirm('确定要取消这个发布任务吗？')) return
-
-    try {
-      await publishApi.cancel(id)
-      toast({
-        title: '成功',
-        description: '发布任务已取消',
-      })
-      fetchTasks()
-    } catch (error) {
-      toast({
-        title: '错误',
-        description: error instanceof Error ? error.message : '取消发布任务失败',
-        variant: 'destructive',
-      })
     }
   }
 
@@ -219,24 +201,12 @@ export default function PublishPage() {
                 </Select>
               </div>
 
-              <div>
-                <Label htmlFor="scheduled_at">计划发布时间 (可选)</Label>
-                <Input
-                  id="scheduled_at"
-                  name="scheduled_at"
-                  type="datetime-local"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  留空表示立即发布
-                </p>
-              </div>
-
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   取消
                 </Button>
                 <Button type="submit" disabled={submitting}>
-                  {submitting ? '提交中...' : '创建'}
+                  {submitting ? '提交中...' : '提交发布'}
                 </Button>
               </div>
             </form>
@@ -247,8 +217,8 @@ export default function PublishPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="all">全部</TabsTrigger>
-          <TabsTrigger value="pending">待发布</TabsTrigger>
-          <TabsTrigger value="processing">处理中</TabsTrigger>
+          <TabsTrigger value="pending">等待中</TabsTrigger>
+          <TabsTrigger value="running">执行中</TabsTrigger>
           <TabsTrigger value="success">成功</TabsTrigger>
           <TabsTrigger value="failed">失败</TabsTrigger>
         </TabsList>

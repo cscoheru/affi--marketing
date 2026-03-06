@@ -230,11 +230,15 @@ export interface ContentItem {
 }
 
 export interface CreateContentDto {
-  title: string
-  type: 'article' | 'review' | 'comparison'
-  asin: string
   slug: string
+  asin: string
+  title: string
+  type: 'review' | 'science' | 'guide' | 'blog' | 'social' | 'video' | 'email'
   content: string
+  excerpt?: string
+  seoTitle?: string
+  seoDescription?: string
+  seoKeywords?: string
 }
 
 export interface UpdateContentDto {
@@ -283,17 +287,17 @@ export const productsApi = {
   list: (params?: { page?: number; pageSize?: number; search?: string }) =>
     api.get<ProductListResponse>('/api/v1/products', params),
 
-  get: (id: string | number) =>
-    api.get<Product>(`/api/v1/products/${id}`),
+  get: (asin: string) =>
+    api.get<Product>(`/api/v1/products/${asin}`),
 
   create: (data: CreateProductDto) =>
     api.post<Product>('/api/v1/products', data),
 
-  update: (id: string | number, data: UpdateProductDto) =>
-    api.put<Product>(`/api/v1/products/${id}`, data),
+  update: (asin: string, data: UpdateProductDto) =>
+    api.put<Product>(`/api/v1/products/${asin}`, data),
 
-  delete: (id: string | number) =>
-    api.delete<void>(`/api/v1/products/${id}`),
+  delete: (asin: string) =>
+    api.delete<void>(`/api/v1/products/${asin}`),
 }
 
 // ==================== 素材 API ====================
@@ -329,22 +333,24 @@ export const contentApi = {
   delete: (id: string | number) =>
     api.delete<void>(`/api/v1/contents/${id}`),
 
-  publish: (id: string | number) =>
-    api.post<ContentItem>(`/api/v1/contents/${id}/publish`),
+  review: (id: string | number, action: 'approve' | 'reject' | 'revision', comment?: string) =>
+    api.post<ContentItem>(`/api/v1/contents/${id}/review`, { action, comment }),
 }
 
 // ==================== 发布 API ====================
 
+export interface SubmitPublishDto {
+  contentId: number
+  platforms: string[]
+}
+
 export const publishApi = {
-  list: (params?: { page?: number; pageSize?: number; status?: string }) =>
+  list: (params?: { page?: number; pageSize?: number }) =>
     api.get<PublishTaskListResponse>('/api/v1/publish/queue', params),
 
-  create: (data: CreatePublishDto) =>
-    api.post<PublishTask>('/api/v1/publish', data),
+  submit: (data: SubmitPublishDto) =>
+    api.post<{ taskId: number; status: string; message: string }>('/api/v1/publish/submit', data),
 
-  execute: (id: string | number) =>
-    api.post<PublishResult>(`/api/v1/publish/${id}/execute`),
-
-  cancel: (id: string | number) =>
-    api.post<void>(`/api/v1/publish/${id}/cancel`),
+  retry: (id: string | number) =>
+    api.post<{ taskId: number; status: string; message: string }>(`/api/v1/publish/queue/${id}/retry`),
 }

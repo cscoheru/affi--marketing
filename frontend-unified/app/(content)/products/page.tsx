@@ -89,16 +89,6 @@ export default function ProductsPage() {
   }
 
   const handleUpdate = async (data: ProductFormData) => {
-    // TODO: 后端产品更新 API 返回 404，暂时禁用编辑功能
-    toast({
-      title: '功能开发中',
-      description: '产品编辑功能正在修复中，请稍后再试',
-      variant: 'destructive',
-    })
-    setDialogOpen(false)
-    setEditingProduct(null)
-    return
-
     if (!editingProduct) return
 
     setSubmitting(true)
@@ -109,7 +99,8 @@ export default function ProductsPage() {
       if (data.image_url) updateData.imageUrl = data.image_url
       if (data.description !== undefined) updateData.category = data.description
 
-      await productsApi.update(editingProduct!.id, updateData)
+      // 使用 ASIN 而不是 ID
+      await productsApi.update(editingProduct!.asin, updateData)
       toast({
         title: '成功',
         description: '产品已更新',
@@ -128,21 +119,21 @@ export default function ProductsPage() {
     }
   }
 
-  // 删除产品
-  const handleDelete = async (id: string | number) => {
+  // 删除产品 - 使用 ASIN
+  const handleDelete = async (asin: string) => {
     if (!confirm('确定要删除这个产品吗？')) return
 
     try {
-      await productsApi.delete(id)
+      await productsApi.delete(asin)
       toast({
         title: '成功',
         description: '产品已删除',
       })
       fetchProducts()
-    } catch (error) {
+    } catch {
       toast({
         title: '错误',
-        description: error instanceof Error ? error.message : '删除产品失败',
+        description: '删除产品失败',
         variant: 'destructive',
       })
     }
@@ -256,7 +247,7 @@ export default function ProductsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(product.id)}
+                          onClick={() => handleDelete(product.asin)}
                           className="text-destructive hover:text-destructive"
                         >
                           删除

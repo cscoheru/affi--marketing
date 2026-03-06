@@ -28,15 +28,18 @@ import { useToast } from '@/hooks/use-toast'
 import { contentApi, type ContentItem } from '@/lib/api'
 
 const contentTypes = [
-  { value: 'article', label: '文章' },
   { value: 'review', label: '评测' },
-  { value: 'comparison', label: '对比' },
+  { value: 'blog', label: '文章' },
+  { value: 'guide', label: '指南' },
+  { value: 'science', label: '科普' },
+  { value: 'social', label: '社媒' },
 ]
 
 const statusLabels: Record<string, string> = {
   draft: '草稿',
+  approved: '已审核',
   published: '已发布',
-  review: '审核中',
+  rejected: '已拒绝',
 }
 
 export default function ContentPage() {
@@ -87,7 +90,7 @@ export default function ContentPage() {
     setSubmitting(true)
     try {
       const title = formData.get('title') as string
-      const type = formData.get('type') as 'article' | 'review' | 'comparison'
+      const type = formData.get('type') as 'review' | 'blog' | 'guide' | 'science' | 'social'
       const productAsin = formData.get('product_id') as string || undefined
       const content = formData.get('content') as string
 
@@ -95,10 +98,10 @@ export default function ContentPage() {
       const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '') + '-' + Date.now()
 
       const data = {
+        slug,
+        asin: productAsin || 'B08X6YZ9G5',
         title,
         type,
-        asin: productAsin || 'B08X6YZ9G5', // 后端需要 asin 字段
-        slug,
         content,
       }
 
@@ -109,10 +112,10 @@ export default function ContentPage() {
       })
       setDialogOpen(false)
       fetchContents()
-    } catch (error) {
+    } catch {
       toast({
         title: '错误',
-        description: error instanceof Error ? error.message : '创建内容失败',
+        description: '创建内容失败',
         variant: 'destructive',
       })
     } finally {
@@ -182,29 +185,33 @@ export default function ContentPage() {
     }
   }
 
-  // 发布内容
+  // 发布内容 - 先审核通过，再提交发布任务
   const handlePublish = async (id: string | number) => {
-    // TODO: 后端发布 API 暂未实现，先显示提示
-    toast({
-      title: '功能开发中',
-      description: '内容发布功能正在开发中，请稍后再试',
-      variant: 'destructive',
-    })
-    return
-
+    setSubmitting(true)
     try {
-      await contentApi.update(id, { status: 'published' })
+      // 步骤1: 审核通过
+      await contentApi.review(id, 'approve', '自动审核通过')
+
+      // 步骤2: 提交发布任务（发布到 Blogger 等平台）
+      const { publishApi } = await import('@/lib/api')
+      await publishApi.submit({
+        contentId: Number(id),
+        platforms: ['Blogger'],
+      })
+
       toast({
         title: '成功',
-        description: '内容已发布',
+        description: '内容已审核通过并提交发布',
       })
       fetchContents()
     } catch {
       toast({
         title: '错误',
-        description: '发布内容失败',
+        description: '发布内容失败，请确保内容已通过审核',
         variant: 'destructive',
       })
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -315,9 +322,9 @@ export default function ContentPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="all">全部</TabsTrigger>
-          <TabsTrigger value="article">文章</TabsTrigger>
           <TabsTrigger value="review">评测</TabsTrigger>
-          <TabsTrigger value="comparison">对比</TabsTrigger>
+          <TabsTrigger value="blog">文章</TabsTrigger>
+          <TabsTrigger value="guide">指南</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab}>
@@ -357,8 +364,10 @@ export default function ContentPage() {
                         <TableCell className="max-w-xs truncate">{content.title}</TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            {content.type === 'article' ? '文章' :
-                             content.type === 'review' ? '评测' : '对比'}
+                            {content.type === 'review' ? '评测' :
+                             content.type === 'blog' ? '文章' :
+                             content.type === 'guide' ? '指南' :
+                             content.type === 'science' ? '科普' : '社媒'}
                           </Badge>
                         </TableCell>
                         <TableCell className="font-mono">{content.asin || '-'}</TableCell>
