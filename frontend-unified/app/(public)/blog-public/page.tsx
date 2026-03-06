@@ -1,189 +1,111 @@
-import { Metadata } from 'next'
-import ArticleCard from '@/components/blog-public/article-card'
-import FeaturedPost from '@/components/blog-public/featured-post'
-import { getBlogPosts, getFeaturedPosts, getBlogCategories } from '@/lib/blog-public/api'
-import { generateBlogMetadata, generateWebsiteSchema } from '@/lib/blog-public/seo'
+'use client'
 
-export const metadata: Metadata = generateBlogMetadata({
-  title: '博客首页',
-  description: '探索最新的联盟营销策略、产品评测和行业洞察',
-  keywords: ['联盟营销', '营销策略', '产品评测', 'SEO优化'],
-  url: '/blog',
-})
+import { useEffect, useState } from 'react'
+import { Sparkles } from 'lucide-react'
+import { useBlogStore } from '@/lib/blog/store'
+import { ArticleCard } from '@/components/blog/article-card'
+import { CategoryFilter } from '@/components/blog/category-filter'
+import { SearchSort } from '@/components/blog/search-sort'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import Link from 'next/link'
 
-export default async function BlogHomePage() {
-  // 从 API 获取数据
-  let featuredPosts: any[] = []
-  let recentPosts: any[] = []
-  let categories: any[] = []
+export default function BlogPublicHomePage() {
+  const { fetchArticles, getFilteredArticles, loading } = useBlogStore()
+  const [displayCount, setDisplayCount] = useState(6)
 
-  try {
-    const [featuredData, recentData, categoriesData] = await Promise.all([
-      getFeaturedPosts(1),
-      getBlogPosts({ page: 1, page_size: 6 }),
-      getBlogCategories(),
-    ])
+  useEffect(() => {
+    fetchArticles()
+  }, [fetchArticles])
 
-    featuredPosts = featuredData
-    recentPosts = recentData.posts || []
-    categories = categoriesData || []
-  } catch (error) {
-    console.error('Failed to fetch blog data:', error)
-    // 使用 fallback 数据（API 不可用时）
-    featuredPosts = [{
-      slug: 'affiliate-marketing-guide-2024',
-      title: '2024年联盟营销完整指南',
-      excerpt: '从零开始学习联盟营销，包括策略、工具和最佳实践',
-      image_url: '/images/blog/affiliate-guide.jpg',
-      category: { name: '营销策略', slug: 'marketing' },
-      published_at: '2024-01-15',
-      author: { name: 'Affi Team' },
-    }]
+  const filteredArticles = getFilteredArticles()
+  const featuredArticle = filteredArticles[0]
+  const otherArticles = filteredArticles.slice(1, displayCount)
+  const hasMore = filteredArticles.length > displayCount
 
-    recentPosts = [
-      {
-        slug: 'top-affiliate-networks',
-        title: '2024年最佳联盟网络平台评测',
-        excerpt: '深度对比主流联盟网络平台的优缺点',
-        image_url: '/images/blog/networks.jpg',
-        category: { name: '产品评测', slug: 'reviews' },
-        published_at: '2024-01-10',
-      },
-      {
-        slug: 'content-marketing-tips',
-        title: '内容营销的10个高效技巧',
-        excerpt: '如何创作高转化的营销内容',
-        image_url: '/images/blog/content-tips.jpg',
-        category: { name: '营销策略', slug: 'marketing' },
-        published_at: '2024-01-08',
-      },
-      {
-        slug: 'seo-for-affiliates',
-        title: '联盟网站SEO优化完全指南',
-        excerpt: '提升网站排名和流量的实用策略',
-        image_url: '/images/blog/seo-guide.jpg',
-        category: { name: 'SEO优化', slug: 'seo' },
-        published_at: '2024-01-05',
-      },
-    ]
-
-    categories = [
-      { name: '营销策略', slug: 'marketing', post_count: 12 },
-      { name: '产品评测', slug: 'reviews', post_count: 8 },
-      { name: 'SEO优化', slug: 'seo', post_count: 6 },
-      { name: '工具推荐', slug: 'tools', post_count: 10 },
-    ]
-  }
-
-  const featuredPost = featuredPosts[0]
-
-  return (
-    <div className="container px-4 py-8 mx-auto">
-      {/* 结构化数据 */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(generateWebsiteSchema()) }}
-      />
-
-      {/* 页面标题 */}
-      <div className="mb-8 text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          联盟营销知识库
-        </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          探索最新的营销策略、产品评测和行业洞察，助您成为联盟营销专家
-        </p>
-      </div>
-
-      {/* 精选文章 */}
-      {featuredPost && (
-        <section className="mb-12">
-          <FeaturedPost
-            slug={featuredPost.slug}
-            title={featuredPost.title}
-            excerpt={featuredPost.excerpt}
-            imageUrl={featuredPost.image_url}
-            category={featuredPost.category?.name || '未分类'}
-            publishedAt={featuredPost.published_at}
-            author={featuredPost.author?.name || 'Affi Team'}
-          />
-        </section>
-      )}
-
-      {/* 主要内容区域 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* 文章列表 */}
-        <div className="lg:col-span-2">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">最新文章</h2>
-          {recentPosts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {recentPosts.map((post: any) => (
-                <ArticleCard
-                  key={post.slug}
-                  slug={post.slug}
-                  title={post.title}
-                  excerpt={post.excerpt}
-                  imageUrl={post.image_url}
-                  category={post.category?.name || '未分类'}
-                  publishedAt={post.published_at}
-                  author={post.author?.name}
-                />
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="container mx-auto px-4 py-8">
+          <div className="space-y-8">
+            <Skeleton className="h-80 w-full rounded-xl" />
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Skeleton key={i} className="h-80 rounded-xl" />
               ))}
             </div>
-          ) : (
-            <div className="text-center py-12 text-gray-500">
-              暂无文章
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="container mx-auto px-4 py-8">
+        {/* Page Header */}
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold tracking-tight mb-3 text-gray-900">
+            Affi Marketing 博客
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            探索联盟营销、SEO 优化、技术教程和产品测评的最新内容
+          </p>
+        </div>
+
+        {/* Featured Article */}
+        {featuredArticle && (
+          <div className="relative mb-8">
+            <div className="absolute -top-3 left-4 z-10">
+              <span className="inline-flex items-center gap-1 bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-full shadow-lg">
+                <Sparkles className="h-3 w-3" />
+                精选文章
+              </span>
             </div>
-          )}
+            <ArticleCard article={featuredArticle} featured />
+          </div>
+        )}
+
+        {/* Filters */}
+        <div className="mb-8 space-y-4">
+          <CategoryFilter />
+          <SearchSort />
         </div>
 
-        {/* 侧边栏 */}
-        <div className="lg:col-span-1">
-          {/* 分类导航 */}
-          <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">文章分类</h3>
-            {categories.length > 0 ? (
-              <ul className="space-y-2">
-                {categories.map((cat: any) => (
-                  <li key={cat.slug}>
-                    <a
-                      href={`/blog-public/category/${cat.slug}`}
-                      className="flex justify-between items-center text-gray-600 hover:text-gray-900 transition-colors"
-                    >
-                      <span>{cat.name}</span>
-                      <span className="text-sm text-gray-400">{cat.post_count || 0}</span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-gray-500">暂无分类</p>
-            )}
+        {/* Article Grid */}
+        {otherArticles.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+            {otherArticles.map((article) => (
+              <ArticleCard key={article.id} article={article} />
+            ))}
           </div>
+        ) : (
+          <div className="text-center py-16 bg-white rounded-xl shadow-sm">
+            <p className="text-gray-500 mb-4">暂无匹配的文章</p>
+            <Link href="/blog-public" className="text-primary hover:underline">
+              查看全部文章
+            </Link>
+          </div>
+        )}
 
-          {/* 订阅表单（可选） */}
-          <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-6 border">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              订阅更新
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              获取最新的营销策略和行业洞察
-            </p>
-            <form className="space-y-3">
-              <input
-                type="email"
-                placeholder="输入您的邮箱"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                type="submit"
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                订阅
-              </button>
-            </form>
+        {/* Load More */}
+        {hasMore && (
+          <div className="text-center">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setDisplayCount(prev => prev + 6)}
+              className="bg-white hover:bg-gray-50"
+            >
+              加载更多
+            </Button>
           </div>
-        </div>
+        )}
+
+        {/* Footer */}
+        <footer className="mt-16 pt-8 border-t border-gray-200 text-center text-gray-500 text-sm">
+          <p>© {new Date().getFullYear()} Affi Marketing. All rights reserved.</p>
+        </footer>
       </div>
     </div>
   )
