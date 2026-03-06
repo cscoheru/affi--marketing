@@ -62,6 +62,7 @@ export default function ProductsPage() {
         title: data.title,
         price: data.price ? parseFloat(data.price) : 0,
         imageUrl: data.image_url || '',
+        status: 'pending' as const,
       }
       await productsApi.create(createData)
       toast({
@@ -88,17 +89,27 @@ export default function ProductsPage() {
   }
 
   const handleUpdate = async (data: ProductFormData) => {
+    // TODO: 后端产品更新 API 返回 404，暂时禁用编辑功能
+    toast({
+      title: '功能开发中',
+      description: '产品编辑功能正在修复中，请稍后再试',
+      variant: 'destructive',
+    })
+    setDialogOpen(false)
+    setEditingProduct(null)
+    return
+
     if (!editingProduct) return
 
     setSubmitting(true)
     try {
       const updateData: any = {}
       if (data.title) updateData.title = data.title
-      if (data.price) updateData.price = parseFloat(data.price)
-      if (data.image_url) updateData.image_url = data.image_url
-      if (data.description !== undefined) updateData.description = data.description
+      if (data.price) updateData.price = parseFloat(data.price!)
+      if (data.image_url) updateData.imageUrl = data.image_url
+      if (data.description !== undefined) updateData.category = data.description
 
-      await productsApi.update(editingProduct.id, updateData)
+      await productsApi.update(editingProduct!.id, updateData)
       toast({
         title: '成功',
         description: '产品已更新',
@@ -106,10 +117,10 @@ export default function ProductsPage() {
       setDialogOpen(false)
       setEditingProduct(null)
       fetchProducts()
-    } catch (error) {
+    } catch {
       toast({
         title: '错误',
-        description: error instanceof Error ? error.message : '更新产品失败',
+        description: '更新产品失败',
         variant: 'destructive',
       })
     } finally {

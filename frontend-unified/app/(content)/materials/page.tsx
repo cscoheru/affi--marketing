@@ -169,7 +169,7 @@ export default function MaterialsPage() {
                 ref={fileInputRef}
                 type="file"
                 onChange={handleFileSelect}
-                accept="image/*,video/*,.pdf,.doc,.docx"
+                accept="image/*,video/*,.pdf,.doc,.docx,.md,.markdown"
                 disabled={uploading}
                 className="block w-full text-sm text-slate-500
                   file:mr-4 file:py-2 file:px-4
@@ -179,7 +179,7 @@ export default function MaterialsPage() {
                   hover:file:bg-violet-100"
               />
               <p className="text-xs text-muted-foreground">
-                支持的格式: 图片 (JPG, PNG, GIF)、视频 (MP4, MOV)、文档 (PDF, DOC, DOCX)
+                支持的格式: 图片 (JPG, PNG, GIF)、视频 (MP4, MOV)、文档 (PDF, DOC, DOCX, MD)
               </p>
             </div>
           </DialogContent>

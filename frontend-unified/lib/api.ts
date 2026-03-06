@@ -232,7 +232,8 @@ export interface ContentItem {
 export interface CreateContentDto {
   title: string
   type: 'article' | 'review' | 'comparison'
-  productId?: number
+  asin: string
+  slug: string
   content: string
 }
 
