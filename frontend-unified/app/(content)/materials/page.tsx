@@ -59,7 +59,7 @@ export default function MaterialsPage() {
   const fetchMaterials = async () => {
     setLoading(true)
     try {
-      const params: any = {}
+      const params: any = { page: 1, pageSize: 10 }
       if (search) params.search = search
       if (typeFilter !== 'all') params.type = typeFilter
 

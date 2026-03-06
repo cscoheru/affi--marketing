@@ -49,7 +49,7 @@ export default function PublishPage() {
   const fetchTasks = async () => {
     setLoading(true)
     try {
-      const params: any = {}
+      const params: any = { page: 1, pageSize: 10 }
       if (activeTab !== 'all') params.status = activeTab
 
       const response = await publishApi.list(params)

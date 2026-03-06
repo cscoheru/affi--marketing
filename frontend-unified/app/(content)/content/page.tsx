@@ -53,7 +53,7 @@ export default function ContentPage() {
   const fetchContents = async () => {
     setLoading(true)
     try {
-      const params: any = {}
+      const params: any = { page: 1, pageSize: 10, status: 'draft' }
       if (search) params.search = search
       if (activeTab !== 'all') params.type = activeTab
 

@@ -31,7 +31,7 @@ export default function ProductsPage() {
   const fetchProducts = async () => {
     setLoading(true)
     try {
-      const response = await productsApi.list({ search: search || undefined })
+      const response = await productsApi.list({ page: 1, pageSize: 10, search: search || undefined })
       setProducts(response.data.items)
     } catch (error) {
       toast({
