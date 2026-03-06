@@ -67,14 +67,15 @@ type ListProductsResponse struct {
 func (c *ProductsController) RegisterRoutes(router *gin.RouterGroup) {
 	products := router.Group("/products")
 	{
+		// 注意：固定路径路由必须在参数化路由之前注册
 		products.GET("", c.List)
+		products.GET("/ai-recommend", c.AIRecommend)     // AI推荐选品 - 必须在 /:asin 之前
+		products.POST("/fetch", c.FetchProduct)         // 采集产品信息 - 必须在 /:asin 之前
 		products.GET("/:asin", c.Get)
 		products.POST("", c.Create)
 		products.PUT("/:asin", c.Update)
 		products.DELETE("/:asin", c.Delete)
 		products.POST("/:asin/status", c.UpdateStatus)
-		products.GET("/ai-recommend", c.AIRecommend)     // AI推荐选品
-		products.POST("/fetch", c.FetchProduct)         // 采集产品信息
 	}
 }
 
