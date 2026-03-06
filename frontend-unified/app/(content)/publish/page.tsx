@@ -195,7 +195,7 @@ export default function PublishPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {contents.map((content) => (
-                      <SelectItem key={content.id} value={content.id}>
+                      <SelectItem key={content.id} value={String(content.id)}>
                         {content.title}
                       </SelectItem>
                     ))}
