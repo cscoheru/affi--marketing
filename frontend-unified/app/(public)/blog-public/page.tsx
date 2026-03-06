@@ -29,16 +29,50 @@ export default async function BlogHomePage() {
     categories = categoriesData || []
   } catch (error) {
     console.error('Failed to fetch blog data:', error)
-    // 使用 fallback 数据
+    // 使用 fallback 数据（API 不可用时）
     featuredPosts = [{
       slug: 'affiliate-marketing-guide-2024',
       title: '2024年联盟营销完整指南',
       excerpt: '从零开始学习联盟营销，包括策略、工具和最佳实践',
       image_url: '/images/blog/affiliate-guide.jpg',
-      category: { name: '营销策略' },
+      category: { name: '营销策略', slug: 'marketing' },
       published_at: '2024-01-15',
       author: { name: 'Affi Team' },
     }]
+
+    recentPosts = [
+      {
+        slug: 'top-affiliate-networks',
+        title: '2024年最佳联盟网络平台评测',
+        excerpt: '深度对比主流联盟网络平台的优缺点',
+        image_url: '/images/blog/networks.jpg',
+        category: { name: '产品评测', slug: 'reviews' },
+        published_at: '2024-01-10',
+      },
+      {
+        slug: 'content-marketing-tips',
+        title: '内容营销的10个高效技巧',
+        excerpt: '如何创作高转化的营销内容',
+        image_url: '/images/blog/content-tips.jpg',
+        category: { name: '营销策略', slug: 'marketing' },
+        published_at: '2024-01-08',
+      },
+      {
+        slug: 'seo-for-affiliates',
+        title: '联盟网站SEO优化完全指南',
+        excerpt: '提升网站排名和流量的实用策略',
+        image_url: '/images/blog/seo-guide.jpg',
+        category: { name: 'SEO优化', slug: 'seo' },
+        published_at: '2024-01-05',
+      },
+    ]
+
+    categories = [
+      { name: '营销策略', slug: 'marketing', post_count: 12 },
+      { name: '产品评测', slug: 'reviews', post_count: 8 },
+      { name: 'SEO优化', slug: 'seo', post_count: 6 },
+      { name: '工具推荐', slug: 'tools', post_count: 10 },
+    ]
   }
 
   const featuredPost = featuredPosts[0]
