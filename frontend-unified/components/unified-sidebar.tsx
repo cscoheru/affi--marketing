@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -20,6 +21,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu'
+import { Menu, X } from 'lucide-react'
 
 interface NavItem {
   id: string
@@ -57,6 +59,25 @@ export function UnifiedSidebar() {
   const { user, logout } = useAuthStore()
   const { theme, setTheme } = useThemeStore()
 
+  // 移动端状态
+  const [isMobile, setIsMobile] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // 检测移动端
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // 路由变化时关闭移动端菜单
+  useEffect(() => {
+    setMobileMenuOpen(false)
+  }, [pathname])
+
   // 按类别分组
   const groupedItems = navItems.reduce((acc, item) => {
     if (!acc[item.category]) acc[item.category] = []
@@ -82,9 +103,147 @@ export function UnifiedSidebar() {
     return '跟随系统'
   }
 
+  // 移动端汉堡菜单按钮
+  if (isMobile) {
+    return (
+      <>
+        {/* 移动端顶部栏 */}
+        <div className="fixed top-0 left-0 right-0 h-14 bg-sidebar border-b flex items-center justify-between px-4 z-40 md:hidden">
+          <h1 className="text-lg font-bold text-sidebar-foreground">Affi-Marketing</h1>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="h-9 w-9"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
+
+        {/* 遮罩层 */}
+        {mobileMenuOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        )}
+
+        {/* 移动端侧边栏 - 从右侧滑入 */}
+        <aside
+          className={cn(
+            "fixed top-0 right-0 h-full w-64 bg-sidebar border-l z-50 transition-transform duration-300 md:hidden flex flex-col",
+            mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+          )}
+        >
+          {/* Logo区 */}
+          <div className="flex h-14 items-center justify-between border-b px-4">
+            <h1 className="text-lg font-bold text-sidebar-foreground">菜单</h1>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileMenuOpen(false)}
+              className="h-8 w-8"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* 导航区 */}
+          <ScrollArea className="flex-1 px-2 py-4">
+            {Object.entries(groupedItems).map(([category, items]) => (
+              <div key={category} className="mb-4">
+                <h3 className="mb-2 px-3 text-xs font-semibold text-muted-foreground uppercase">
+                  {category}
+                </h3>
+                <ul className="space-y-1">
+                  {items.map(item => (
+                    <li key={item.id}>
+                      <Link href={item.path}>
+                        <Button
+                          variant={pathname === item.path ? "secondary" : "ghost"}
+                          className="w-full justify-start"
+                        >
+                          <span className="text-lg mr-3">{item.icon}</span>
+                          <span>{item.label}</span>
+                          {item.type === 'vue' && (
+                            <span className="ml-auto text-xs text-muted-foreground">
+                              Vue
+                            </span>
+                          )}
+                        </Button>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </ScrollArea>
+
+          {/* 主题切换区 */}
+          <div className="border-t p-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="w-full justify-start">
+                  <span className="text-lg mr-3">{getThemeIcon()}</span>
+                  <span>{getThemeLabel()}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuLabel>主题设置</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup value={theme} onValueChange={(value) => setTheme(value as 'light' | 'dark' | 'system')}>
+                  <DropdownMenuRadioItem value="light">
+                    ☀️ 白天模式
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="dark">
+                    🌙 夜间模式
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="system">
+                    💻 跟随系统
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* 用户信息区 */}
+          {user && (
+            <div className="border-t p-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-start px-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {user.name[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="ml-3 text-left">
+                      <div className="text-sm font-medium">{user.name}</div>
+                      <div className="text-xs text-muted-foreground">{user.email}</div>
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>我的账户</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>设置</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    退出登录
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+        </aside>
+      </>
+    )
+  }
+
+  // 桌面端侧边栏
   return (
     <aside className={cn(
-      "flex flex-col border-r bg-sidebar transition-all duration-300",
+      "hidden md:flex flex-col border-r bg-sidebar transition-all duration-300",
       sidebarCollapsed ? "w-16" : "w-64"
     )}>
       {/* Logo区 */}
