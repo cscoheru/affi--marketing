@@ -30,16 +30,15 @@ const navItems: NavItem[] = [
   { id: 'dashboard', label: '仪表板', icon: '📊', path: '/dashboard', type: 'vue', category: '控制台' },
   { id: 'experiments', label: '实验管理', icon: '🔬', path: '/experiments', type: 'vue', category: '控制台' },
   { id: 'plugins', label: '插件市场', icon: '🔌', path: '/plugins', type: 'vue', category: '控制台' },
-  { id: 'analytics', label: '数据分析', icon: '📈', path: '/analytics', type: 'vue', category: '控制台' },
   { id: 'settlements', label: '佣金结算', icon: '💰', path: '/settlements', type: 'vue', category: '控制台' },
 
-  // React原生组件 - 内容自动化
-  { id: 'products', label: '产品管理', icon: '📦', path: '/products', type: 'react', category: '内容自动化' },
-  { id: 'materials', label: '素材库', icon: '📄', path: '/materials', type: 'react', category: '内容自动化' },
-  { id: 'content', label: '内容管理', icon: '✍️', path: '/content', type: 'react', category: '内容自动化' },
-  { id: 'publish', label: '发布中心', icon: '📤', path: '/publish', type: 'react', category: '内容自动化' },
+  // React原生组件 - 内容企业核心模块
+  { id: 'strategy', label: '市场战略', icon: '🎯', path: '/strategy', type: 'react', category: '内容企业' },
+  { id: 'products', label: '产品中心', icon: '📄', path: '/products', type: 'react', category: '内容企业' },
+  { id: 'marketing', label: '营销中心', icon: '📢', path: '/marketing', type: 'react', category: '内容企业' },
+  { id: 'analytics', label: '数据分析', icon: '📈', path: '/analytics', type: 'react', category: '内容企业' },
 
-  // 博客系统 - 集成到 Dashboard
+  // 博客系统
   { id: 'blog-home', label: '博客首页', icon: '📝', path: '/blog', type: 'react', category: '博客' },
   { id: 'blog-admin', label: '文章管理', icon: '📚', path: '/blog/admin', type: 'react', category: '博客' },
   { id: 'blog-categories', label: '分类管理', icon: '🏷️', path: '/blog/admin/categories', type: 'react', category: '博客' },
