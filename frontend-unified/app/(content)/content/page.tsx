@@ -53,7 +53,7 @@ export default function ContentPage() {
   const fetchContents = async () => {
     setLoading(true)
     try {
-      const params: any = { page: 1, pageSize: 10, status: 'draft' }
+      const params: any = { page: 1, size: 10, status: 'draft' }
       if (search) params.search = search
       if (activeTab !== 'all') params.type = activeTab
 
@@ -344,7 +344,7 @@ export default function ContentPage() {
                              content.type === 'review' ? '评测' : '对比'}
                           </Badge>
                         </TableCell>
-                        <TableCell className="font-mono">{content.productAsin || '-'}</TableCell>
+                        <TableCell className="font-mono">{content.asin || '-'}</TableCell>
                         <TableCell>
                           <Badge
                             variant={content.status === 'published' ? 'default' : 'secondary'}

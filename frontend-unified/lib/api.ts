@@ -208,15 +208,25 @@ export interface MaterialListResponse {
 
 export interface ContentItem {
   id: number
+  slug: string
+  asin: string
   title: string
-  type: 'article' | 'review' | 'comparison'
-  status: 'draft' | 'published' | 'review'
-  productId?: number
-  productAsin?: string
+  type: string
   content: string
-  createdAt: string
-  updatedAt?: string
+  excerpt: string
+  seoTitle: string
+  seoDescription: string
+  seoKeywords: string
+  status: string
+  aiGenerated: boolean
+  aiModel: string
+  humanReviewed: boolean
+  reviewedBy: number
+  reviewComment: string
+  wordCount: number
   publishedAt?: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface CreateContentDto {

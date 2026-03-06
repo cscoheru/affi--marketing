@@ -68,7 +68,7 @@ export default function PublishPage() {
   // 获取可发布内容列表
   const fetchContents = async () => {
     try {
-      const response = await contentApi.list({ status: 'published', pageSize: 100 })
+      const response = await contentApi.list({ status: 'published', size: 100 })
       setContents(response.contents)
     } catch (error) {
       console.error('Failed to fetch contents:', error)
