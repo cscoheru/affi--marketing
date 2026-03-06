@@ -279,10 +279,18 @@ export default function PublishPage() {
                       platformList = []
                     }
 
+                    // Parse results to extract URLs
+                    let resultsData: Record<string, {url?: string; status?: string}> = {}
+                    try {
+                      resultsData = JSON.parse(task.results)
+                    } catch {
+                      resultsData = {}
+                    }
+
                     return (
-                    <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
+                    <div key={task.id} className="p-4 border rounded-lg">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
                           <h3 className="font-medium">{getContentTitle(String(task.contentId))}</h3>
                           {platformList.map((p) => (
                             <Badge key={p} variant="outline">{p}</Badge>
@@ -291,13 +299,40 @@ export default function PublishPage() {
                             {statusConfig[task.status]?.label || task.status}
                           </Badge>
                         </div>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          <p>创建时间: {formatTime(task.createdAt)}</p>
-                          {task.errorMsg && (
-                            <p className="text-destructive">错误: {task.errorMsg}</p>
-                          )}
+                        <div className="text-sm text-muted-foreground">
+                          创建时间: {formatTime(task.createdAt)}
                         </div>
                       </div>
+
+                      {/* Display publish results */}
+                      {Object.keys(resultsData).length > 0 && (
+                        <div className="mt-3 p-3 bg-muted rounded-md">
+                          <p className="text-sm font-medium mb-2">发布结果:</p>
+                          {Object.entries(resultsData).map(([platform, result]) => (
+                            <div key={platform} className="flex items-center gap-2 text-sm">
+                              <span className="font-medium">{platform}:</span>
+                              {result.url ? (
+                                <a
+                                  href={result.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:underline"
+                                >
+                                  {result.url}
+                                </a>
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  {result.status || '未知状态'}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {task.errorMsg && (
+                        <p className="mt-3 text-sm text-destructive">错误: {task.errorMsg}</p>
+                      )}
                     </div>
                   )})}
                 </div>
