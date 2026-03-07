@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-@theme inline {
+/* Light theme (default) */
+:root {
   /* Base colors */
   --color-background: white;
   --color-foreground: #171717;
@@ -49,56 +50,61 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* Dark theme via class (manual toggle) */
+/* Dark theme */
 .dark {
-  /* Base colors */
   --color-background: #0a0a0a;
   --color-foreground: #ededed;
-
-  /* Muted */
   --color-muted: #262626;
   --color-muted-foreground: #a3a3a3;
-
-  /* Card */
   --color-card: #0a0a0a;
   --color-card-foreground: #ededed;
-
-  /* Popover */
   --color-popover: #0a0a0a;
   --color-popover-foreground: #ededed;
-
-  /* Border */
   --color-border: #262626;
   --color-input: #262626;
-
-  /* Primary */
   --color-primary: #fafafa;
   --color-primary-foreground: #171717;
-
-  /* Secondary */
   --color-secondary: #262626;
   --color-secondary-foreground: #fafafa;
-
-  /* Accent */
   --color-accent: #262626;
   --color-accent-foreground: #fafafa;
-
-  /* Destructive */
   --color-destructive: #dc2626;
   --color-destructive-foreground: #fafafa;
-
-  /* Ring */
   --color-ring: #d4d4d4;
-
-  /* Sidebar */
   --color-sidebar: #171717;
   --color-sidebar-foreground: #ededed;
   --color-sidebar-border: #262626;
 }
 
+/* Light theme (explicit) */
+.light {
+  --color-background: white;
+  --color-foreground: #171717;
+  --color-muted: #f5f5f5;
+  --color-muted-foreground: #737373;
+  --color-card: white;
+  --color-card-foreground: #171717;
+  --color-popover: white;
+  --color-popover-foreground: #171717;
+  --color-border: #e5e5e5;
+  --color-input: #e5e5e5;
+  --color-primary: #171717;
+  --color-primary-foreground: #fafafa;
+  --color-secondary: #f5f5f5;
+  --color-secondary-foreground: #171717;
+  --color-accent: #f5f5f5;
+  --color-accent-foreground: #171717;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #fafafa;
+  --color-ring: #171717;
+  --color-sidebar: #fafafa;
+  --color-sidebar-foreground: #171717;
+  --color-sidebar-border: #e5e5e5;
+}
+
 /* Fallback: system preference when no class is set */
 @media (prefers-color-scheme: dark) {
-  :not(.light):not(.dark) {
+  html:not(.light):not(.dark) {
     --color-background: #0a0a0a;
     --color-foreground: #ededed;
     --color-muted: #262626;
@@ -128,9 +134,14 @@
   border-color: var(--color-border);
 }
 
+html {
+  background-color: var(--color-background);
+}
+
 body {
   background: var(--color-background);
   color: var(--color-foreground);
+  min-height: 100vh;
 }
 
 /* Prose styles for article content */
