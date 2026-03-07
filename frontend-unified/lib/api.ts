@@ -200,13 +200,25 @@ export interface ProductListResponse {
   pageSize: number
 }
 
+// 素材类型
+export type MaterialType = 'product_intro' | 'user_review' | 'youtube_review' | 'attachment'
+
+// 素材（新模型，关联市场）
 export interface Material {
   id: number
-  name: string
-  type: 'image' | 'video' | 'document'
-  url: string
-  size: number
+  title: string
+  type: MaterialType
+  content?: string
+  sourceUrl?: string
+  filePath?: string
+  fileName?: string
+  fileSize?: number
+  marketId: number
+  wordCount?: number
+  metadata?: string
   createdAt: string
+  updatedAt: string
+  market?: MarketOpportunity
 }
 
 export interface MaterialListResponse {
@@ -214,6 +226,21 @@ export interface MaterialListResponse {
   total: number
   page: number
   pageSize: number
+}
+
+export interface CreateMaterialDto {
+  title: string
+  type: MaterialType
+  content?: string
+  sourceUrl?: string
+  marketId: number
+}
+
+export interface UpdateMaterialDto {
+  title?: string
+  type?: MaterialType
+  content?: string
+  sourceUrl?: string
 }
 
 export interface ContentItem {
@@ -339,7 +366,17 @@ export interface AIRecommendedMarket {
   aiReason: string
   marketTrend: 'rising' | 'stable' | 'declining'
   competitionLevel: 'high' | 'medium' | 'low'
-  url: string
+  url?: string  // 旧字段，保留兼容
+  searchUrl: string  // 新字段：Amazon 搜索链接
+  analysis?: {
+    marketTrend: 'rising' | 'stable' | 'declining'
+    competitionLevel: 'high' | 'medium' | 'low'
+    estimatedCommission: string
+    profitPotential: 'high' | 'medium' | 'low'
+    contentDifficulty: 'easy' | 'medium' | 'hard'
+    seasonalFactor: string
+  }
+  matchedCriteria?: string[]
 }
 
 export interface CreateMarketDto {
@@ -347,6 +384,14 @@ export interface CreateMarketDto {
   title?: string
   category?: string
   status?: MarketStatus
+  price?: string
+  rating?: string
+  reviewCount?: number
+  imageUrl?: string
+  marketSize?: 'large' | 'medium' | 'small'
+  competitionLevel?: 'high' | 'medium' | 'low'
+  contentPotential?: 'high' | 'medium' | 'low'
+  aiScore?: number
 }
 
 export interface UpdateMarketDto {
@@ -534,19 +579,26 @@ export const productsApi = {
     api.delete<void>(`/api/v1/products/${asin}`),
 }
 
-// ==================== 素材 API ====================
+// ==================== 素材库 API ====================
 
 export const materialsApi = {
-  list: (params?: { page?: number; pageSize?: number; type?: string }) =>
+  list: (params?: { page?: number; pageSize?: number; type?: MaterialType; marketId?: number }) =>
     api.get<MaterialListResponse>('/api/v1/materials', params),
 
-  upload: (formData: FormData) =>
-    api.postForm<Material>('/api/v1/materials/upload', formData),
+  get: (id: number) =>
+    api.get<Material>(`/api/v1/materials/${id}`),
 
-  delete: (id: string | number) =>
+  create: (data: CreateMaterialDto) =>
+    api.post<Material>('/api/v1/materials', data),
+
+  update: (id: number, data: UpdateMaterialDto) =>
+    api.put<Material>(`/api/v1/materials/${id}`, data),
+
+  delete: (id: number) =>
     api.delete<void>(`/api/v1/materials/${id}`),
 
-  getUrl: (id: string | number) => `${API_BASE}/api/v1/materials/${id}/download`,
+  byMarket: (marketId: number, params?: { page?: number; pageSize?: number }) =>
+    api.get<MaterialListResponse>(`/api/v1/materials/by-market/${marketId}`, params),
 }
 
 // ==================== 内容 API ====================

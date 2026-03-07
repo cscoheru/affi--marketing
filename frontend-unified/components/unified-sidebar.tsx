@@ -42,6 +42,7 @@ const navItems: NavItem[] = [
   // React原生组件 - 内容企业核心模块
   { id: 'strategy', label: '市场战略', icon: '🎯', path: '/strategy', type: 'react', category: '内容企业' },
   { id: 'products', label: '产品中心', icon: '📄', path: '/products', type: 'react', category: '内容企业' },
+  { id: 'materials', label: '素材库', icon: '📦', path: '/materials', type: 'react', category: '内容企业' },
   { id: 'marketing', label: '营销中心', icon: '📢', path: '/marketing', type: 'react', category: '内容企业' },
   { id: 'analytics', label: '数据分析', icon: '📈', path: '/analytics', type: 'react', category: '内容企业' },
 

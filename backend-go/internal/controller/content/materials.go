@@ -26,10 +26,27 @@ func NewMaterialsController(db *gorm.DB) *MaterialsController {
 
 // ListMaterialsRequest 素材列表请求
 type ListMaterialsRequest struct {
-	ASIN       string `form:"asin"`
-	SourceType string `form:"sourceType"`
-	Page       int    `form:"page" binding:"min=1"`
-	PageSize   int    `form:"pageSize" binding:"min=1,max=100"`
+	MarketID int    `form:"marketId"`
+	Type     string `form:"type"`
+	Page     int    `form:"page" binding:"min=1"`
+	PageSize int    `form:"pageSize" binding:"min=1,max=100"`
+}
+
+// CreateMaterialRequest 创建素材请求
+type CreateMaterialRequest struct {
+	Title     string `json:"title" binding:"required"`
+	Type      string `json:"type" binding:"required,oneof=product_intro user_review youtube_review attachment"`
+	Content   string `json:"content"`
+	SourceURL string `json:"sourceUrl"`
+	MarketID  int    `json:"marketId" binding:"required"`
+}
+
+// UpdateMaterialRequest 更新素材请求
+type UpdateMaterialRequest struct {
+	Title     string `json:"title"`
+	Type      string `json:"type" binding:"omitempty,oneof=product_intro user_review youtube_review attachment"`
+	Content   string `json:"content"`
+	SourceURL string `json:"sourceUrl"`
 }
 
 // CollectMaterialsRequest 收集素材请求
@@ -40,10 +57,10 @@ type CollectMaterialsRequest struct {
 
 // ListMaterialsResponse 素材列表响应
 type ListMaterialsResponse struct {
-	Materials []content.Material `json:"materials"`
-	Total     int64             `json:"total"`
-	Page      int               `json:"page"`
-	PageSize  int               `json:"pageSize"`
+	Materials []content.Material       `json:"materials"`
+	Total     int64                    `json:"total"`
+	Page      int                      `json:"page"`
+	PageSize  int                      `json:"pageSize"`
 }
 
 // CollectTaskResponse 收集任务响应
@@ -58,15 +75,22 @@ type CollectTaskResponse struct {
 func (c *MaterialsController) RegisterRoutes(router *gin.RouterGroup) {
 	materials := router.Group("/materials")
 	{
+		// 新素材库 API
 		materials.GET("", c.List)
+		materials.POST("", c.Create)
+		materials.GET("/:id", c.Get)
+		materials.PUT("/:id", c.Update)
+		materials.DELETE("/:id", c.Delete)
+		materials.GET("/by-market/:marketId", c.ListByMarket)
+
+		// 旧收集任务 API (保留兼容)
 		materials.POST("/collect", c.Collect)
 		materials.GET("/tasks/:id", c.GetTask)
 		materials.GET("/tasks", c.ListTasks)
-		materials.DELETE("/:id", c.Delete)
 	}
 }
 
-// List 获取素材列表
+// List 获取素材列表（新版素材库）
 func (c *MaterialsController) List(ctx *gin.Context) {
 	var req ListMaterialsRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -82,26 +106,14 @@ func (c *MaterialsController) List(ctx *gin.Context) {
 		req.PageSize = 50
 	}
 
-	// 验证 sourceType 参数（如果提供）
-	validSourceTypes := map[string]bool{
-		"amazon_review": true,
-		"youtube":       true,
-		"reddit":        true,
-		"quora":         true,
-	}
-	if req.SourceType != "" && !validSourceTypes[req.SourceType] {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid sourceType. Must be one of: amazon_review, youtube, reddit, quora"})
-		return
-	}
-
 	// 构建查询
 	query := c.db.Model(&content.Material{})
 
-	if req.ASIN != "" {
-		query = query.Where("asin = ?", req.ASIN)
+	if req.MarketID > 0 {
+		query = query.Where("market_id = ?", req.MarketID)
 	}
-	if req.SourceType != "" {
-		query = query.Where("source_type = ?", req.SourceType)
+	if req.Type != "" {
+		query = query.Where("type = ?", req.Type)
 	}
 
 	// 获取总数
@@ -126,6 +138,191 @@ func (c *MaterialsController) List(ctx *gin.Context) {
 		Total:     total,
 		Page:      req.Page,
 		PageSize:  req.PageSize,
+	})
+}
+
+// Get 获取单个素材
+func (c *MaterialsController) Get(ctx *gin.Context) {
+	id := ctx.Param("id")
+	materialID, err := parseID(id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid material ID"})
+		return
+	}
+
+	var material content.Material
+	if err := c.db.First(&material, materialID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "Material not found"})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get material"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, material)
+}
+
+// Create 创建素材
+func (c *MaterialsController) Create(ctx *gin.Context) {
+	var req CreateMaterialRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 检查市场是否存在
+	var market content.MarketOpportunity
+	if err := c.db.First(&market, req.MarketID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "Market not found"})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check market"})
+		return
+	}
+
+	// 计算字数
+	wordCount := 0
+	if req.Content != "" {
+		wordCount = len([]rune(req.Content))
+	}
+
+	material := content.Material{
+		Title:     req.Title,
+		Type:      content.MaterialType(req.Type),
+		Content:   req.Content,
+		SourceURL: req.SourceURL,
+		MarketID:  req.MarketID,
+		WordCount: wordCount,
+	}
+
+	if err := c.db.Create(&material).Error; err != nil {
+		logger.Error("Failed to create material", zap.Error(err))
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create material"})
+		return
+	}
+
+	logger.Info("Material created", zap.Int("id", material.ID), zap.String("title", material.Title))
+	ctx.JSON(http.StatusCreated, material)
+}
+
+// Update 更新素材
+func (c *MaterialsController) Update(ctx *gin.Context) {
+	id := ctx.Param("id")
+	materialID, err := parseID(id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid material ID"})
+		return
+	}
+
+	var req UpdateMaterialRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var material content.Material
+	if err := c.db.First(&material, materialID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "Material not found"})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get material"})
+		return
+	}
+
+	updates := map[string]interface{}{}
+	if req.Title != "" {
+		updates["title"] = req.Title
+	}
+	if req.Type != "" {
+		updates["type"] = req.Type
+	}
+	if req.Content != "" {
+		updates["content"] = req.Content
+		updates["word_count"] = len([]rune(req.Content))
+	}
+	if req.SourceURL != "" {
+		updates["source_url"] = req.SourceURL
+	}
+
+	if err := c.db.Model(&material).Updates(updates).Error; err != nil {
+		logger.Error("Failed to update material", zap.Error(err))
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update material"})
+		return
+	}
+
+	// 重新获取更新后的数据
+	c.db.First(&material, materialID)
+	ctx.JSON(http.StatusOK, material)
+}
+
+// Delete 删除素材
+func (c *MaterialsController) Delete(ctx *gin.Context) {
+	id := ctx.Param("id")
+	materialID, err := parseID(id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid material ID"})
+		return
+	}
+
+	if err := c.db.Delete(&content.Material{}, materialID).Error; err != nil {
+		logger.Error("Failed to delete material", zap.Error(err))
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete material"})
+		return
+	}
+
+	logger.Info("Material deleted", zap.Int("id", materialID))
+	ctx.JSON(http.StatusOK, gin.H{"message": "Material deleted successfully"})
+}
+
+// ListByMarket 按市场获取素材列表
+func (c *MaterialsController) ListByMarket(ctx *gin.Context) {
+	marketID, err := parseID(ctx.Param("marketId"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid market ID"})
+		return
+	}
+
+	page := 1
+	pageSize := 50
+	if p := ctx.Query("page"); p != "" {
+		fmt.Sscanf(p, "%d", &page)
+	}
+	if ps := ctx.Query("pageSize"); ps != "" {
+		fmt.Sscanf(ps, "%d", &pageSize)
+	}
+
+	// 检查市场是否存在
+	var market content.MarketOpportunity
+	if err := c.db.First(&market, marketID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "Market not found"})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check market"})
+		return
+	}
+
+	// 获取总数
+	var total int64
+	c.db.Model(&content.Material{}).Where("market_id = ?", marketID).Count(&total)
+
+	// 分页查询
+	var materials []content.Material
+	offset := (page - 1) * pageSize
+	if err := c.db.Where("market_id = ?", marketID).Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&materials).Error; err != nil {
+		logger.Error("Failed to list materials by market", zap.Error(err))
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list materials"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, ListMaterialsResponse{
+		Materials: materials,
+		Total:     total,
+		Page:      page,
+		PageSize:  pageSize,
 	})
 }
 
@@ -199,7 +396,7 @@ func (c *MaterialsController) runCollectTask(taskID int, asin string, sourceType
 	time.Sleep(2 * time.Second)
 
 	// 创建模拟素材数据
-	mockMaterials := []content.Material{
+	mockMaterials := []content.MaterialLegacy{
 		{
 			ASIN:           asin,
 			SourceType:     "amazon_review",
@@ -278,25 +475,6 @@ func (c *MaterialsController) ListTasks(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"tasks": tasks})
-}
-
-// Delete 删除素材
-func (c *MaterialsController) Delete(ctx *gin.Context) {
-	id := ctx.Param("id")
-	materialID, err := parseID(id)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid material ID"})
-		return
-	}
-
-	if err := c.db.Delete(&content.Material{}, materialID).Error; err != nil {
-		logger.Error("Failed to delete material", zap.Error(err))
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete material"})
-		return
-	}
-
-	logger.Info("Material deleted", zap.Int("id", materialID))
-	ctx.JSON(http.StatusOK, gin.H{"message": "Material deleted successfully"})
 }
 
 // parseID 解析 ID 参数

@@ -141,7 +141,7 @@ func (c *AutomationController) GetWorkflow(ctx *gin.Context) {
 
 	// 获取关联的素材统计
 	var materialsCount int64
-	c.db.Model(&content.Material{}).Where("asin = ?", workflow.ProductASIN).Count(&materialsCount)
+	c.db.Model(&content.MaterialLegacy{}).Where("asin = ?", workflow.ProductASIN).Count(&materialsCount)
 
 	// 获取生成任务统计
 	var jobsCount int64
@@ -221,7 +221,7 @@ type ReviewMaterialRequest struct {
 func (c *AutomationController) ReviewMaterial(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	var material content.Material
+	var material content.MaterialLegacy
 	if err := c.db.First(&material, id).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Material not found"})
 		return
@@ -265,7 +265,7 @@ func (c *AutomationController) BatchReviewMaterials(ctx *gin.Context) {
 		return
 	}
 
-	var materials []content.Material
+	var materials []content.MaterialLegacy
 	if err := c.db.Where("id IN ?", req.MaterialIDs).Find(&materials).Error; err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch materials"})
 		return
@@ -348,7 +348,7 @@ func (c *AutomationController) GenerateContent(ctx *gin.Context) {
 	}
 
 	// 获取素材内容
-	var materials []content.Material
+	var materials []content.MaterialLegacy
 	if len(req.MaterialIDs) > 0 {
 		c.db.Where("id IN ?", req.MaterialIDs).Find(&materials)
 	}
@@ -570,7 +570,7 @@ func (c *AutomationController) GetRecommendations(ctx *gin.Context) {
 // ============================================================
 
 // callAIReviewMaterial 调用AI服务审核素材
-func (c *AutomationController) callAIReviewMaterial(material *content.Material) (*content.MaterialAIReview, error) {
+func (c *AutomationController) callAIReviewMaterial(material *content.MaterialLegacy) (*content.MaterialAIReview, error) {
 	// 构建 AI 请求
 	payload := map[string]interface{}{
 		"content":     material.Content,
@@ -690,7 +690,7 @@ func (c *AutomationController) callAIAnalyzeProduct(product *content.AmazonProdu
 }
 
 // executeGenerationJob 执行内容生成任务
-func (c *AutomationController) executeGenerationJob(job *content.ContentGenerationJob, product *content.AmazonProduct, materials []content.Material) {
+func (c *AutomationController) executeGenerationJob(job *content.ContentGenerationJob, product *content.AmazonProduct, materials []content.MaterialLegacy) {
 	// 更新状态为处理中
 	now := time.Now()
 	c.db.Model(job).Updates(map[string]interface{}{
