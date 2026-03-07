@@ -25,6 +25,7 @@ import (
 	"github.com/zenconsult/affi-marketing/internal/controller/ai"
 	"github.com/zenconsult/affi-marketing/internal/controller/health"
 	"github.com/zenconsult/affi-marketing/internal/controller/public"
+	contentservice "github.com/zenconsult/affi-marketing/internal/service/content"
 	"github.com/zenconsult/affi-marketing/pkg/cache"
 	"github.com/zenconsult/affi-marketing/pkg/database"
 	"github.com/zenconsult/affi-marketing/pkg/logger"
@@ -64,6 +65,13 @@ func main() {
 	defer database.Close()
 	logger.Info("Database connected")
 
+	// 自动迁移数据库表
+	db := database.Get()
+	if err := database.AutoMigrate(db); err != nil {
+		logger.Fatal("Failed to auto migrate database", zap.Error(err))
+	}
+	logger.Info("Database auto migration completed")
+
 	// 初始化 Redis
 	if err := cache.Init(&cfg.Redis); err != nil {
 		logger.Warn("Failed to init Redis", zap.Error(err))
@@ -71,6 +79,12 @@ func main() {
 		logger.Info("Redis connected")
 	}
 	defer cache.Close()
+
+	// 初始化定时任务调度器
+	scheduler := contentservice.NewScheduleScheduler(database.Get())
+	scheduler.Start()
+	defer scheduler.Stop()
+	logger.Info("Schedule scheduler started")
 
 	// 设置 Gin 模式
 	gin.SetMode(cfg.Server.Mode)
