@@ -1,12 +1,19 @@
 import { streamText } from 'ai'
 import { createOpenAI } from '@ai-sdk/openai'
 
-// 使用你们的 Python AI 服务作为后端
-// 如果 Python 服务支持 OpenAI 兼容 API，可以直接使用
-const aiProvider = createOpenAI({
-  baseURL: process.env.NEXT_PUBLIC_AI_API_URL || 'https://ai-api.zenconsult.top',
-  apiKey: process.env.AI_API_KEY || 'dummy',
+// 智谱 AI 配置（OpenAI 兼容 API）
+const zhipu = createOpenAI({
+  baseURL: 'https://open.bigmodel.cn/api/paas/v4/',
+  apiKey: process.env.ZHIPU_API_KEY,
 })
+
+// 可用的智谱模型
+const ZHIPU_MODELS = {
+  'glm-4-plus': 'glm-4-plus',      // 最新最强
+  'glm-4-air': 'glm-4-air',        // 性价比高
+  'glm-4-flash': 'glm-4-flash',    // 快速响应
+  'glm-4': 'glm-4',                // 标准版
+}
 
 // 系统提示词模板
 const SYSTEM_PROMPTS: Record<string, string> = {
@@ -38,10 +45,18 @@ const LENGTH_GUIDE: Record<string, string> = {
 
 export async function POST(req: Request) {
   try {
-    const { topic, tone = 'professional', length = 'medium', category, model = 'qwen' } = await req.json()
+    const { topic, tone = 'professional', length = 'medium', category, model = 'glm-4-plus' } = await req.json()
 
     if (!topic?.trim()) {
       return new Response(JSON.stringify({ error: '请输入主题' }), { status: 400 })
+    }
+
+    // 检查 API Key
+    if (!process.env.ZHIPU_API_KEY) {
+      return new Response(
+        JSON.stringify({ error: '智谱 API Key 未配置，请在环境变量中设置 ZHIPU_API_KEY' }),
+        { status: 500 }
+      )
     }
 
     const systemPrompt = `${SYSTEM_PROMPTS[tone] || SYSTEM_PROMPTS.professional}
@@ -56,12 +71,14 @@ ${category ? `文章分类：${category}` : ''}
 3. 正文内容
 4. 标签建议（在文末用一行列出，格式：标签：xxx, xxx, xxx）`
 
-    // 根据长度设置提示词中的字数要求
     const lengthHint = LENGTH_GUIDE[length] || LENGTH_GUIDE.medium
     const fullPrompt = `${systemPrompt}\n\n请为以下主题写一篇文章（${lengthHint}）：${topic}`
 
+    // 获取模型名称
+    const modelName = ZHIPU_MODELS[model as keyof typeof ZHIPU_MODELS] || 'glm-4-plus'
+
     const result = streamText({
-      model: aiProvider(model),
+      model: zhipu(modelName),
       system: systemPrompt,
       prompt: fullPrompt,
       temperature: 0.7,

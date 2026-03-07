@@ -26,12 +26,13 @@ import type { AITone, AILength, AIGenerationResult } from '@/lib/blog/types'
 import { Badge } from '@/components/ui/badge'
 import { useCompletion } from '@ai-sdk/react'
 
-type AIModel = 'qwen' | 'openai' | 'chatglm'
+type AIModel = 'glm-4-plus' | 'glm-4-air' | 'glm-4-flash' | 'glm-4'
 
 const aiModels = [
-  { value: 'qwen', label: '通义千问', description: '阿里云通义千问，适合中文内容' },
-  { value: 'openai', label: 'OpenAI', description: 'GPT系列，适合英文内容' },
-  { value: 'chatglm', label: '智谱GLM', description: '智谱AI，适合技术内容' },
+  { value: 'glm-4-plus', label: 'GLM-4-Plus', description: '最新最强，适合复杂任务' },
+  { value: 'glm-4-air', label: 'GLM-4-Air', description: '性价比高，适合日常使用' },
+  { value: 'glm-4-flash', label: 'GLM-4-Flash', description: '快速响应，适合简单任务' },
+  { value: 'glm-4', label: 'GLM-4', description: '标准版，平衡性能' },
 ]
 
 interface AIContentDialogProps {
@@ -45,7 +46,7 @@ export function AIContentDialog({ onAccept }: AIContentDialogProps) {
   const [tone, setTone] = useState<AITone>('professional')
   const [length, setLength] = useState<AILength>('medium')
   const [category, setCategory] = useState('')
-  const [model, setModel] = useState<AIModel>('qwen')
+  const [model, setModel] = useState<AIModel>('glm-4-plus')
   const [aiHealthy, setAiHealthy] = useState<boolean | null>(null)
   const [checkingHealth, setCheckingHealth] = useState(false)
   const [showResult, setShowResult] = useState(false)
