@@ -22,7 +22,6 @@ import {
 } from '@/components/ui/select'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useBlogStore } from '@/lib/blog/store'
-import { aiService } from '@/lib/ai-service'
 import type { AITone, AILength, AIGenerationResult } from '@/lib/blog/types'
 import { Badge } from '@/components/ui/badge'
 import { useCompletion } from '@ai-sdk/react'
@@ -75,18 +74,27 @@ export function AIContentDialog({ onAccept }: AIContentDialogProps) {
     },
   })
 
-  // 检查AI服务健康状态
+  // 检查AI API 健康状态（本地 API 路由）
   useEffect(() => {
     const checkHealth = async () => {
       setCheckingHealth(true)
-      const healthy = await aiService.checkHealth()
-      setAiHealthy(healthy)
-      setCheckingHealth(false)
+      try {
+        // 检查本地 AI API 路由是否可用
+        const response = await fetch('/api/ai/generate', {
+          method: 'OPTIONS',
+        })
+        setAiHealthy(response.ok || response.status === 405) // 405 = 方法不允许但路由存在
+      } catch {
+        setAiHealthy(false)
+      } finally {
+        setCheckingHealth(false)
+      }
     }
 
     if (open) {
       checkHealth()
-      const interval = setInterval(checkHealth, 30000)
+      // 每 60 秒检查一次
+      const interval = setInterval(checkHealth, 60000)
       return () => clearInterval(interval)
     }
   }, [open])
