@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { Sparkles, Loader2, Check, RefreshCw, Wifi, WifiOff, Square } from 'lucide-react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Sparkles, Loader2, Check, RefreshCw, Wifi, WifiOff, Square, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -24,7 +24,6 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { useBlogStore } from '@/lib/blog/store'
 import type { AITone, AILength, AIGenerationResult } from '@/lib/blog/types'
 import { Badge } from '@/components/ui/badge'
-import { useCompletion } from '@ai-sdk/react'
 
 type AIModel = 'glm-4-plus' | 'glm-4-air' | 'glm-4-flash' | 'glm-4'
 
@@ -50,41 +49,21 @@ export function AIContentDialog({ onAccept }: AIContentDialogProps) {
   const [aiHealthy, setAiHealthy] = useState<boolean | null>(null)
   const [checkingHealth, setCheckingHealth] = useState(false)
   const [showResult, setShowResult] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [streamContent, setStreamContent] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // 使用 AI SDK 的 useCompletion hook
-  const {
-    completion,
-    isLoading,
-    complete,
-    stop,
-    setCompletion,
-  } = useCompletion({
-    api: '/api/ai/generate',
-    body: {
-      tone,
-      length,
-      category,
-      model,
-    },
-    onFinish: () => {
-      // 生成完成后自动滚动到底部
-      setTimeout(() => {
-        scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
-      }, 100)
-    },
-  })
-
-  // 检查AI API 健康状态（本地 API 路由）
+  // 检查AI API 健康状态
   useEffect(() => {
     const checkHealth = async () => {
       setCheckingHealth(true)
       try {
-        // 检查本地 AI API 路由是否可用
         const response = await fetch('/api/ai/generate', {
           method: 'OPTIONS',
         })
-        setAiHealthy(response.ok || response.status === 405) // 405 = 方法不允许但路由存在
+        setAiHealthy(response.ok || response.status === 405)
       } catch {
         setAiHealthy(false)
       } finally {
@@ -94,56 +73,123 @@ export function AIContentDialog({ onAccept }: AIContentDialogProps) {
 
     if (open) {
       checkHealth()
-      // 每 60 秒检查一次
-      const interval = setInterval(checkHealth, 60000)
-      return () => clearInterval(interval)
     }
   }, [open])
 
-  // 自动滚动到最新内容
+  // 自动滚动
   useEffect(() => {
-    if (isLoading && scrollRef.current) {
+    if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
-  }, [completion, isLoading])
+  }, [streamContent])
 
-  const handleGenerate = async () => {
+  // 流式生成内容
+  const generateContent = useCallback(async () => {
     if (!topic.trim()) return
 
+    setIsGenerating(true)
+    setStreamContent('')
+    setError(null)
     setShowResult(true)
-    setCompletion('') // 清空之前的内容
+
+    // 创建新的 AbortController
+    abortControllerRef.current = new AbortController()
 
     try {
-      await complete(topic)
-    } catch (error) {
-      console.error('AI generation error:', error)
-      setCompletion('# 生成失败\n\n请检查网络连接或稍后重试。')
+      const response = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic,
+          tone,
+          length,
+          category,
+          model,
+        }),
+        signal: abortControllerRef.current.signal,
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      const reader = response.body?.getReader()
+      if (!reader) {
+        throw new Error('无法读取响应流')
+      }
+
+      const decoder = new TextDecoder()
+      let accumulatedContent = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const chunk = decoder.decode(value, { stream: true })
+
+        // 解析 SSE 格式
+        const lines = chunk.split('\n')
+        for (const line of lines) {
+          if (line.startsWith('0:"')) {
+            // 提取文本内容
+            const text = line.slice(3, -1)
+            // 处理转义字符
+            const unescaped = text
+              .replace(/\\n/g, '\n')
+              .replace(/\\"/g, '"')
+              .replace(/\\\\/g, '\\')
+            accumulatedContent += unescaped
+            setStreamContent(accumulatedContent)
+          }
+        }
+      }
+
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.log('Generation stopped by user')
+      } else {
+        console.error('AI generation error:', err)
+        setError(err instanceof Error ? err.message : '生成失败，请稍后重试')
+      }
+    } finally {
+      setIsGenerating(false)
     }
-  }
+  }, [topic, tone, length, category, model])
 
   const handleStop = () => {
-    stop()
+    abortControllerRef.current?.abort()
+    setIsGenerating(false)
+  }
+
+  const handleRegenerate = () => {
+    setStreamContent('')
+    setError(null)
+    generateContent()
+  }
+
+  const handleBack = () => {
+    setShowResult(false)
+    setStreamContent('')
+    setError(null)
   }
 
   // 解析生成的内容
   const parseResult = (content: string): AIGenerationResult => {
     const lines = content.split('\n')
 
-    // 提取标题（第一个 # 开头的行）
     let title = topic
     const titleLine = lines.find(line => line.startsWith('# '))
     if (titleLine) {
       title = titleLine.replace('# ', '').trim()
     }
 
-    // 提取标签（最后一行以 "标签：" 开头的）
     let tags: string[] = []
     const tagLine = lines.find(line => line.startsWith('标签：') || line.startsWith('标签:'))
     if (tagLine) {
       tags = tagLine.replace(/标签[：:]/, '').split(',').map(t => t.trim()).filter(Boolean)
     }
 
-    // 提取摘要（第二段非空内容，通常在标题之后）
     let excerpt = ''
     let contentStarted = false
     for (let i = 0; i < lines.length; i++) {
@@ -159,7 +205,6 @@ export function AIContentDialog({ onAccept }: AIContentDialogProps) {
       }
     }
 
-    // 清理内容（移除标签行）
     const cleanContent = lines
       .filter(line => !line.startsWith('标签：') && !line.startsWith('标签:'))
       .join('\n')
@@ -176,39 +221,28 @@ export function AIContentDialog({ onAccept }: AIContentDialogProps) {
   }
 
   const handleAccept = () => {
-    if (completion) {
-      const result = parseResult(completion)
+    if (streamContent) {
+      const result = parseResult(streamContent)
       onAccept(result)
       setOpen(false)
       resetState()
     }
   }
 
-  const handleRegenerate = () => {
-    setCompletion('')
-    handleGenerate()
-  }
-
-  const handleBack = () => {
-    setShowResult(false)
-    setCompletion('')
-  }
-
   const resetState = () => {
     setShowResult(false)
-    setCompletion('')
+    setStreamContent('')
+    setError(null)
     setTopic('')
   }
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen)
     if (!newOpen) {
+      abortControllerRef.current?.abort()
       resetState()
     }
   }
-
-  // 解析当前内容用于预览
-  const currentResult = completion ? parseResult(completion) : null
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -228,25 +262,21 @@ export function AIContentDialog({ onAccept }: AIContentDialogProps) {
             <div className="flex items-center gap-2">
               {checkingHealth ? (
                 <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
-              ) : aiHealthy === null ? (
-                <WifiOff className="h-4 w-4 text-muted-foreground" />
               ) : aiHealthy ? (
-                <Badge variant="outline" className="gap-1">
+                <Badge variant="outline" className="gap-1 text-green-600">
                   <Wifi className="h-3 w-3" />
                   AI在线
                 </Badge>
-              ) : (
+              ) : aiHealthy === false ? (
                 <Badge variant="destructive" className="gap-1">
                   <WifiOff className="h-3 w-3" />
                   AI离线
                 </Badge>
-              )}
+              ) : null}
             </div>
           </div>
           <DialogDescription>
-            {aiHealthy === false
-              ? 'AI服务暂时不可用，将使用备用生成方案'
-              : '输入主题和偏好，让 AI 为您生成高质量的博客内容'}
+            输入主题和偏好，让 AI 为您生成高质量的博客内容
           </DialogDescription>
         </DialogHeader>
 
@@ -259,7 +289,7 @@ export function AIContentDialog({ onAccept }: AIContentDialogProps) {
                 placeholder="例如：Next.js 15 性能优化最佳实践"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
+                onKeyDown={(e) => e.key === 'Enter' && generateContent()}
               />
             </div>
 
@@ -329,11 +359,11 @@ export function AIContentDialog({ onAccept }: AIContentDialogProps) {
             </div>
 
             <Button
-              onClick={handleGenerate}
-              disabled={!topic.trim() || isLoading}
+              onClick={generateContent}
+              disabled={!topic.trim() || isGenerating}
               className="w-full"
             >
-              {isLoading ? (
+              {isGenerating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   正在生成...
@@ -349,19 +379,27 @@ export function AIContentDialog({ onAccept }: AIContentDialogProps) {
         ) : (
           <div className="space-y-4 py-4">
             <ScrollArea className="h-80 rounded-md border p-4" ref={scrollRef}>
-              <div className="space-y-4 prose prose-sm max-w-none">
-                {/* 实时流式显示 */}
-                <div className="whitespace-pre-wrap">
-                  {completion}
-                  {isLoading && (
-                    <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-1" />
-                  )}
-                </div>
+              <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+                {streamContent}
+                {isGenerating && !streamContent && (
+                  <span className="text-muted-foreground">正在连接 AI 服务...</span>
+                )}
+                {isGenerating && streamContent && (
+                  <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-1" />
+                )}
               </div>
             </ScrollArea>
 
+            {/* 错误提示 */}
+            {error && (
+              <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-md">
+                <AlertCircle className="h-4 w-4" />
+                {error}
+              </div>
+            )}
+
             {/* 状态指示器 */}
-            {isLoading && (
+            {isGenerating && !error && (
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span className="flex items-center gap-2">
                   <Loader2 className="h-3 w-3 animate-spin" />
@@ -374,7 +412,7 @@ export function AIContentDialog({ onAccept }: AIContentDialogProps) {
               </div>
             )}
 
-            {!isLoading && completion && (
+            {!isGenerating && streamContent && !error && (
               <div className="flex items-center gap-2 text-sm text-green-600">
                 <Check className="h-4 w-4" />
                 生成完成
@@ -386,11 +424,11 @@ export function AIContentDialog({ onAccept }: AIContentDialogProps) {
                 返回修改
               </Button>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={handleRegenerate} disabled={isLoading}>
+                <Button variant="outline" onClick={handleRegenerate} disabled={isGenerating}>
                   <RefreshCw className="h-4 w-4 mr-2" />
                   重新生成
                 </Button>
-                <Button onClick={handleAccept} disabled={isLoading || !completion}>
+                <Button onClick={handleAccept} disabled={isGenerating || !streamContent || !!error}>
                   <Check className="h-4 w-4 mr-2" />
                   采用此内容
                 </Button>
