@@ -1,14 +1,8 @@
-import { streamText } from 'ai'
-import { createOpenAI } from '@ai-sdk/openai'
-
-// 智谱 AI 配置（OpenAI 兼容 API）
-const zhipu = createOpenAI({
-  baseURL: 'https://open.bigmodel.cn/api/paas/v4/',
-  apiKey: process.env.ZHIPU_API_KEY,
-})
+// 直接调用智谱 API，绕过 AI SDK 的端点兼容问题
+const ZHIPU_API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
 
 // 可用的智谱模型
-const ZHIPU_MODELS = {
+const ZHIPU_MODELS: Record<string, string> = {
   'glm-4-plus': 'glm-4-plus',      // 最新最强
   'glm-4-air': 'glm-4-air',        // 性价比高
   'glm-4-flash': 'glm-4-flash',    // 快速响应
@@ -72,19 +66,91 @@ ${category ? `文章分类：${category}` : ''}
 4. 标签建议（在文末用一行列出，格式：标签：xxx, xxx, xxx）`
 
     const lengthHint = LENGTH_GUIDE[length] || LENGTH_GUIDE.medium
-    const fullPrompt = `${systemPrompt}\n\n请为以下主题写一篇文章（${lengthHint}）：${topic}`
+    const userPrompt = `请为以下主题写一篇文章（${lengthHint}）：${topic}`
 
     // 获取模型名称
-    const modelName = ZHIPU_MODELS[model as keyof typeof ZHIPU_MODELS] || 'glm-4-plus'
+    const modelName = ZHIPU_MODELS[model] || 'glm-4-plus'
 
-    const result = streamText({
-      model: zhipu(modelName),
-      system: systemPrompt,
-      prompt: fullPrompt,
-      temperature: 0.7,
+    // 直接调用智谱 API
+    const response = await fetch(ZHIPU_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.ZHIPU_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: modelName,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.7,
+        stream: true,
+      }),
     })
 
-    return result.toTextStreamResponse()
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Zhipu API error:', errorText)
+      return new Response(
+        JSON.stringify({ error: `智谱 API 错误: ${response.status}` }),
+        { status: response.status }
+      )
+    }
+
+    // 创建流式响应
+    const encoder = new TextEncoder()
+    const reader = response.body?.getReader()
+
+    if (!reader) {
+      return new Response(JSON.stringify({ error: '无法读取响应流' }), { status: 500 })
+    }
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        const decoder = new TextDecoder()
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) {
+              controller.close()
+              break
+            }
+
+            const chunk = decoder.decode(value, { stream: true })
+            const lines = chunk.split('\n')
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6)
+                if (data === '[DONE]') continue
+
+                try {
+                  const json = JSON.parse(data)
+                  const content = json.choices?.[0]?.delta?.content
+                  if (content) {
+                    // 使用 AI SDK 兼容的流格式
+                    controller.enqueue(encoder.encode(`0:${JSON.stringify(content)}\n`))
+                  }
+                } catch {
+                  // 忽略解析错误
+                }
+              }
+            }
+          }
+        } catch (error) {
+          controller.error(error)
+        }
+      },
+    })
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked',
+      },
+    })
   } catch (error) {
     console.error('AI generation error:', error)
     return new Response(
