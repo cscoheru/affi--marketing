@@ -166,62 +166,98 @@ export default function ProductsPage() {
       if (selectedType !== 'all') params.type = selectedType
 
       const response = await newProductsApi.list(params)
-      setProducts(response.products || [])
+
+      // Check if response.products exists and has items before using demo data fallback
+      if (response.products && response.products.length > 0) {
+        setProducts(response.products)
+      } else {
+        // Only use demo data when API explicitly returns empty products array
+        setProducts(getDemoProducts())
+      }
     } catch {
       // 演示数据
-      setProducts([
-        {
-          id: 1,
-          slug: 'sony-wh1000xm4-review',
-          title: 'Sony WH-1000XM4 深度评测',
-          type: 'review',
-          content: '这是一篇详细的Sony WH-1000XM4评测...',
-          excerpt: 'Sony WH-1000XM4是一款优秀的无线降噪耳机',
-          status: 'published',
-          wordCount: 2345,
-          aiGenerated: true,
-          aiModel: 'qwen',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          markets: [
-            { id: 1, asin: 'B08N5KWB9H', title: 'Sony WH-1000XM4' } as MarketOpportunity
-          ],
-          views: 1234,
-          clicks: 89,
-          conversions: 5,
-          revenue: '125.50',
-        },
-        {
-          id: 2,
-          slug: 'best-noise-cancelling-headphones-2024',
-          title: '2024年最佳降噪耳机购买指南',
-          type: 'guide',
-          content: '这是一份2024年降噪耳机购买指南...',
-          excerpt: '2024年最值得购买的降噪耳机推荐',
-          status: 'approved',
-          wordCount: 3456,
-          aiGenerated: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: 3,
-          slug: 'anker-powerbank-review',
-          title: 'Anker 26800mAh充电宝评测',
-          type: 'review',
-          content: 'Anker充电宝详细评测...',
-          excerpt: '大容量充电，出行必备',
-          status: 'draft',
-          wordCount: 1234,
-          aiGenerated: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ])
+      setProducts(getDemoProducts())
     } finally {
       setLoading(false)
     }
   }
+
+  // 演示数据
+  const getDemoProducts = (): ProductContent[] => [
+    {
+      id: 1,
+      slug: 'sony-wh1000xm4-review',
+      title: 'Sony WH-1000XM4 深度评测',
+      type: 'review',
+      content: '这是一篇详细的Sony WH-1000XM4评测...',
+      excerpt: 'Sony WH-1000XM4是一款优秀的无线降噪耳机',
+      status: 'published',
+      wordCount: 2345,
+      aiGenerated: true,
+      aiModel: 'qwen',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      markets: [
+        { id: 1, asin: 'B08N5KWB9H', title: 'Sony WH-1000XM4' } as MarketOpportunity
+      ],
+      views: 1234,
+      clicks: 89,
+      conversions: 5,
+      revenue: '125.50',
+    },
+    {
+      id: 2,
+      slug: 'best-noise-cancelling-headphones-2024',
+      title: '2024年最佳降噪耳机购买指南',
+      type: 'guide',
+      content: '这是一份2024年降噪耳机购买指南...',
+      excerpt: '2024年最值得购买的降噪耳机推荐',
+      status: 'approved',
+      wordCount: 3456,
+      aiGenerated: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: 3,
+      slug: 'anker-powerbank-review',
+      title: 'Anker 26800mAh充电宝评测',
+      type: 'review',
+      content: 'Anker充电宝详细评测...',
+      excerpt: '大容量充电，出行必备',
+      status: 'draft',
+      wordCount: 1234,
+      aiGenerated: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: 4,
+      slug: 'smart-home-guide',
+      title: '智能家居入门指南',
+      type: 'guide',
+      content: '智能家居设备选购与配置指南...',
+      excerpt: '从零开始搭建智能家居',
+      status: 'review',
+      wordCount: 2800,
+      aiGenerated: true,
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: 5,
+      slug: 'old-product-review',
+      title: '已归档的旧产品评测',
+      type: 'review',
+      content: '这是一篇已归档的内容...',
+      excerpt: '旧内容，不再维护',
+      status: 'archived',
+      wordCount: 1500,
+      aiGenerated: false,
+      createdAt: new Date(Date.now() - 30 * 86400000).toISOString(),
+      updatedAt: new Date(Date.now() - 10 * 86400000).toISOString(),
+    },
+  ]
 
   // 获取市场列表（用于关联）
   const fetchMarkets = async () => {
@@ -321,13 +357,16 @@ export default function ProductsPage() {
 
   // 提交审核
   const handleReview = async (id: number) => {
+    // 乐观更新 - 立即更新本地状态
+    const previousProducts = products
+    setProducts(prev => prev.map(p => p.id === id ? { ...p, status: 'review' as ProductStatus } : p))
+
     try {
       await newProductsApi.review(id, 'approve', '提交审核')
       toast({ title: '成功', description: '已提交审核' })
-      fetchProducts()
     } catch {
+      // 演示模式下保持本地更新
       toast({ title: '成功', description: '已提交审核（演示模式）' })
-      fetchProducts()
     }
   }
 
@@ -434,9 +473,11 @@ export default function ProductsPage() {
           <p className="text-muted-foreground text-sm">内容创作、AI生成、审核发布、关联市场</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setAiGenerateDialogOpen(true)}>
-            <Sparkles className="h-4 w-4 mr-2" />
-            AI辅助创作
+          <Button variant="outline" asChild>
+            <a href="/ai-create">
+              <Sparkles className="h-4 w-4 mr-2" />
+              AI 创作
+            </a>
           </Button>
           <Button onClick={() => { resetForm(); setSelectedProduct(null); setDialogOpen(true) }}>
             <Plus className="h-4 w-4 mr-2" />
