@@ -10,7 +10,7 @@ import (
 
 	"github.com/zenconsult/affi-marketing/internal/config"
 	"github.com/zenconsult/affi-marketing/internal/model"
-	contentModel "github.com/zenconsult/affi-marketing/internal/model/content"
+	_ "github.com/zenconsult/affi-marketing/internal/model/content" // imported for side effects
 )
 
 var (
@@ -118,20 +118,22 @@ func NewPostgres(cfg config.DatabaseConfig) (*gorm.DB, error) {
 
 // AutoMigrate 自动迁移数据库表
 func AutoMigrate(db *gorm.DB) error {
+	// Note: Temporarily disabled auto-migrate for some models due to database view dependencies
+	// TODO: Re-enable after fixing database views
 	return db.AutoMigrate(
 		&model.Experiment{},
 		&model.User{},
 		&model.APIKey{},
-		// Content automation models
-		&contentModel.Product{},
-		&contentModel.Material{},
-		&contentModel.Content{},
-		&contentModel.PublishTask{},
-		&contentModel.MaterialCollectTask{},
-		&contentModel.ContentGenerateTask{},
-		&contentModel.ProductAIInfo{},
-		&contentModel.MaterialAIReview{},
-		&contentModel.ContentGenerationJob{},
-		&contentModel.ContentWorkflow{},
+		// Content automation models - temporarily disabled problematic ones
+		// &contentModel.Product{},
+		// &contentModel.Material{},
+		// &contentModel.Content{},
+		// &contentModel.PublishTask{},
+		// &contentModel.MaterialCollectTask{},
+		// &contentModel.ContentGenerateTask{},
+		// &contentModel.ProductAIInfo{},
+		// &contentModel.MaterialAIReview{},
+		// &contentModel.ContentGenerationJob{},
+		// &contentModel.ContentWorkflow{},
 	)
 }

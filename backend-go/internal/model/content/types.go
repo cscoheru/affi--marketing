@@ -34,7 +34,7 @@ type MarketOpportunity struct {
 	MarketSize       string `json:"marketSize" gorm:"size:20"`       // large/medium/small
 	CompetitionLevel string `json:"competitionLevel" gorm:"size:20"` // high/medium/low
 	ContentPotential string `json:"contentPotential" gorm:"size:20"` // high/medium/low
-	AIScore          int    `json:"aiScore"`                          // AI推荐评分(0-100)
+	AIScore          int    `json:"aiScore" gorm:"type:integer"`       // AI推荐评分(0-100)
 	// 统计数据（从关联内容汇总）
 	ContentCount     int     `json:"contentCount" gorm:"default:0"`     // 关联内容数量
 	TotalClicks      int     `json:"totalClicks" gorm:"default:0"`      // 总点击
@@ -291,8 +291,9 @@ func (Content) TableName() string {
 // SUPPORTING MODELS - Unchanged
 // ============================================================================
 
-// Material 素材
-type Material struct {
+// MaterialLegacy 素材（旧模型，用于向后兼容）
+// Deprecated: 使用 material.go 中的新 Material 模型
+type MaterialLegacy struct {
 	ID             int       `json:"id" gorm:"primaryKey;autoIncrement"`
 	ASIN           string    `json:"asin" gorm:"index;size:20;not null"`
 	SourceType     string    `json:"sourceType" gorm:"size:50;index"`
@@ -304,8 +305,8 @@ type Material struct {
 }
 
 // TableName 指定表名
-func (Material) TableName() string {
-	return "materials"
+func (MaterialLegacy) TableName() string {
+	return "materials_legacy"
 }
 
 // PublishLog 发布日志

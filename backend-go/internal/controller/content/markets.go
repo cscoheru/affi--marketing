@@ -50,6 +50,7 @@ type CreateMarketRequest struct {
 	Category  string `json:"category"`
 	Price     string `json:"price"`
 	Rating    string `json:"rating"`
+	ReviewCount int    `json:"reviewCount"`
 	ImageURL  string `json:"imageUrl"`
 	Status    string  `json:"status" binding:"omitempty,oneof=watching targeting active saturated exited"`
 	MarketSize       string `json:"marketSize" binding:"omitempty,oneof=large medium small"`
@@ -96,6 +97,7 @@ func (c *MarketsController) RegisterRoutes(router *gin.RouterGroup) {
 		markets.POST("/fetch", c.FetchMarket)       // 一键采集 - 必须在 /:asin 之前
 		markets.GET("/:asin", c.Get)
 		markets.PUT("/:asin", c.Update)
+		markets.DELETE("/:asin", c.Delete)          // 删除市场
 		markets.POST("/:asin/status", c.UpdateStatus)
 		markets.GET("/:asin/products", c.GetProducts) // 获取关联的内容
 	}
@@ -195,12 +197,23 @@ func (c *MarketsController) Create(ctx *gin.Context) {
 		return
 	}
 
+	// 处理空字符串 - PostgreSQL numeric 类型不接受空字符串
+	price := req.Price
+	if price == "" {
+		price = "0"
+	}
+	rating := req.Rating
+	if rating == "" {
+		rating = "0"
+	}
+
 	market := content.MarketOpportunity{
 		ASIN:             req.ASIN,
 		Title:            req.Title,
 		Category:         req.Category,
-		Price:            req.Price,
-		Rating:           req.Rating,
+		Price:            price,
+		Rating:           rating,
+		ReviewCount:      req.ReviewCount,
 		ImageURL:         req.ImageURL,
 		Status:           req.Status,
 		MarketSize:       req.MarketSize,
@@ -209,7 +222,7 @@ func (c *MarketsController) Create(ctx *gin.Context) {
 		AIScore:          req.AIScore,
 	}
 
-	if req.Status == "" {
+	if market.Status == "" {
 		market.Status = "watching"
 	}
 
@@ -327,6 +340,42 @@ func (c *MarketsController) UpdateStatus(ctx *gin.Context) {
 	})
 }
 
+// Delete 删除市场
+// DELETE /api/v1/markets/:asin
+func (c *MarketsController) Delete(ctx *gin.Context) {
+	asin := ctx.Param("asin")
+
+	var market content.MarketOpportunity
+	if err := c.db.Where("asin = ?", asin).First(&market).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "Market not found"})
+			return
+		}
+		logger.Error("Failed to get market", zap.Error(err))
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get market"})
+		return
+	}
+
+	// 删除关联的 product_markets 记录
+	if err := c.db.Where("market_id = ?", market.ID).Delete(&content.ProductMarket{}).Error; err != nil {
+		logger.Error("Failed to delete market associations", zap.Error(err))
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete market associations"})
+		return
+	}
+
+	// 删除市场
+	if err := c.db.Delete(&market).Error; err != nil {
+		logger.Error("Failed to delete market", zap.Error(err))
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete market"})
+		return
+	}
+
+	logger.Info("Market deleted", zap.String("asin", asin))
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Market deleted successfully",
+	})
+}
+
 // FetchProduct 一键采集市场信息（从Amazon API获取）
 // POST /api/v1/markets/fetch
 func (c *MarketsController) FetchMarket(ctx *gin.Context) {
@@ -336,22 +385,46 @@ func (c *MarketsController) FetchMarket(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: 调用Amazon Product Advertising API获取产品详情
-	// 目前返回模拟数据
 	logger.Info("Fetch market request", zap.String("asin", req.ASIN))
 
-	// 模拟市场数据（实际应从Amazon API获取）
-	market := gin.H{
-		"asin":    req.ASIN,
-		"title":   "Product " + req.ASIN,
-		"price":   "99.99",
-		"rating":  "4.5",
-		"imageUrl": "https://m.media-amazon.com/images/I/71E0PH8YIDL._AC_SL1500_.jpg",
-		"status":  "watching",
+	// 检查是否已存在
+	var existingMarket content.MarketOpportunity
+	if err := c.db.Where("asin = ?", req.ASIN).First(&existingMarket).Error; err == nil {
+		// 已存在，返回现有数据
+		logger.Info("Market already exists", zap.String("asin", req.ASIN))
+		ctx.JSON(http.StatusOK, gin.H{
+			"market":   existingMarket,
+			"message":  "该产品已存在于市场库中",
+			"existing": true,
+		})
+		return
 	}
 
+	// TODO: 调用Amazon Product Advertising API获取产品详情
+	// 目前使用模拟数据
+	market := &content.MarketOpportunity{
+		ASIN:        req.ASIN,
+		Title:       "Product " + req.ASIN,
+		Price:       "99.99",
+		Rating:      "4.5",
+		ReviewCount: 1000,
+		ImageURL:    "https://m.media-amazon.com/images/I/71E0PH8YIDL._AC_SL1500_.jpg",
+		Status:      "watching",
+		Category:    "unknown",
+	}
+
+	// 保存到数据库
+	if err := c.db.Create(market).Error; err != nil {
+		logger.Error("Failed to save fetched market", zap.Error(err))
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "保存产品失败"})
+		return
+	}
+
+	logger.Info("Market fetched and saved", zap.String("asin", req.ASIN))
 	ctx.JSON(http.StatusOK, gin.H{
-		"market": market,
+		"market":   market,
+		"message":  "产品采集成功",
+		"existing": false,
 	})
 }
 

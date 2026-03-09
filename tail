@@ -1,0 +1,8 @@
+error: unexpected argument '-c' found
+
+  tip: to pass '-c' as a value, use '-- -c'
+
+Usage: railway logs [OPTIONS] [DEPLOYMENT_ID]
+
+For more information, try '--help'.
+

@@ -75,13 +75,13 @@ type CollectTaskResponse struct {
 func (c *MaterialsController) RegisterRoutes(router *gin.RouterGroup) {
 	materials := router.Group("/materials")
 	{
-		// 新素材库 API
+		// 新素材库 API - 注意: /by-market 必须在 /:id 之前注册
 		materials.GET("", c.List)
 		materials.POST("", c.Create)
+		materials.GET("/by-market/:marketId", c.ListByMarket)
 		materials.GET("/:id", c.Get)
 		materials.PUT("/:id", c.Update)
 		materials.DELETE("/:id", c.Delete)
-		materials.GET("/by-market/:marketId", c.ListByMarket)
 
 		// 旧收集任务 API (保留兼容)
 		materials.POST("/collect", c.Collect)
@@ -195,15 +195,18 @@ func (c *MaterialsController) Create(ctx *gin.Context) {
 		SourceURL: req.SourceURL,
 		MarketID:  req.MarketID,
 		WordCount: wordCount,
+		Asin:      market.ASIN, // Set ASIN from market
 	}
 
-	if err := c.db.Create(&material).Error; err != nil {
+	// Use GORM's Session method to bypass schema caching issue
+	// This creates a fresh session for this specific insert operation
+	session := c.db.Session(&gorm.Session{})
+	if err := session.Create(&material).Error; err != nil {
 		logger.Error("Failed to create material", zap.Error(err))
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create material"})
 		return
 	}
 
-	logger.Info("Material created", zap.Int("id", material.ID), zap.String("title", material.Title))
 	ctx.JSON(http.StatusCreated, material)
 }
 

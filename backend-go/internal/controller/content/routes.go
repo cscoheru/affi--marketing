@@ -14,6 +14,7 @@ func RegisterRoutes(router *gin.RouterGroup, db *gorm.DB) {
 	contentsController := NewContentsController(db)
 	publishController := NewPublishController(db)
 	analyticsController := NewAnalyticsController(db)
+	scheduleController := NewScheduleController(db)     // 新增：定时任务控制器
 
 	// 注册各控制器的路由
 	marketsController.RegisterRoutes(router)  // 新增：市场战略路由
@@ -22,4 +23,5 @@ func RegisterRoutes(router *gin.RouterGroup, db *gorm.DB) {
 	contentsController.RegisterRoutes(router)
 	publishController.RegisterRoutes(router)
 	analyticsController.RegisterRoutes(router)
+	scheduleController.RegisterRoutes(router) // 新增：定时任务路由
 }

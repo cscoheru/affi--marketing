@@ -41,14 +41,14 @@ export default function BlogPublicHomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Page Header */}
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold tracking-tight mb-3 text-gray-900">
+          <h1 className="text-4xl font-bold tracking-tight mb-3 text-foreground">
             Affi Marketing 博客
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             探索联盟营销、SEO 优化、技术教程和产品测评的最新内容
           </p>
         </div>
@@ -80,8 +80,8 @@ export default function BlogPublicHomePage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-16 bg-white rounded-xl shadow-sm">
-            <p className="text-gray-500 mb-4">暂无匹配的文章</p>
+          <div className="text-center py-16 bg-card rounded-xl shadow-sm">
+            <p className="text-muted-foreground mb-4">暂无匹配的文章</p>
             <Link href="/blog-public" className="text-primary hover:underline">
               查看全部文章
             </Link>
@@ -95,7 +95,7 @@ export default function BlogPublicHomePage() {
               variant="outline"
               size="lg"
               onClick={() => setDisplayCount(prev => prev + 6)}
-              className="bg-white hover:bg-gray-50"
+              className="bg-card hover:bg-accent"
             >
               加载更多
             </Button>
@@ -103,7 +103,7 @@ export default function BlogPublicHomePage() {
         )}
 
         {/* Footer */}
-        <footer className="mt-16 pt-8 border-t border-gray-200 text-center text-gray-500 text-sm">
+        <footer className="mt-16 pt-8 border-t text-center text-muted-foreground text-sm">
           <p>© {new Date().getFullYear()} Affi Marketing. All rights reserved.</p>
         </footer>
       </div>

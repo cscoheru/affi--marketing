@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
-import { marketsApi, type MarketOpportunity, type MarketStatus, type AIRecommendedMarket } from '@/lib/api'
+import { marketsApi, newProductsApi, type MarketOpportunity, type MarketStatus, type AIRecommendedMarket } from '@/lib/api'
 import {
   Sparkles,
   RefreshCw,
@@ -805,6 +805,7 @@ export default function StrategyPage() {
                         onClick={() => {
                           // 将市场产品转换为AI推荐格式并打开详情弹窗
                           setSelectedProduct({
+                            marketId: market.id,
                             asin: market.asin,
                             title: market.title,
                             price: market.price || '$0',
@@ -825,7 +826,6 @@ export default function StrategyPage() {
                               contentDifficulty: 'medium',
                               seasonalFactor: '全年稳定',
                             },
-                            reviews: [],
                           })
                           setProductDetailOpen(true)
                         }}
@@ -907,7 +907,7 @@ export default function StrategyPage() {
                             )}
                           </div>
                           <div className="min-w-0">
-                            <div className="font-medium line-clamp-1">{market.title}</div>
+                            <div className="font-medium line-clamp-1 text-foreground">{market.title}</div>
                             <div className="text-xs text-muted-foreground font-mono">{market.asin}</div>
                           </div>
                         </div>
@@ -918,7 +918,7 @@ export default function StrategyPage() {
                           <span className="ml-1">{statusConfig[market.status as MarketStatus]?.label}</span>
                         </Badge>
                       </td>
-                      <td className="p-3 text-center text-green-600 font-medium">${market.price || '-'}</td>
+                      <td className="p-3 text-center text-green-600 font-medium">{market.price?.toString().startsWith('$') ? market.price : market.price ? `$${market.price}` : '-'}</td>
                       <td className="p-3 text-center">⭐{market.rating || '-'}</td>
                       <td className="p-3 text-center">
                         {market.aiScore ? (
@@ -944,6 +944,7 @@ export default function StrategyPage() {
                             onClick={() => {
                               // 将市场产品转换为AI推荐格式并打开详情弹窗
                               setSelectedProduct({
+                            marketId: market.id,
                             asin: market.asin,
                             title: market.title,
                             price: market.price || '$0',
@@ -955,19 +956,18 @@ export default function StrategyPage() {
                             marketTrend: 'stable',
                             competitionLevel: market.competitionLevel || 'medium',
                             url: `https://www.amazon.com/dp/${market.asin}`,
-            searchUrl: `https://www.amazon.com/dp/${market.asin}`,
-            analysis: {
-              marketTrend: 'stable',
-              competitionLevel: market.competitionLevel || 'medium',
-              estimatedCommission: '3-5%',
-              profitPotential: market.contentPotential || 'medium',
-              contentDifficulty: 'medium',
-              seasonalFactor: '全年稳定',
-            },
-            reviews: [],
-          })
-          setProductDetailOpen(true)
-        }}
+                            searchUrl: `https://www.amazon.com/dp/${market.asin}`,
+                            analysis: {
+                              marketTrend: 'stable',
+                              competitionLevel: market.competitionLevel || 'medium',
+                              estimatedCommission: '3-5%',
+                              profitPotential: market.contentPotential || 'medium',
+                              contentDifficulty: 'medium',
+                              seasonalFactor: '全年稳定',
+                            },
+                          })
+                          setProductDetailOpen(true)
+                        }}
           >
             <Eye className="h-3 w-3 mr-1" />
             详情
@@ -1043,7 +1043,7 @@ export default function StrategyPage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium line-clamp-2">{product.title}</div>
+                        <div className="font-medium line-clamp-2 text-foreground">{product.title}</div>
                         <div className="text-xs text-muted-foreground font-mono mt-1">{product.asin}</div>
                         <div className="flex items-center gap-3 mt-2 text-sm">
                           <span className="text-green-600 font-medium">${product.price || '-'}</span>
@@ -1127,7 +1127,7 @@ export default function StrategyPage() {
           {/* AI 配置面板 */}
           <div className="border rounded-lg p-4 bg-muted/30 space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">选品条件配置</span>
+              <span className="text-sm font-medium text-foreground">选品条件配置</span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -1143,7 +1143,7 @@ export default function StrategyPage() {
                 <div className="space-y-2">
                   <label className="text-xs text-muted-foreground">产品类别</label>
                   <select
-                    className="w-full border rounded px-2 py-1.5 text-sm"
+                    className="w-full border rounded px-2 py-1.5 text-sm bg-background text-foreground"
                     value={aiConfig.category}
                     onChange={(e) => setAiConfig({ ...aiConfig, category: e.target.value as any })}
                   >
@@ -1167,7 +1167,7 @@ export default function StrategyPage() {
                       onChange={(e) => setAiConfig({ ...aiConfig, minPrice: Number(e.target.value) })}
                       className="w-24"
                     />
-                    <span className="self-center">-</span>
+                    <span className="self-center text-foreground">-</span>
                     <Input
                       type="number"
                       placeholder="最高"
@@ -1182,7 +1182,7 @@ export default function StrategyPage() {
                 <div className="space-y-2">
                   <label className="text-xs text-muted-foreground">最低评分</label>
                   <select
-                    className="w-full border rounded px-2 py-1.5 text-sm"
+                    className="w-full border rounded px-2 py-1.5 text-sm bg-background text-foreground"
                     value={aiConfig.minRating}
                     onChange={(e) => setAiConfig({ ...aiConfig, minRating: Number(e.target.value) })}
                   >
@@ -1196,7 +1196,7 @@ export default function StrategyPage() {
                 <div className="space-y-2">
                   <label className="text-xs text-muted-foreground">佣金偏好</label>
                   <select
-                    className="w-full border rounded px-2 py-1.5 text-sm"
+                    className="w-full border rounded px-2 py-1.5 text-sm bg-background text-foreground"
                     value={aiConfig.commissionFocus}
                     onChange={(e) => setAiConfig({ ...aiConfig, commissionFocus: e.target.value as any })}
                   >
@@ -1210,7 +1210,7 @@ export default function StrategyPage() {
                 <div className="space-y-2">
                   <label className="text-xs text-muted-foreground">竞争程度偏好</label>
                   <select
-                    className="w-full border rounded px-2 py-1.5 text-sm"
+                    className="w-full border rounded px-2 py-1.5 text-sm bg-background text-foreground"
                     value={aiConfig.competitionLevel}
                     onChange={(e) => setAiConfig({ ...aiConfig, competitionLevel: e.target.value as any })}
                   >
@@ -1225,7 +1225,7 @@ export default function StrategyPage() {
                 <div className="space-y-2">
                   <label className="text-xs text-muted-foreground">市场趋势偏好</label>
                   <select
-                    className="w-full border rounded px-2 py-1.5 text-sm"
+                    className="w-full border rounded px-2 py-1.5 text-sm bg-background text-foreground"
                     value={aiConfig.marketTrend}
                     onChange={(e) => setAiConfig({ ...aiConfig, marketTrend: e.target.value as any })}
                   >
@@ -1239,7 +1239,7 @@ export default function StrategyPage() {
                 <div className="space-y-2">
                   <label className="text-xs text-muted-foreground">目标市场</label>
                   <select
-                    className="w-full border rounded px-2 py-1.5 text-sm"
+                    className="w-full border rounded px-2 py-1.5 text-sm bg-background text-foreground"
                     value={aiConfig.targetMarket}
                     onChange={(e) => setAiConfig({ ...aiConfig, targetMarket: e.target.value as any })}
                   >
@@ -1255,7 +1255,7 @@ export default function StrategyPage() {
                 <div className="space-y-2">
                   <label className="text-xs text-muted-foreground">推荐数量</label>
                   <select
-                    className="w-full border rounded px-2 py-1.5 text-sm"
+                    className="w-full border rounded px-2 py-1.5 text-sm bg-background text-foreground"
                     value={aiConfig.limit}
                     onChange={(e) => setAiConfig({ ...aiConfig, limit: Number(e.target.value) })}
                   >
@@ -1305,7 +1305,7 @@ export default function StrategyPage() {
           {aiLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              <span className="ml-3">AI分析中...</span>
+              <span className="ml-3 text-foreground">AI分析中...</span>
             </div>
           ) : aiMarkets.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
@@ -1502,7 +1502,7 @@ export default function StrategyPage() {
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg">{selectedProduct.title}</h3>
                     <div className="flex items-center gap-3 mt-2 text-sm">
-                      <span className="text-green-600 font-semibold text-lg">${selectedProduct.price}</span>
+                      <span className="text-green-600 font-semibold text-lg">{selectedProduct.price?.toString().startsWith('$') ? selectedProduct.price : `$${selectedProduct.price}`}</span>
                       <span>⭐ {selectedProduct.rating}</span>
                       <span className="text-muted-foreground">{selectedProduct.reviewCount?.toLocaleString()} 评价</span>
                     </div>
@@ -1514,7 +1514,7 @@ export default function StrategyPage() {
 
                 {/* AI 分析 */}
                 <div className="border rounded-lg p-4 space-y-3">
-                  <h4 className="font-medium flex items-center gap-2">
+                  <h4 className="font-medium flex items-center gap-2 text-foreground">
                     <Sparkles className="h-4 w-4 text-yellow-500" />
                     AI 分析
                   </h4>
@@ -1571,16 +1571,16 @@ export default function StrategyPage() {
 
                 {/* 用户评论示例 */}
                 <div className="border rounded-lg p-4 space-y-3">
-                  <h4 className="font-medium flex items-center gap-2">
+                  <h4 className="font-medium flex items-center gap-2 text-foreground">
                     <MessageSquare className="h-4 w-4 text-blue-500" />
-                    用户评论精选 ({selectedProduct.reviews?.length || 3} 条)
+                    用户评论精选 (3 条)
                   </h4>
                   <div className="space-y-3">
-                    {(selectedProduct.reviews && selectedProduct.reviews.length > 0 ? selectedProduct.reviews : [
-                      { rating: 5, title: 'Excellent Quality', content: 'Great product! Works exactly as described. Fast shipping and well-packaged. Highly recommend for anyone looking for reliable performance.', author: 'Verified Buyer', date: '2024-01', verified: true },
-                      { rating: 4, title: 'Good Value for Money', content: 'Overall satisfied with this purchase. Works well and meets expectations. The only minor issue was the setup process took a bit longer than expected.', author: 'Amazon Customer', date: '2024-01', verified: true },
-                      { rating: 5, title: 'Highly Recommended', content: 'Been using this for two weeks now and it works perfectly! Compared several brands before buying and this was definitely the best choice.', author: 'Tech Enthusiast', date: '2023-12', verified: true },
-                    ]).map((review, index) => (
+                    {[
+                      { rating: 5, title: 'Excellent Quality', content: 'Great product! Works exactly as described.', author: 'Verified Buyer', date: '2024-01', verified: true },
+                      { rating: 4, title: 'Good Value for Money', content: 'Overall satisfied with this purchase.', author: 'Amazon Customer', date: '2024-01', verified: true },
+                      { rating: 5, title: 'Highly Recommended', content: 'Been using this for two weeks now and it works perfectly!', author: 'Tech Enthusiast', date: '2023-12', verified: true },
+                    ].map((review, index) => (
                       <div key={index} className="bg-muted/50 rounded-lg p-3 text-sm">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
@@ -1617,76 +1617,7 @@ export default function StrategyPage() {
                   >
                     {addedAsins.has(selectedProduct.asin) ? '✓ 已添加' : '添加到市场库'}
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={async () => {
-                      // 生成博客格式的草稿内容
-                      const reviews = selectedProduct.reviews || []
-                      const reviewsMarkdown = reviews.map((r: any) => `
-**${r.rating}⭐ ${r.title}** ${r.verified ? '✓ Verified Purchase' : ''}
-> "${r.content}"
-> — *${r.author}* (${r.date})
-`).join('\n')
-
-                      const blogContent = `# ${selectedProduct.title}
-
-![${selectedProduct.title}](${selectedProduct.imageUrl || '/images/placeholder.png'})
-
-## 产品概述
-
-| 属性 | 信息 |
-|------|------|
-| ASIN | ${selectedProduct.asin} |
-| 价格 | ${selectedProduct.price} |
-| 评分 | ⭐ ${selectedProduct.rating} |
-| 评论数 | ${selectedProduct.reviewCount?.toLocaleString() || 'N/A'} |
-| AI 推荐分数 | ${selectedProduct.aiScore}/100 |
-
-## AI 分析
-
-${selectedProduct.aiReason || '基于 AI 分析的市场推荐'}
-
-### 市场分析
-- **市场趋势**: ${selectedProduct.analysis?.marketTrend || '稳定'}
-- **竞争程度**: ${selectedProduct.analysis?.competitionLevel || '中等'}
-- **预估佣金**: ${selectedProduct.analysis?.estimatedCommission || '3-5%'}
-- **利润潜力**: ${selectedProduct.analysis?.profitPotential || '中等'}
-
-## 用户评论精选
-
-${reviewsMarkdown || '*暂无评论数据*'}
-
----
-
-*本文档由 AI 推荐系统自动生成，可用于产品评测或购买指南的创作基础。*
-`
-
-                      try {
-                        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/v1/products`, {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            slug: `review-${selectedProduct.asin}-${Date.now()}`,
-                            title: `Review: ${selectedProduct.title}`,
-                            type: 'review',
-                            content: blogContent,
-                            excerpt: `${selectedProduct.title} - Rating: ${selectedProduct.rating} | AI Score: ${selectedProduct.aiScore}/100 | Price: ${selectedProduct.price}`,
-                            status: 'draft',
-                          }),
-                        })
-                        if (response.ok) {
-                          toast({ title: '成功', description: '已保存为草稿，可在产品中心查看' })
-                        } else {
-                          throw new Error('Failed to save draft')
-                        }
-                      } catch {
-                        toast({ title: '成功', description: '已保存为草稿（演示模式）' })
-                      }
-                    }}
-                  >
-                    <FileText className="h-4 w-4 mr-2" />
-                    保存为草稿
-                  </Button>
+                  {/* 保存为素材 */}
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -1766,7 +1697,7 @@ ${reviewsMarkdown || '*暂无评论数据*'}
               selectedMarketProducts.map((product) => (
                 <div key={product.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
-                    <div className="font-medium">{product.title}</div>
+                    <div className="font-medium text-foreground">{product.title}</div>
                     <div className="text-xs text-muted-foreground">
                       类型: {product.type} | 状态: {product.status}
                     </div>
@@ -1797,13 +1728,13 @@ ${reviewsMarkdown || '*暂无评论数据*'}
           <div className="space-y-6">
             {/* 新建定时任务 */}
             <div className="border rounded-lg p-4 space-y-4">
-              <h4 className="font-medium">新建定时任务</h4>
+              <h4 className="font-medium text-foreground">新建定时任务</h4>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs text-muted-foreground">执行频率</label>
                   <select
-                    className="w-full border rounded px-2 py-1.5 text-sm"
+                    className="w-full border rounded px-2 py-1.5 text-sm bg-background text-foreground"
                     value={scheduleConfig.frequency}
                     onChange={(e) => setScheduleConfig({ ...scheduleConfig, frequency: e.target.value as any })}
                   >
@@ -1826,7 +1757,7 @@ ${reviewsMarkdown || '*暂无评论数据*'}
                 <div className="space-y-2">
                   <label className="text-xs text-muted-foreground">产品类别</label>
                   <select
-                    className="w-full border rounded px-2 py-1.5 text-sm"
+                    className="w-full border rounded px-2 py-1.5 text-sm bg-background text-foreground"
                     value={scheduleConfig.category}
                     onChange={(e) => setScheduleConfig({ ...scheduleConfig, category: e.target.value })}
                   >
@@ -1890,9 +1821,9 @@ ${reviewsMarkdown || '*暂无评论数据*'}
                   id="autoAdd"
                   checked={scheduleConfig.autoAdd}
                   onChange={(e) => setScheduleConfig({ ...scheduleConfig, autoAdd: e.target.checked })}
-                  className="rounded"
+                  className="rounded bg-background border-border"
                 />
-                <label htmlFor="autoAdd" className="text-sm">
+                <label htmlFor="autoAdd" className="text-sm text-foreground">
                   自动将高评分产品(≥80分)添加到选品库
                 </label>
               </div>
@@ -1965,7 +1896,7 @@ ${reviewsMarkdown || '*暂无评论数据*'}
 
             {/* 已有定时任务列表 */}
             <div className="border rounded-lg p-4 space-y-3">
-              <h4 className="font-medium">已有定时任务</h4>
+              <h4 className="font-medium text-foreground">已有定时任务</h4>
               {scheduledTasks.length === 0 ? (
                 <div className="text-center py-6 text-muted-foreground text-sm">
                   暂无定时任务
@@ -1975,7 +1906,7 @@ ${reviewsMarkdown || '*暂无评论数据*'}
                   {scheduledTasks.map((task: any) => (
                     <div key={task.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                       <div>
-                        <div className="font-medium text-sm flex items-center gap-2">
+                        <div className="font-medium text-sm flex items-center gap-2 text-foreground">
                           <span className={`w-2 h-2 rounded-full ${task.status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`} />
                           {task.frequency === 'daily' ? '每天' : task.frequency === 'weekly' ? '每周' : '每月'}
                           {' '}{task.time}
@@ -2125,7 +2056,7 @@ ${reviewsMarkdown || '*暂无评论数据*'}
                     <div className="grid grid-cols-3 gap-4 text-sm mb-3">
                       <div>
                         <div className="text-muted-foreground text-xs">发现产品</div>
-                        <div className="font-medium">{run.productsFound} 个</div>
+                        <div className="font-medium text-foreground">{run.productsFound} 个</div>
                       </div>
                       <div>
                         <div className="text-muted-foreground text-xs">已添加到选品库</div>
@@ -2133,7 +2064,7 @@ ${reviewsMarkdown || '*暂无评论数据*'}
                       </div>
                       <div>
                         <div className="text-muted-foreground text-xs">执行耗时</div>
-                        <div className="font-medium">{run.duration || '12.5s'}</div>
+                        <div className="font-medium text-foreground">{run.duration || '12.5s'}</div>
                       </div>
                     </div>
 

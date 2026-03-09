@@ -26,7 +26,7 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
 
   return (
     <Link href={`/blog/${article.slug}`}>
-      <Card className={`group overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${featured ? 'md:flex md:h-80' : ''}`}>
+      <Card className={`group overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${featured ? 'md:flex md:h-64' : ''}`}>
         {article.coverImage && (
           <div className={`relative overflow-hidden ${featured ? 'md:w-1/2 h-48 md:h-full' : 'h-48'}`}>
             <Image

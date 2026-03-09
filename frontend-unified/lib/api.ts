@@ -69,17 +69,44 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${this.token}`
     }
 
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    })
+    // 添加超时控制 (30秒)
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000)
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: '请求失败' }))
-      throw new Error(error.message || '请求失败')
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+        signal: controller.signal,
+      })
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        // 尝试解析错误详情
+        let errorMessage = `请求失败 (${response.status})`
+        try {
+          const errorData = await response.json()
+          // 后端返回的是 error 字段
+          errorMessage = errorData.error || errorData.message || errorMessage
+          console.error('[API Error]', response.status, endpoint, errorData)
+        } catch {
+          console.error('[API Error]', response.status, endpoint, 'Unable to parse error response')
+        }
+        throw new Error(errorMessage)
+      }
+
+      return response.json()
+    } catch (error) {
+      // 处理超时或网络错误
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          console.error('[API Error] Request timeout:', endpoint)
+          throw new Error('请求超时，请稍后重试')
+        }
+        console.error('[API Error]', endpoint, error.message)
+      }
+      throw error
     }
-
-    return response.json()
   }
 
   // GET 请求
@@ -356,6 +383,7 @@ export interface MarketListResponse {
 
 // AI推荐市场类型（与后端 AIRecommendedMarket 一致）
 export interface AIRecommendedMarket {
+  marketId?: number  // 关联的市场ID，用于保存草稿时自动关联
   asin: string
   title: string
   price: string
@@ -377,6 +405,14 @@ export interface AIRecommendedMarket {
     seasonalFactor: string
   }
   matchedCriteria?: string[]
+  reviews?: Array<{
+    rating: number
+    title: string
+    content: string
+    author: string
+    date: string
+    verified?: boolean
+  }>
 }
 
 export interface CreateMarketDto {

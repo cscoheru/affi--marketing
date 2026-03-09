@@ -39,7 +39,7 @@ interface MarketCardProps {
 const statusConfig: Record<MarketStatus, { label: string; color: string; icon: React.ReactNode; nextStatuses: MarketStatus[] }> = {
   watching: {
     label: '观察中',
-    color: 'bg-slate-500',
+    color: 'bg-muted-foreground',
     icon: <Eye className="h-3 w-3" />,
     nextStatuses: ['targeting', 'exited'],
   },
@@ -63,7 +63,7 @@ const statusConfig: Record<MarketStatus, { label: string; color: string; icon: R
   },
   exited: {
     label: '已退出',
-    color: 'bg-gray-500',
+    color: 'bg-muted-foreground',
     icon: <Archive className="h-3 w-3" />,
     nextStatuses: ['watching'],
   },

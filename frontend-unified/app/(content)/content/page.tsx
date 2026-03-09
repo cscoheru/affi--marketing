@@ -502,9 +502,9 @@ export default function ContentPage() {
                               setSelectedMaterials(selectedMaterials.filter(id => id !== m.id))
                             }
                           }}
-                          className="rounded"
+                          className="rounded bg-background border-border"
                         />
-                        <span className="truncate flex-1">{m.content.slice(0, 50)}...</span>
+                        <span className="truncate flex-1 text-foreground">{m.content.slice(0, 50)}...</span>
                         <Badge variant="outline" className="text-xs">{m.aiQualityScore}分</Badge>
                       </label>
                     ))}

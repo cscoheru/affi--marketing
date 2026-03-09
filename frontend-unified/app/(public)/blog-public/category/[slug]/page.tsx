@@ -60,15 +60,15 @@ export default async function CategoryPage({ params }: Props) {
     <div className="container px-4 py-8 mx-auto">
       {/* 页面标题 */}
       <div className="mb-8">
-        <nav className="text-sm text-gray-600 mb-2">
-          <a href="/blog" className="hover:text-gray-900">博客首页</a>
+        <nav className="text-sm text-muted-foreground mb-2">
+          <a href="/blog" className="hover:text-foreground">博客首页</a>
           <span className="mx-2">/</span>
-          <span className="text-gray-900">{categoryName}</span>
+          <span className="text-foreground">{categoryName}</span>
         </nav>
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold text-foreground">
           {categoryName}
         </h1>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-muted-foreground">
           共 {posts.length} 篇文章
         </p>
       </div>
@@ -82,8 +82,8 @@ export default async function CategoryPage({ params }: Props) {
         </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-gray-600">暂无文章</p>
-          <a href="/blog" className="text-blue-600 hover:text-blue-700 mt-2 inline-block">
+          <p className="text-muted-foreground">暂无文章</p>
+          <a href="/blog" className="text-primary hover:text-primary/80 mt-2 inline-block">
             返回博客首页
           </a>
         </div>

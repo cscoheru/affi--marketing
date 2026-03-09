@@ -112,21 +112,21 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <div className="container px-4 py-8 mx-auto max-w-4xl">
-      <article className="bg-white rounded-lg shadow-sm border overflow-hidden">
+      <article className="bg-card rounded-lg shadow-sm border overflow-hidden">
         {/* 文章头部 */}
         <header className="p-8 border-b">
           <div className="mb-4">
             <a
               href={`/blog/category/${post.category.toLowerCase()}`}
-              className="text-sm font-medium text-blue-600 hover:text-blue-700"
+              className="text-sm font-medium text-primary hover:text-primary/80"
             >
               {post.category}
             </a>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-card-foreground mb-4">
             {post.title}
           </h1>
-          <div className="flex items-center text-sm text-gray-600 space-x-4">
+          <div className="flex items-center text-sm text-muted-foreground space-x-4">
             <span>作者：{post.author}</span>
             <span>•</span>
             <time dateTime={post.publishedAt}>{post.publishedAt}</time>
@@ -135,7 +135,7 @@ export default async function BlogPostPage({ params }: Props) {
 
         {/* 特色图片 */}
         {post.imageUrl && (
-          <div className="aspect-video bg-gray-100">
+          <div className="aspect-video bg-muted">
             <img
               src={post.imageUrl}
               alt={post.title}
@@ -152,17 +152,17 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
 
         {/* 文章底部 */}
-        <footer className="p-8 bg-gray-50 border-t">
+        <footer className="p-8 bg-muted border-t">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 最后更新于 {post.publishedAt}
               </p>
             </div>
             <div className="flex space-x-4">
               <a
                 href="/blog-public"
-                className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                className="text-sm font-medium text-primary hover:text-primary/80"
               >
                 ← 返回博客首页
               </a>
@@ -173,15 +173,15 @@ export default async function BlogPostPage({ params }: Props) {
 
       {/* 相关文章推荐 */}
       <div className="mt-8">
-        <h3 className="text-xl font-bold text-gray-900 mb-4">相关文章</h3>
+        <h3 className="text-xl font-bold text-foreground mb-4">相关文章</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <a href="/blog-public/top-affiliate-networks" className="block p-4 bg-white rounded-lg border hover:shadow-md transition-shadow">
-            <h4 className="font-semibold text-gray-900 mb-1">2024年最佳联盟网络平台评测</h4>
-            <p className="text-sm text-gray-600">深度对比主流联盟网络平台的优缺点</p>
+          <a href="/blog-public/top-affiliate-networks" className="block p-4 bg-card rounded-lg border hover:shadow-md transition-shadow">
+            <h4 className="font-semibold text-card-foreground mb-1">2024年最佳联盟网络平台评测</h4>
+            <p className="text-sm text-muted-foreground">深度对比主流联盟网络平台的优缺点</p>
           </a>
-          <a href="/blog-public/content-marketing-tips" className="block p-4 bg-white rounded-lg border hover:shadow-md transition-shadow">
-            <h4 className="font-semibold text-gray-900 mb-1">内容营销的10个高效技巧</h4>
-            <p className="text-sm text-gray-600">如何创作高转化的营销内容</p>
+          <a href="/blog-public/content-marketing-tips" className="block p-4 bg-card rounded-lg border hover:shadow-md transition-shadow">
+            <h4 className="font-semibold text-card-foreground mb-1">内容营销的10个高效技巧</h4>
+            <p className="text-sm text-muted-foreground">如何创作高转化的营销内容</p>
           </a>
         </div>
       </div>

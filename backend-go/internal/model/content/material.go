@@ -1,6 +1,10 @@
 package content
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 // MaterialType 素材类型
 type MaterialType string
@@ -15,23 +19,30 @@ const (
 // Material 素材
 type Material struct {
 	ID         int          `json:"id" gorm:"primaryKey;autoIncrement"`
-	Title      string       `json:"title" gorm:"size:200;not null"`
-	Type       MaterialType `json:"type" gorm:"size:20;not null;index"`
+	Title      string       `json:"title" gorm:"size:200;not null;default:'Untitled Material'"`
+	Type       MaterialType `json:"type" gorm:"size:20;not null;index;default:'product_intro'"`
 	Content    string       `json:"content" gorm:"type:text"`
 	SourceURL  string       `json:"sourceUrl" gorm:"size:500"`
 	FilePath   string       `json:"filePath" gorm:"size:500"`
 	FileName   string       `json:"fileName" gorm:"size:200"`
 	FileSize   int64        `json:"fileSize" gorm:"default:0"`
-	MarketID   int          `json:"marketId" gorm:"not null;index"`
+	Asin       string       `json:"asin" gorm:"column:asin;size:20;not null;default:'UNKNOWN'"`
+	MarketID   int          `json:"marketId" gorm:"index"`
 	WordCount  int          `json:"wordCount" gorm:"default:0"`
 	Metadata   string       `json:"metadata" gorm:"type:jsonb;default:'{}'"`
 	CreatedAt  time.Time    `json:"createdAt" gorm:"autoCreateTime"`
 	UpdatedAt  time.Time    `json:"updatedAt" gorm:"autoUpdateTime"`
-	// 关联
-	Market     *MarketOpportunity `json:"market,omitempty" gorm:"foreignKey:MarketID"`
 }
 
 // TableName 指定表名
 func (Material) TableName() string {
 	return "materials"
+}
+
+// BeforeCreate GORM hook - ensures Asin is set before insert
+func (m *Material) BeforeCreate(tx *gorm.DB) error {
+	if m.Asin == "" {
+		m.Asin = "UNKNOWN"
+	}
+	return nil
 }
