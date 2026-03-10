@@ -209,6 +209,7 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 		authGroup := v1.Group("/auth")
 		{
 			authGroup.POST("/login", authController.Login)
+			authGroup.POST("/register", authController.Register)
 			authGroup.POST("/refresh", authController.RefreshToken)
 			authGroup.POST("/logout", authController.Logout)
 		}
