@@ -124,16 +124,12 @@ func AutoMigrate(db *gorm.DB) error {
 		&model.Experiment{},
 		&model.User{},
 		&model.APIKey{},
-		// Content automation models - temporarily disabled problematic ones
-		// &contentModel.Product{},
-		// &contentModel.Material{},
-		// &contentModel.Content{},
-		// &contentModel.PublishTask{},
-		// &contentModel.MaterialCollectTask{},
-		// &contentModel.ContentGenerateTask{},
-		// &contentModel.ProductAIInfo{},
-		// &contentModel.MaterialAIReview{},
-		// &contentModel.ContentGenerationJob{},
-		// &contentModel.ContentWorkflow{},
+		// Content models
+		&content.Material{},
+		&content.MaterialCollectTask{},
+		&content.ContentGenerateTask{},
+		&content.ContentWorkflow{},
+		&content.MarketOpportunity{},
+		&content.Product{},
 	)
 }
