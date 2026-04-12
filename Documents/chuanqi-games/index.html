@@ -50,12 +50,15 @@
 
             <!-- Game Area -->
             <div id="game-area">
-                <canvas id="game-canvas" width="800" height="600"></canvas>
+                <div id="canvas-viewport">
+                    <canvas id="game-canvas" width="800" height="600"></canvas>
+                </div>
                 <!-- Weapon Shop Panel -->
                 <div id="shop-panel">
                     <h3>武器商店</h3>
                     <div id="shop-items"></div>
                 </div>
+                <button id="btn-toggle-shop" class="mobile-only ctrl-btn">武器库</button>
             </div>
 
             <!-- Bottom Control Bar -->
@@ -91,6 +94,7 @@
                 <button class="tool-btn" data-tool="start">设起点</button>
                 <button class="tool-btn" data-tool="end">设终点</button>
                 <span class="tool-sep">|</span>
+                <button id="btn-editor-pan" class="tool-btn mobile-only">拖拽</button>
                 <input type="text" id="map-name-input" placeholder="地图名称">
                 <button id="btn-save-map" class="ctrl-btn">保存</button>
                 <button id="btn-load-map" class="ctrl-btn">加载</button>
@@ -98,7 +102,9 @@
                 <button id="btn-clear-map" class="ctrl-btn">清空</button>
                 <button id="btn-back-menu-editor" class="ctrl-btn">返回</button>
             </div>
-            <canvas id="editor-canvas" width="800" height="600"></canvas>
+            <div id="editor-viewport">
+                <canvas id="editor-canvas" width="800" height="600"></canvas>
+            </div>
         </div>
 
         <!-- Game Over / Victory Overlay -->
@@ -159,7 +165,9 @@
                 <span id="pvp-hud-attacker-gold">进攻资源: --</span>
             </div>
             <div id="pvp-game-area">
-                <canvas id="pvp-canvas" width="800" height="600"></canvas>
+                <div id="pvp-viewport">
+                    <canvas id="pvp-canvas" width="800" height="600"></canvas>
+                </div>
                 <div id="pvp-side-panel"></div>
             </div>
             <div id="pvp-control-bar">
