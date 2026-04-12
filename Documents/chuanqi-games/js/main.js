@@ -11,6 +11,7 @@ import { MapLoader } from './map/map-loader.js';
 import { MapEditor } from './map/map-editor.js';
 import { createTower } from './entities/tower.js';
 import { NetworkClient } from './network.js';
+import { ViewportManager } from './viewport.js';
 import { PVP_CONFIG, ENEMY_TYPES } from './config.js';
 import { SoundManager } from './audio.js';
 
@@ -30,9 +31,11 @@ class App {
         this.selectedMapData = null;
         this.animFrameId = null;
         this.lastTime = 0;
+        this.isMobile = 'ontouchstart' in window;
 
         this._setupUI();
         this._showScreen('menu-screen');
+        window.addEventListener('resize', () => this._onResize());
     }
 
     _setupUI() {
@@ -146,6 +149,12 @@ class App {
         document.getElementById(id).classList.add('active');
     }
 
+    _onResize() {
+        if (this.gameViewport) this.gameViewport.clampToViewport();
+        if (this.editorViewport) this.editorViewport.clampToViewport();
+        if (this.pvpViewport) this.pvpViewport.clampToViewport();
+    }
+
     _showMapSelect() {
         const mapList = document.getElementById('map-list');
         mapList.innerHTML = '';
@@ -184,7 +193,13 @@ class App {
         this.waveSystem = new WaveSystem(this.difficulty, mapData.path, this.grid);
         this.economy = new Economy(DIFFICULTY[this.difficulty]);
         this.renderer = new Renderer(canvas.getContext('2d'), this.grid);
-        this.input = new InputHandler(canvas);
+        const viewportEl = document.getElementById('canvas-viewport');
+        this.gameViewport = new ViewportManager(viewportEl);
+        this.input = new InputHandler(canvas, this.gameViewport);
+        if (this.isMobile) {
+            this.gameViewport.enable();
+            this.gameViewport.clampToViewport();
+        }
 
         this.game.init(this.grid, this.waveSystem, this.economy, this.renderer, this.input, this.sound);
 
@@ -196,6 +211,14 @@ class App {
 
         this.lastTime = performance.now();
         this._gameLoop(this.lastTime);
+
+        if (this.isMobile) {
+            const shopPanel = document.getElementById('shop-panel');
+            shopPanel.classList.add('collapsed');
+            document.getElementById('btn-toggle-shop').addEventListener('click', () => {
+                shopPanel.classList.toggle('collapsed');
+            });
+        }
     }
 
     _setupShopUI() {
@@ -334,24 +357,29 @@ class App {
 
     _showTowerInfo(tower) {
         const panel = document.getElementById('tower-info');
-        const gameArea = document.getElementById('game-area');
-        const rect = gameArea.getBoundingClientRect();
-        const containerRect = document.getElementById('game-container').getBoundingClientRect();
 
-        // Position panel near the tower, offset to the right
-        let left = rect.left - containerRect.left + tower.centerX + 20;
-        let top = rect.top - containerRect.top + tower.centerY - 40;
+        if (this.isMobile) {
+            panel.style.left = '';
+            panel.style.top = '';
+            panel.style.display = 'block';
+        } else {
+            const gameArea = document.getElementById('game-area');
+            const rect = gameArea.getBoundingClientRect();
+            const containerRect = document.getElementById('game-container').getBoundingClientRect();
 
-        // Keep panel within game-container bounds
-        if (left + 180 > containerRect.width) {
-            left = rect.left - containerRect.left + tower.centerX - 190;
+            let left = rect.left - containerRect.left + tower.centerX + 20;
+            let top = rect.top - containerRect.top + tower.centerY - 40;
+
+            if (left + 180 > containerRect.width) {
+                left = rect.left - containerRect.left + tower.centerX - 190;
+            }
+            if (top < 0) top = 10;
+            if (top + 120 > containerRect.height) top = containerRect.height - 130;
+
+            panel.style.left = left + 'px';
+            panel.style.top = top + 'px';
+            panel.style.display = 'block';
         }
-        if (top < 0) top = 10;
-        if (top + 120 > containerRect.height) top = containerRect.height - 130;
-
-        panel.style.left = left + 'px';
-        panel.style.top = top + 'px';
-        panel.style.display = 'block';
 
         document.getElementById('tower-info-name').textContent = `${tower.name} Lv.${tower.level}`;
 
@@ -404,6 +432,22 @@ class App {
         if (this.mapEditor) this.mapEditor.destroy();
         const canvas = document.getElementById('editor-canvas');
         this.mapEditor = new MapEditor(canvas, this.mapLoader);
+
+        if (this.isMobile) {
+            const viewportEl = document.getElementById('editor-viewport');
+            this.editorViewport = new ViewportManager(viewportEl);
+            this.editorViewport.enable();
+            this.editorViewport.clampToViewport();
+
+            const panBtn = document.getElementById('btn-editor-pan');
+            panBtn.addEventListener('click', () => {
+                this.editorDrawMode = !this.editorDrawMode;
+                panBtn.textContent = this.editorDrawMode ? '绘制' : '拖拽';
+                panBtn.classList.toggle('active', this.editorDrawMode);
+                this.editorViewport.enable();
+            });
+            this.editorDrawMode = false;
+        }
     }
 
     // PvP methods
@@ -500,7 +544,13 @@ class App {
         const canvas = document.getElementById('pvp-canvas');
         const grid = new Grid(this.pvpMapData.grid);
         const renderer = new Renderer(canvas.getContext('2d'), grid);
-        const input = new InputHandler(canvas);
+        if (this.isMobile) {
+            const viewportEl = document.getElementById('pvp-viewport');
+            this.pvpViewport = new ViewportManager(viewportEl);
+            this.pvpViewport.enable();
+            this.pvpViewport.clampToViewport();
+        }
+        const input = new InputHandler(canvas, this.pvpViewport || null);
 
         this.pvpEnemies = [];
         this.pvpTowers = [];
