@@ -188,6 +188,6 @@ export const PVP_CONFIG = {
         hard:   { defenderGold: 200, attackerGold: 400, regenRate: 6, breachBonus: 35 },
         hell:   { defenderGold: 100, attackerGold: 500, regenRate: 8, breachBonus: 40 }
     },
-    SERVER_URL: `ws://${window.location.host}`,
+    SERVER_URL: typeof window !== 'undefined' ? `ws://${window.location.host}` : '',
     GRACE_PERIOD: 30
 };
