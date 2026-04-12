@@ -80,6 +80,7 @@ export class MapEditor {
     }
 
     _setupCanvasEvents() {
+        // Mouse events
         this.canvas.addEventListener('mousedown', (e) => {
             this.isDrawing = true;
             this._paint(e);
@@ -90,6 +91,20 @@ export class MapEditor {
         this.canvas.addEventListener('mouseup', () => this.isDrawing = false);
         this.canvas.addEventListener('mouseleave', () => this.isDrawing = false);
         this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // Touch events
+        this.canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                this.isDrawing = true;
+                this._paintTouch(e.touches[0]);
+            }
+        }, { passive: true });
+        this.canvas.addEventListener('touchmove', (e) => {
+            if (this.isDrawing && e.touches.length === 1) {
+                this._paintTouch(e.touches[0]);
+            }
+        }, { passive: true });
+        this.canvas.addEventListener('touchend', () => this.isDrawing = false);
     }
 
     _paint(e) {
@@ -114,6 +129,32 @@ export class MapEditor {
             this.grid[y][x] = cellMap[tool];
         }
 
+        this.render();
+    }
+
+    _paintTouch(touch) {
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        const x = Math.floor((touch.clientX - rect.left) * scaleX / CELL_SIZE);
+        const y = Math.floor((touch.clientY - rect.top) * scaleY / CELL_SIZE);
+        if (x < 0 || x >= GRID_COLS || y < 0 || y >= GRID_ROWS) return;
+
+        const tool = this.currentTool;
+        if (tool === 'start') {
+            for (let ry = 0; ry < GRID_ROWS; ry++)
+                for (let rx = 0; rx < GRID_COLS; rx++)
+                    if (this.grid[ry][rx] === CELL.START) this.grid[ry][rx] = CELL.PATH;
+            this.grid[y][x] = CELL.START;
+        } else if (tool === 'end') {
+            for (let ry = 0; ry < GRID_ROWS; ry++)
+                for (let rx = 0; rx < GRID_COLS; rx++)
+                    if (this.grid[ry][rx] === CELL.END) this.grid[ry][rx] = CELL.PATH;
+            this.grid[y][x] = CELL.END;
+        } else {
+            const cellMap = { grass: CELL.GRASS, path: CELL.PATH, obstacle: CELL.OBSTACLE };
+            this.grid[y][x] = cellMap[tool];
+        }
         this.render();
     }
 
