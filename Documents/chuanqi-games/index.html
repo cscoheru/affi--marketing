@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>传奇塔防</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Main Menu Screen -->
+        <div id="menu-screen" class="screen active">
+            <h1 class="game-title">传奇塔防</h1>
+            <div class="menu-buttons">
+                <button id="btn-start" class="menu-btn">开始游戏</button>
+                <button id="btn-editor" class="menu-btn">地图编辑器</button>
+            </div>
+        </div>
+
+        <!-- Difficulty Select Screen -->
+        <div id="difficulty-screen" class="screen">
+            <h2>选择难度</h2>
+            <div class="difficulty-buttons">
+                <button class="diff-btn" data-diff="easy">简单</button>
+                <button class="diff-btn" data-diff="normal">普通</button>
+                <button class="diff-btn" data-diff="hard">困难</button>
+                <button class="diff-btn" data-diff="hell">地狱</button>
+            </div>
+            <div id="diff-description" class="diff-desc"></div>
+            <button id="btn-back-menu" class="menu-btn secondary">返回</button>
+        </div>
+
+        <!-- Map Select Screen -->
+        <div id="map-screen" class="screen">
+            <h2>选择地图</h2>
+            <div id="map-list" class="map-list"></div>
+            <button id="btn-back-diff" class="menu-btn secondary">返回</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <!-- HUD -->
+            <div id="hud">
+                <span id="hud-wave">波次: 0/0</span>
+                <span id="hud-gold">金币: 0</span>
+                <span id="hud-lives">生命: 20</span>
+                <span id="hud-difficulty">普通</span>
+            </div>
+
+            <!-- Game Area -->
+            <div id="game-area">
+                <canvas id="game-canvas" width="800" height="600"></canvas>
+                <!-- Weapon Shop Panel -->
+                <div id="shop-panel">
+                    <h3>武器商店</h3>
+                    <div id="shop-items"></div>
+                </div>
+            </div>
+
+            <!-- Bottom Control Bar -->
+            <div id="control-bar">
+                <button id="btn-start-wave" class="ctrl-btn">开始波次</button>
+                <button id="btn-pause" class="ctrl-btn">暂停</button>
+                <button id="btn-speed" class="ctrl-btn">加速 x1</button>
+                <button id="btn-back-menu-game" class="ctrl-btn">菜单</button>
+            </div>
+        </div>
+
+        <!-- Map Editor Screen -->
+        <div id="editor-screen" class="screen">
+            <div id="editor-toolbar">
+                <span class="tool-label">工具:</span>
+                <button class="tool-btn active" data-tool="grass">草地</button>
+                <button class="tool-btn" data-tool="path">路径</button>
+                <button class="tool-btn" data-tool="obstacle">障碍</button>
+                <span class="tool-sep">|</span>
+                <button class="tool-btn" data-tool="start">设起点</button>
+                <button class="tool-btn" data-tool="end">设终点</button>
+                <span class="tool-sep">|</span>
+                <input type="text" id="map-name-input" placeholder="地图名称">
+                <button id="btn-save-map" class="ctrl-btn">保存</button>
+                <button id="btn-load-map" class="ctrl-btn">加载</button>
+                <button id="btn-test-map" class="ctrl-btn">测试</button>
+                <button id="btn-clear-map" class="ctrl-btn">清空</button>
+                <button id="btn-back-menu-editor" class="ctrl-btn">返回</button>
+            </div>
+            <canvas id="editor-canvas" width="800" height="600"></canvas>
+        </div>
+
+        <!-- Game Over / Victory Overlay -->
+        <div id="result-overlay" class="screen overlay">
+            <div id="result-content">
+                <h2 id="result-title"></h2>
+                <div id="result-stats"></div>
+                <button id="btn-retry" class="menu-btn">重新开始</button>
+                <button id="btn-back-menu-result" class="menu-btn secondary">返回菜单</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load game modules -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

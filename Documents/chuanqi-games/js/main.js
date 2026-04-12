@@ -1,0 +1,288 @@
+// js/main.js - Game entry point
+
+import { GAME_STATE, DIFFICULTY, TOWER_TYPES } from './config.js';
+import { Game } from './game.js';
+import { Renderer } from './renderer.js';
+import { Grid } from './systems/grid.js';
+import { WaveSystem } from './systems/wave.js';
+import { Economy } from './systems/economy.js';
+import { InputHandler } from './input.js';
+import { MapLoader } from './map/map-loader.js';
+import { MapEditor } from './map/map-editor.js';
+import { createTower } from './entities/tower.js';
+
+class App {
+    constructor() {
+        this.game = null;
+        this.renderer = null;
+        this.grid = null;
+        this.waveSystem = null;
+        this.economy = null;
+        this.input = null;
+        this.mapLoader = new MapLoader();
+        this.mapEditor = null;
+
+        this.difficulty = null;
+        this.selectedMapData = null;
+        this.animFrameId = null;
+        this.lastTime = 0;
+
+        this._setupUI();
+        this._showScreen('menu-screen');
+    }
+
+    _setupUI() {
+        document.getElementById('btn-start').addEventListener('click', () => {
+            this._showScreen('difficulty-screen');
+        });
+        document.getElementById('btn-editor').addEventListener('click', () => {
+            this._initEditor();
+            this._showScreen('editor-screen');
+        });
+
+        document.querySelectorAll('.diff-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const diff = btn.dataset.diff;
+                this.difficulty = diff;
+                document.getElementById('diff-description').textContent =
+                    `金币: ${DIFFICULTY[diff].gold} | 生命: ${DIFFICULTY[diff].lives} | 波次: ${DIFFICULTY[diff].waves}`;
+                this._showMapSelect();
+            });
+        });
+        document.getElementById('btn-back-menu').addEventListener('click', () => {
+            this._showScreen('menu-screen');
+        });
+
+        document.getElementById('btn-back-diff').addEventListener('click', () => {
+            this._showScreen('difficulty-screen');
+        });
+
+        document.getElementById('btn-start-wave').addEventListener('click', () => {
+            this._startWave();
+        });
+        document.getElementById('btn-pause').addEventListener('click', () => {
+            if (this.game) this.game.togglePause();
+        });
+        document.getElementById('btn-speed').addEventListener('click', () => {
+            if (this.game) {
+                const speed = this.game.cycleSpeed();
+                document.getElementById('btn-speed').textContent = `加速 x${speed}`;
+            }
+        });
+        document.getElementById('btn-back-menu-game').addEventListener('click', () => {
+            if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
+            this.game = null;
+            this._showScreen('menu-screen');
+        });
+
+        document.getElementById('btn-retry').addEventListener('click', () => {
+            document.getElementById('result-overlay').classList.remove('active');
+            this._startGame(this.selectedMapData);
+        });
+        document.getElementById('btn-back-menu-result').addEventListener('click', () => {
+            document.getElementById('result-overlay').classList.remove('active');
+            if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
+            this.game = null;
+            this._showScreen('menu-screen');
+        });
+
+        document.getElementById('btn-back-menu-editor').addEventListener('click', () => {
+            this._showScreen('menu-screen');
+        });
+    }
+
+    _showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    _showMapSelect() {
+        const mapList = document.getElementById('map-list');
+        mapList.innerHTML = '';
+
+        const maps = this.mapLoader.listMaps();
+        if (maps.length === 0) {
+            mapList.innerHTML = '<p style="color:#aaa;">暂无地图，请先在地图编辑器中创建</p>';
+        } else {
+            maps.forEach(name => {
+                const item = document.createElement('div');
+                item.className = 'map-item';
+                const data = this.mapLoader.loadMap(name);
+                item.innerHTML = `
+                    <div class="map-name">${name}</div>
+                    <div class="map-info">${data ? data.pathLength + ' 格路径' : ''}</div>
+                `;
+                item.addEventListener('click', () => {
+                    this.selectedMapData = this.mapLoader.loadMap(name);
+                    this._startGame(this.selectedMapData);
+                });
+                mapList.appendChild(item);
+            });
+        }
+
+        this._showScreen('map-screen');
+    }
+
+    _startGame(mapData) {
+        if (!mapData) { alert('地图数据无效'); return; }
+
+        this._showScreen('game-screen');
+
+        const canvas = document.getElementById('game-canvas');
+        this.game = new Game(canvas);
+        this.grid = new Grid(mapData.grid);
+        this.waveSystem = new WaveSystem(this.difficulty, mapData.path, this.grid);
+        this.economy = new Economy(DIFFICULTY[this.difficulty]);
+        this.renderer = new Renderer(canvas.getContext('2d'), this.grid);
+        this.input = new InputHandler(canvas);
+
+        this.game.init(this.grid, this.waveSystem, this.economy, this.renderer, this.input);
+
+        this.game.totalWaves = this.waveSystem.totalWaves;
+        this.game.start();
+
+        this._setupShopUI();
+        this._updateHUD();
+
+        this.lastTime = performance.now();
+        this._gameLoop(this.lastTime);
+    }
+
+    _setupShopUI() {
+        const shopContainer = document.getElementById('shop-items');
+        shopContainer.innerHTML = '';
+
+        for (const [key, tower] of Object.entries(TOWER_TYPES)) {
+            const item = document.createElement('div');
+            item.className = 'shop-item';
+            item.dataset.towerType = key;
+            item.innerHTML = `
+                <div class="shop-icon" style="background:${tower.color};">${this._getTowerEmoji(key)}</div>
+                <div class="shop-info">
+                    <div class="shop-name">${tower.name}</div>
+                    <div class="shop-desc">${tower.description}</div>
+                </div>
+                <div class="shop-price">${tower.price}</div>
+            `;
+            item.addEventListener('click', () => {
+                if (this.economy.gold < tower.price) return;
+                document.querySelectorAll('.shop-item').forEach(i => i.classList.remove('selected'));
+                if (this.game.selectedTower === key) {
+                    this.game.selectedTower = null;
+                } else {
+                    this.game.selectedTower = key;
+                    item.classList.add('selected');
+                }
+                this.game.selectedPlacedTower = null;
+            });
+            shopContainer.appendChild(item);
+        }
+    }
+
+    _getTowerEmoji(type) {
+        const emojis = {
+            machinegun: '🔫', missile: '🚀', laser: '⚡', emp: '🧲',
+            freeze: '❄️', sniper: '🎯', spike: '📌', goldBoost: '💰'
+        };
+        return emojis[type] || '🗼';
+    }
+
+    _startWave() {
+        if (!this.game) return;
+        if (this.game.state === GAME_STATE.PREPARING) {
+            this.game.state = GAME_STATE.WAVE_ACTIVE;
+            this.waveSystem.startNextWave();
+            this.game.currentWave = this.waveSystem.currentWave;
+        }
+    }
+
+    _gameLoop(timestamp) {
+        const dt = Math.min((timestamp - this.lastTime) / 1000, 0.05);
+        this.lastTime = timestamp;
+
+        if (this.game) {
+            if (this.input.mouse.clicked) {
+                this._handleCanvasClick();
+            }
+
+            this.game.update(dt);
+            this.game.render();
+            this._updateHUD();
+            this._updateShopAffordability();
+
+            if (this.game.state === GAME_STATE.VICTORY || this.game.state === GAME_STATE.DEFEAT) {
+                this._showResult();
+            }
+
+            this.input.clearFrame();
+        }
+
+        this.animFrameId = requestAnimationFrame((t) => this._gameLoop(t));
+    }
+
+    _handleCanvasClick() {
+        const { gridX, gridY } = this.input.mouse;
+        const { grid, economy, selectedTower } = this.game;
+
+        if (selectedTower) {
+            const towerDef = TOWER_TYPES[selectedTower];
+            if (economy.gold >= towerDef.price && grid.canPlace(gridX, gridY, towerDef)) {
+                economy.spendGold(towerDef.price);
+                const tower = createTower(selectedTower, gridX, gridY);
+                this.game.towers.push(tower);
+                grid.setOccupied(gridX, gridY, tower);
+            }
+            return;
+        }
+
+        const placed = grid.getEntityAt(gridX, gridY);
+        if (placed) {
+            this.game.selectedPlacedTower = placed;
+        } else {
+            this.game.selectedPlacedTower = null;
+        }
+    }
+
+    _updateHUD() {
+        if (!this.game || !this.economy) return;
+        document.getElementById('hud-wave').textContent = `波次: ${this.game.currentWave}/${this.game.totalWaves}`;
+        document.getElementById('hud-gold').textContent = `金币: ${this.economy.gold}`;
+        document.getElementById('hud-lives').textContent = `生命: ${this.economy.lives}`;
+        document.getElementById('hud-difficulty').textContent = DIFFICULTY[this.difficulty]?.label || '';
+    }
+
+    _updateShopAffordability() {
+        if (!this.economy) return;
+        document.querySelectorAll('.shop-item').forEach(item => {
+            const type = item.dataset.towerType;
+            const price = TOWER_TYPES[type].price;
+            item.classList.toggle('disabled', this.economy.gold < price);
+        });
+    }
+
+    _showResult() {
+        const isVictory = this.game.state === GAME_STATE.VICTORY;
+        const title = document.getElementById('result-title');
+        title.textContent = isVictory ? '胜利！' : '游戏结束';
+        title.className = isVictory ? 'victory' : 'defeat';
+
+        document.getElementById('result-stats').innerHTML = `
+            <div>存活波次: <span>${this.game.currentWave}/${this.game.totalWaves}</span></div>
+            <div>击杀总数: <span>${this.game.totalKills}</span></div>
+            <div>剩余生命: <span>${this.economy.lives}</span></div>
+            <div>剩余金币: <span>${this.economy.gold}</span></div>
+        `;
+
+        document.getElementById('result-overlay').classList.add('active');
+    }
+
+    _initEditor() {
+        if (this.mapEditor) this.mapEditor.destroy();
+        const canvas = document.getElementById('editor-canvas');
+        this.mapEditor = new MapEditor(canvas, this.mapLoader);
+    }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    window.app = new App();
+});
