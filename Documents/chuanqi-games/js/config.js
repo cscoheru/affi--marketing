@@ -173,3 +173,21 @@ export const COLORS = {
     hpBarBg: '#333',
     hpBarLost: '#e74c3c'
 };
+
+// PvP settings
+export const PVP_CONFIG = {
+    SEND_COSTS: {
+        infantry: 10, heavy: 30, armored: 25, scout: 15, flyer: 20, boss: 100
+    },
+    SEND_COOLDOWNS: {
+        infantry: 500, heavy: 1000, armored: 1000, scout: 300, flyer: 800, boss: 3000
+    },
+    PVP_DIFFICULTY: {
+        easy:   { defenderGold: 500, attackerGold: 200, regenRate: 4, breachBonus: 25 },
+        normal: { defenderGold: 300, attackerGold: 300, regenRate: 5, breachBonus: 30 },
+        hard:   { defenderGold: 200, attackerGold: 400, regenRate: 6, breachBonus: 35 },
+        hell:   { defenderGold: 100, attackerGold: 500, regenRate: 8, breachBonus: 40 }
+    },
+    SERVER_URL: `ws://${window.location.host}`,
+    GRACE_PERIOD: 30
+};

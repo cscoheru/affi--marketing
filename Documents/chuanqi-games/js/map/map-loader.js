@@ -65,9 +65,9 @@ export class MapLoader {
         const pathCells = [];
         for (let x = 2; x < 38; x++) pathCells.push({ x, y: 5 });
         for (let y = 6; y < 15; y++) pathCells.push({ x: 37, y });
-        for (let x = 36; x >= 3; x--) pathCells.push({ x, y: 15 });
+        for (let x = 37; x >= 3; x--) pathCells.push({ x, y: 15 });
         for (let y = 16; y < 25; y++) pathCells.push({ x: 3, y });
-        for (let x = 4; x < 38; x++) pathCells.push({ x, y: 25 });
+        for (let x = 3; x < 38; x++) pathCells.push({ x, y: 25 });
 
         pathCells.forEach(p => grid[p.y][p.x] = CELL.PATH);
         grid[5][2] = CELL.START;
