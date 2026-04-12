@@ -368,3 +368,257 @@ body {
 .send-desc { font-size: 11px; color: #aaa; }
 .send-cost { color: #3498db; font-weight: bold; }
 .regen-info { text-align: center; margin-top: 12px; color: #4ecca3; font-size: 13px; }
+
+/* ========== Mobile Responsive (≤768px) ========== */
+
+.mobile-only { display: none !important; }
+
+@media (max-width: 768px) {
+    .mobile-only { display: block !important; }
+
+    body {
+        overflow: auto;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    #game-container {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    /* Main Menu */
+    .game-title {
+        font-size: 36px;
+        letter-spacing: 4px;
+        margin-bottom: 24px;
+    }
+    .menu-buttons {
+        width: 80%;
+    }
+    .menu-btn {
+        width: 100%;
+        font-size: 20px;
+        padding: 14px 24px;
+        touch-action: manipulation;
+    }
+
+    /* Difficulty */
+    .difficulty-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        width: 80%;
+    }
+    .diff-btn {
+        padding: 16px 12px;
+        font-size: 16px;
+        touch-action: manipulation;
+    }
+
+    /* Map Select */
+    .map-list {
+        flex-direction: column;
+        width: 90%;
+        max-height: 50vh;
+    }
+    .map-item {
+        padding: 12px 16px;
+        touch-action: manipulation;
+    }
+
+    /* Result overlay */
+    #result-title {
+        font-size: 32px;
+    }
+    #result-stats {
+        font-size: 15px;
+    }
+
+    /* Game Screen */
+    #game-screen {
+        justify-content: flex-start;
+    }
+    #hud {
+        gap: 8px;
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    #hud span { padding: 2px 6px; }
+    #hud-difficulty { display: none; }
+
+    #game-area {
+        flex-direction: column;
+        position: relative;
+        flex: 1;
+        overflow: hidden;
+    }
+    #canvas-viewport {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+        touch-action: none;
+    }
+    #canvas-viewport canvas {
+        transform-origin: 0 0;
+        display: block;
+    }
+
+    /* Shop panel becomes bottom drawer */
+    #shop-panel {
+        width: 100%;
+        max-height: 40vh;
+        border-left: none;
+        border-top: 2px solid #533483;
+        overflow-y: auto;
+        transition: max-height 0.3s ease;
+    }
+    #shop-panel.collapsed {
+        max-height: 0;
+        padding: 0 12px;
+        overflow: hidden;
+    }
+    #btn-toggle-shop {
+        position: absolute;
+        bottom: 60px;
+        right: 10px;
+        z-index: 20;
+        background: #533483;
+        border: 2px solid #e94560;
+        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        touch-action: manipulation;
+    }
+
+    /* Control bar */
+    #control-bar {
+        gap: 6px;
+        padding: 8px 10px;
+    }
+    .ctrl-btn {
+        min-height: 44px;
+        min-width: 44px;
+        font-size: 13px;
+        touch-action: manipulation;
+    }
+
+    /* Tower info becomes bottom panel */
+    #tower-info {
+        position: fixed !important;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        border-radius: 12px 12px 0 0;
+        width: 100% !important;
+    }
+    .tower-info-content {
+        padding: 16px;
+    }
+    .tower-info-buttons .ctrl-btn {
+        min-height: 44px;
+        font-size: 14px;
+        flex: 1;
+    }
+
+    /* Editor Screen */
+    #editor-screen {
+        flex-direction: column-reverse;
+    }
+    #editor-toolbar {
+        order: 2;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 6px 8px;
+        gap: 6px;
+    }
+    .tool-label { display: none; }
+    .tool-sep { display: none; }
+    .tool-btn {
+        flex-shrink: 0;
+        padding: 8px 14px;
+        font-size: 14px;
+        touch-action: manipulation;
+        min-height: 40px;
+    }
+    #map-name-input {
+        width: 100px;
+        min-height: 40px;
+        font-size: 14px;
+    }
+    #editor-viewport {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+        touch-action: none;
+        order: 1;
+    }
+    #editor-viewport canvas {
+        transform-origin: 0 0;
+        display: block;
+    }
+
+    /* PvP Lobby */
+    .lobby-section {
+        flex-direction: column;
+        width: 90%;
+    }
+    .lobby-box {
+        min-width: auto;
+        width: 100%;
+    }
+    .lobby-input {
+        font-size: 22px;
+        min-height: 48px;
+    }
+    .room-id {
+        font-size: 24px;
+    }
+
+    /* PvP Game */
+    #pvp-game-area {
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+    }
+    #pvp-viewport {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+        touch-action: none;
+    }
+    #pvp-viewport canvas {
+        transform-origin: 0 0;
+        display: block;
+    }
+    #pvp-side-panel {
+        width: 100%;
+        max-height: 40vh;
+        border-left: none;
+        border-top: 2px solid #533483;
+        overflow-y: auto;
+    }
+    #pvp-side-panel.collapsed {
+        max-height: 0;
+        padding: 0 12px;
+        overflow: hidden;
+    }
+    #pvp-hud {
+        gap: 8px;
+        padding: 6px 10px;
+        font-size: 12px;
+        flex-wrap: wrap;
+    }
+    #pvp-control-bar {
+        gap: 6px;
+        padding: 8px 10px;
+    }
+}
