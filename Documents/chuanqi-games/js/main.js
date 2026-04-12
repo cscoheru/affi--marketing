@@ -12,6 +12,7 @@ import { MapEditor } from './map/map-editor.js';
 import { createTower } from './entities/tower.js';
 import { NetworkClient } from './network.js';
 import { PVP_CONFIG, ENEMY_TYPES } from './config.js';
+import { SoundManager } from './audio.js';
 
 class App {
     constructor() {
@@ -23,6 +24,7 @@ class App {
         this.input = null;
         this.mapLoader = new MapLoader();
         this.mapEditor = null;
+        this.sound = new SoundManager();
 
         this.difficulty = null;
         this.selectedMapData = null;
@@ -34,6 +36,17 @@ class App {
     }
 
     _setupUI() {
+        // Initialize audio on first user interaction (browser requirement)
+        if (!this.sound.ctx) {
+            const initAudio = () => {
+                this.sound.init();
+                document.removeEventListener('click', initAudio);
+                document.removeEventListener('keydown', initAudio);
+            };
+            document.addEventListener('click', initAudio);
+            document.addEventListener('keydown', initAudio);
+        }
+
         document.getElementById('btn-start').addEventListener('click', () => {
             this._showScreen('difficulty-screen');
         });
@@ -173,7 +186,7 @@ class App {
         this.renderer = new Renderer(canvas.getContext('2d'), this.grid);
         this.input = new InputHandler(canvas);
 
-        this.game.init(this.grid, this.waveSystem, this.economy, this.renderer, this.input);
+        this.game.init(this.grid, this.waveSystem, this.economy, this.renderer, this.input, this.sound);
 
         this.game.totalWaves = this.waveSystem.totalWaves;
         this.game.start();
@@ -230,6 +243,7 @@ class App {
             this.game.state = GAME_STATE.WAVE_ACTIVE;
             this.waveSystem.startNextWave();
             this.game.currentWave = this.waveSystem.currentWave;
+            this.sound.waveStart();
         }
     }
 
@@ -269,6 +283,7 @@ class App {
                 const tower = createTower(selectedTower, gridX, gridY);
                 this.game.towers.push(tower);
                 grid.setOccupied(gridX, gridY, tower);
+                this.sound.placeTower();
             }
             return;
         }
@@ -302,6 +317,7 @@ class App {
 
     _showResult() {
         const isVictory = this.game.state === GAME_STATE.VICTORY;
+        if (isVictory) this.sound.victory(); else this.sound.defeat();
         const title = document.getElementById('result-title');
         title.textContent = isVictory ? '胜利！' : '游戏结束';
         title.className = isVictory ? 'victory' : 'defeat';
@@ -363,6 +379,7 @@ class App {
         tower.damage *= 1.25;
         tower.range *= 1.1;
         tower.level++;
+        this.sound.upgradeTower();
 
         this._showTowerInfo(tower);
     }
@@ -379,6 +396,7 @@ class App {
         if (idx !== -1) this.game.towers.splice(idx, 1);
         this.grid.removeOccupant(tower.gridX, tower.gridY);
 
+        this.sound.sellTower();
         this._hideTowerInfo();
     }
 

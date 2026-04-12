@@ -28,14 +28,16 @@ export class Game {
         this.totalKills = 0;
         this.currentWave = 0;
         this.totalWaves = 0;
+        this.sound = null;
     }
 
-    init(grid, waveSystem, economy, renderer, input) {
+    init(grid, waveSystem, economy, renderer, input, sound) {
         this.grid = grid;
         this.waveSystem = waveSystem;
         this.economy = economy;
         this.renderer = renderer;
         this.input = input;
+        this.sound = sound;
     }
 
     start() {
@@ -184,6 +186,7 @@ export class Game {
             const enemy = this.enemies[i];
             if (enemy.reachedEnd) {
                 this.economy.loseLife(enemy.livesCost);
+                if (this.sound) this.sound.lifeLost();
                 this.enemies.splice(i, 1);
                 if (this.economy.lives <= 0) {
                     this.state = GAME_STATE.DEFEAT;
@@ -216,15 +219,18 @@ export class Game {
 
         if (projectile.slow) {
             enemy.applySlow(projectile.slowFactor, projectile.slowDuration);
+            if (this.sound) this.sound.slow();
         }
         if (projectile.freeze) {
             enemy.applyFreeze(projectile.freezeDuration);
+            if (this.sound) this.sound.freeze();
         }
         if (projectile.splashRadius) {
             this._applySplash(projectile.x, projectile.y, projectile.splashRadius, damage * 0.5);
         }
 
         this.particles.push(this._createHitParticle(projectile.x, projectile.y));
+        if (this.sound) this.sound.smallHit();
 
         if (enemy.hp <= 0) {
             this._onEnemyKill(enemy);
@@ -232,6 +238,7 @@ export class Game {
     }
 
     _applySplash(x, y, radius, damage) {
+        if (this.sound) this.sound.splash();
         for (const enemy of this.enemies) {
             if (enemy.hp <= 0 || enemy.dead) continue;
             const dx = enemy.x - x;
@@ -265,10 +272,12 @@ export class Game {
 
         const reward = Math.floor(enemy.goldReward * goldMult);
         this.economy.addGold(reward);
+        if (this.sound) this.sound.goldEarned();
 
         for (let i = 0; i < 5; i++) {
             this.particles.push(this._createDeathParticle(enemy.x, enemy.y, enemy.color));
         }
+        if (this.sound) this.sound.explosion();
     }
 
     _createHitParticle(x, y) {
