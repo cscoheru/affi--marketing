@@ -300,3 +300,32 @@ body {
     color: #ccc;
 }
 #result-stats span { color: #f0a500; font-weight: bold; }
+
+/* Tower Info Panel */
+#tower-info {
+    background: rgba(15, 52, 96, 0.95);
+    border: 2px solid #e94560;
+    border-radius: 8px;
+    padding: 12px;
+    min-width: 160px;
+}
+.tower-info-content h4 {
+    color: #e94560;
+    margin-bottom: 8px;
+}
+#tower-info-stats {
+    color: #ccc;
+    font-size: 13px;
+    line-height: 1.8;
+    margin-bottom: 8px;
+}
+.tower-info-buttons {
+    display: flex;
+    gap: 6px;
+}
+.tower-info-buttons .ctrl-btn {
+    font-size: 12px;
+    padding: 4px 10px;
+}
+#btn-upgrade { background: #4ecca3; border-color: #4ecca3; color: #000; }
+#btn-sell { background: #f0a500; border-color: #f0a500; color: #000; }

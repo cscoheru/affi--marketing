@@ -89,6 +89,17 @@ class App {
         document.getElementById('btn-back-menu-editor').addEventListener('click', () => {
             this._showScreen('menu-screen');
         });
+
+        // Tower info panel buttons
+        document.getElementById('btn-upgrade').addEventListener('click', () => {
+            this._upgradeTower();
+        });
+        document.getElementById('btn-sell').addEventListener('click', () => {
+            this._sellTower();
+        });
+        document.getElementById('btn-close-info').addEventListener('click', () => {
+            this._hideTowerInfo();
+        });
     }
 
     _showScreen(id) {
@@ -225,6 +236,7 @@ class App {
         const { grid, economy, selectedTower } = this.game;
 
         if (selectedTower) {
+            this._hideTowerInfo();
             const towerDef = TOWER_TYPES[selectedTower];
             if (economy.gold >= towerDef.price && grid.canPlace(gridX, gridY, towerDef)) {
                 economy.spendGold(towerDef.price);
@@ -238,8 +250,10 @@ class App {
         const placed = grid.getEntityAt(gridX, gridY);
         if (placed) {
             this.game.selectedPlacedTower = placed;
+            this._showTowerInfo(placed);
         } else {
             this.game.selectedPlacedTower = null;
+            this._hideTowerInfo();
         }
     }
 
@@ -274,6 +288,72 @@ class App {
         `;
 
         document.getElementById('result-overlay').classList.add('active');
+    }
+
+    _showTowerInfo(tower) {
+        const panel = document.getElementById('tower-info');
+        const gameArea = document.getElementById('game-area');
+        const rect = gameArea.getBoundingClientRect();
+        const containerRect = document.getElementById('game-container').getBoundingClientRect();
+
+        // Position panel near the tower, offset to the right
+        let left = rect.left - containerRect.left + tower.centerX + 20;
+        let top = rect.top - containerRect.top + tower.centerY - 40;
+
+        // Keep panel within game-container bounds
+        if (left + 180 > containerRect.width) {
+            left = rect.left - containerRect.left + tower.centerX - 190;
+        }
+        if (top < 0) top = 10;
+        if (top + 120 > containerRect.height) top = containerRect.height - 130;
+
+        panel.style.left = left + 'px';
+        panel.style.top = top + 'px';
+        panel.style.display = 'block';
+
+        document.getElementById('tower-info-name').textContent = `${tower.name} Lv.${tower.level}`;
+
+        const upgradeCost = Math.floor(TOWER_TYPES[tower.type].price * 0.75 * tower.level);
+        const sellValue = Math.floor(tower.price * 0.5 * tower.level);
+        document.getElementById('tower-info-stats').innerHTML =
+            `伤害: ${Math.round(tower.damage * 10) / 10}<br>` +
+            `范围: ${Math.round(tower.range * 10) / 10}<br>` +
+            `升级费用: ${upgradeCost} 金币<br>` +
+            `出售价值: ${sellValue} 金币`;
+    }
+
+    _hideTowerInfo() {
+        document.getElementById('tower-info').style.display = 'none';
+        if (this.game) this.game.selectedPlacedTower = null;
+    }
+
+    _upgradeTower() {
+        const tower = this.game?.selectedPlacedTower;
+        if (!tower) return;
+
+        const cost = Math.floor(TOWER_TYPES[tower.type].price * 0.75 * tower.level);
+        if (!this.economy.spendGold(cost)) return;
+
+        tower.damage *= 1.25;
+        tower.range *= 1.1;
+        tower.level++;
+
+        this._showTowerInfo(tower);
+    }
+
+    _sellTower() {
+        const tower = this.game?.selectedPlacedTower;
+        if (!tower) return;
+
+        const sellValue = Math.floor(tower.price * 0.5 * tower.level);
+        this.economy.addGold(sellValue);
+
+        // Remove tower from game and grid
+        const idx = this.game.towers.indexOf(tower);
+        if (idx !== -1) this.game.towers.splice(idx, 1);
+        this.grid.removeOccupant(tower.gridX, tower.gridY);
+
+        this._hideTowerInfo();
     }
 
     _initEditor() {
