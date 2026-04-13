@@ -6,6 +6,8 @@ export const CELL_SIZE = 20;
 export const CANVAS_WIDTH = GRID_COLS * CELL_SIZE;  // 800
 export const CANVAS_HEIGHT = GRID_ROWS * CELL_SIZE; // 600
 
+export const MAX_TOWER_LEVEL = 3;
+
 // Cell types
 export const CELL = {
     GRASS: 0,
@@ -70,6 +72,12 @@ export const ENEMY_TYPES = {
         name: 'Boss', hp: 1000, speed: 0.4, armor: 10,
         livesCost: 5, goldReward: 100,
         color: '#c0392b', size: 16, flying: false
+    },
+    demolisher: {
+        name: '爆破兵', hp: 150, speed: 0.7, armor: 0,
+        livesCost: 2, goldReward: 30,
+        color: '#d35400', size: 10, flying: false,
+        bombRange: 120, bombCooldown: 3000, bombDamage: 999
     }
 };
 
@@ -120,6 +128,15 @@ export const TOWER_TYPES = {
         description: '单体爆发', category: 'tower',
         projectileColor: '#ecf0f1', projectileSpeed: 15
     },
+    grenade: {
+        name: '手榴弹', price: 120, damage: 60, range: 160,
+        fireRate: 2000,
+        color: '#2c3e50', canHitAir: false,
+        description: '抛物线爆炸', category: 'tower',
+        splashRadius: 65,
+        projectileColor: '#556b2f', projectileSpeed: 4,
+        arc: true
+    },
     spike: {
         name: '地刺', price: 75, damage: 40, range: 0,
         fireRate: 0,
@@ -134,6 +151,63 @@ export const TOWER_TYPES = {
         description: '范围内击杀3x金币', category: 'gadget',
         goldMultiplier: 3
     }
+};
+
+// Upgrade stat multipliers per level (relative to base stats in TOWER_TYPES)
+export const UPGRADE_STATS = {
+    machinegun: {
+        2: { damage: 1.3, fireRate: 0.85 },
+        3: { damage: 1.6, fireRate: 0.7, range: 1.15 },
+        special: { name: '眩晕弹', description: '30%几率眩晕敌人0.5秒', stunChance: 0.3, stunDuration: 500 }
+    },
+    missile: {
+        2: { damage: 1.3, splashRadius: 1.3 },
+        3: { damage: 1.5, splashRadius: 1.6 },
+        special: { name: '重型导弹', description: '溅射范围+60%', splashRadius: 1.6 }
+    },
+    laser: {
+        2: { damage: 1.4, range: 1.15 },
+        3: { damage: 1.6, range: 1.2 },
+        special: { name: '闪电链', description: '命中后连锁2个附近敌人', chainCount: 2, chainRange: 100 }
+    },
+    emp: {
+        2: { damage: 1.3, slowDuration: 3000 },
+        3: { damage: 1.5, slowDuration: 4500, range: 1.15 },
+        special: { name: '超载电磁', description: '减速时间翻倍以上' }
+    },
+    freeze: {
+        2: { damage: 1.5, freezeDuration: 3000 },
+        3: { damage: 2.0, freezeDuration: 5000, range: 1.15 },
+        special: { name: '绝对零度', description: '冻结时间大幅增加' }
+    },
+    sniper: {
+        2: { damage: 1.4, range: 1.1 },
+        3: { damage: 2.0, range: 1.2 },
+        special: { name: '致命一击', description: '必定暴击2倍伤害', critMultiplier: 2.0 }
+    },
+    grenade: {
+        2: { damage: 1.3, splashRadius: 1.2 },
+        3: { damage: 1.5, splashRadius: 1.4 },
+        special: { name: '集束炸弹', description: '产生2个小型二次爆炸', clusterCount: 2, clusterSplash: 40, clusterDamageRatio: 0.4 }
+    },
+    spike: {
+        2: { triggerDamage: 1.4, uses: 5 },
+        3: { triggerDamage: 1.8, uses: 7 },
+        special: { name: '连环地刺', description: '额外弹射2次', extraTriggers: 2 }
+    },
+    goldBoost: {
+        2: { goldMultiplier: 4 },
+        3: { goldMultiplier: 5, range: 1.3 },
+        special: { name: '金矿脉', description: '范围+30%，5倍金币' }
+    }
+};
+
+// Pre-placed starting towers per difficulty
+export const STARTING_TOWERS = {
+    easy:   { count: 4, types: ['machinegun', 'freeze', 'machinegun', 'freeze'] },
+    normal: { count: 3, types: ['machinegun', 'freeze', 'machinegun'] },
+    hard:   { count: 2, types: ['machinegun', 'freeze'] },
+    hell:   { count: 1, types: ['machinegun'] }
 };
 
 // Wave generation config
@@ -177,10 +251,10 @@ export const COLORS = {
 // PvP settings
 export const PVP_CONFIG = {
     SEND_COSTS: {
-        infantry: 10, heavy: 30, armored: 25, scout: 15, flyer: 20, boss: 100
+        infantry: 10, heavy: 30, armored: 25, scout: 15, flyer: 20, boss: 100, demolisher: 35
     },
     SEND_COOLDOWNS: {
-        infantry: 500, heavy: 1000, armored: 1000, scout: 300, flyer: 800, boss: 3000
+        infantry: 500, heavy: 1000, armored: 1000, scout: 300, flyer: 800, boss: 3000, demolisher: 1200
     },
     PVP_DIFFICULTY: {
         easy:   { defenderGold: 500, attackerGold: 200, regenRate: 4, breachBonus: 25 },
@@ -188,6 +262,6 @@ export const PVP_CONFIG = {
         hard:   { defenderGold: 200, attackerGold: 400, regenRate: 6, breachBonus: 35 },
         hell:   { defenderGold: 100, attackerGold: 500, regenRate: 8, breachBonus: 40 }
     },
-    SERVER_URL: typeof window !== 'undefined' ? `ws://${window.location.host}` : '',
+    SERVER_URL: typeof window !== 'undefined' ? `wss://${window.location.host}` : '',
     GRACE_PERIOD: 30
 };

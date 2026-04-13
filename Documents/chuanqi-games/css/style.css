@@ -164,10 +164,15 @@ body {
     display: flex;
     flex: 1;
     width: 100%;
+    min-height: 0;
+    overflow: hidden;
 }
 #game-canvas {
     background: #2a5d45;
     cursor: crosshair;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 #shop-panel {
     width: 280px;
@@ -328,7 +333,15 @@ body {
     padding: 4px 10px;
 }
 #btn-upgrade { background: #4ecca3; border-color: #4ecca3; color: #000; }
-#btn-sell { background: #f0a500; border-color: #f0a500; color: #000; }
+#btn-upgrade.max-level {
+    background: #555; border-color: #555; color: #999;
+    cursor: not-allowed; opacity: 0.6;
+}
+#btn-upgrade:disabled:not(.max-level) {
+    opacity: 0.5; cursor: not-allowed;
+}
+.special-effect-label { color: #ffd700; font-weight: bold; }
+.special-effect-unlock { color: #e94560; font-size: 12px; }
 
 /* PvP Lobby */
 .lobby-section { display: flex; gap: 24px; margin: 20px 0; }
@@ -383,9 +396,21 @@ body {
 
     #game-container {
         width: 100vw;
-        height: 100vh;
+        min-height: 100vh;
+        height: auto;
         border-radius: 0;
         box-shadow: none;
+        overflow: auto;
+    }
+
+    .screen {
+        position: relative;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .screen.active {
+        overflow: auto;
     }
 
     /* Main Menu */
@@ -461,6 +486,8 @@ body {
         touch-action: none;
     }
     #canvas-viewport canvas {
+        width: 100%;
+        height: auto;
         transform-origin: 0 0;
         display: block;
     }
@@ -562,6 +589,8 @@ body {
         order: 1;
     }
     #editor-viewport canvas {
+        width: 100%;
+        height: auto;
         transform-origin: 0 0;
         display: block;
     }
@@ -596,6 +625,8 @@ body {
         touch-action: none;
     }
     #pvp-viewport canvas {
+        width: 100%;
+        height: auto;
         transform-origin: 0 0;
         display: block;
     }
@@ -620,5 +651,20 @@ body {
     #pvp-control-bar {
         gap: 6px;
         padding: 8px 10px;
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        background: #0f3460;
+    }
+    #btn-toggle-pvp-panel {
+        position: sticky;
+        bottom: 52px;
+        z-index: 10;
+        background: #533483;
+    }
+    #pvp-side-panel.collapsed {
+        max-height: 0;
+        padding: 0 12px;
+        overflow: hidden;
     }
 }

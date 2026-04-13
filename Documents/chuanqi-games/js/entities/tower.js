@@ -1,6 +1,6 @@
 // js/entities/tower.js - Tower targeting and shooting logic
 
-import { TOWER_TYPES, CELL_SIZE } from '../config.js';
+import { TOWER_TYPES, CELL_SIZE, UPGRADE_STATS } from '../config.js';
 
 export function createTower(type, gridX, gridY) {
     const def = TOWER_TYPES[type];
@@ -36,6 +36,10 @@ export function createTower(type, gridX, gridY) {
         triggeredEnemies: new Set(),
         beamTarget: null,
         beamTimer: 0,
+        // Special effect state (populated at level 3)
+        specialEffect: null,
+        chainTargets: null,
+        clusterPending: null,
 
         update(dt, enemies, projectiles) {
             if (this.category === 'trap') {
@@ -81,11 +85,14 @@ export function createTower(type, gridX, gridY) {
                         slowDuration: this.slowDuration,
                         freeze: this.freezeDuration > 0,
                         freezeDuration: this.freezeDuration,
+                        specialEffect: this.specialEffect,
+                        towerRef: this,
                         update(dt) { this.hit = true; }
                     });
                 } else {
                     projectiles.push({
                         x: this.centerX, y: this.centerY,
+                        startX: this.centerX, startY: this.centerY,
                         target: target,
                         damage: this.damage,
                         speed: this.projectileSpeed,
@@ -100,21 +107,30 @@ export function createTower(type, gridX, gridY) {
                         slowDuration: this.slowDuration,
                         freeze: this.freezeDuration > 0,
                         freezeDuration: this.freezeDuration,
+                        arc: def.arc || false,
+                        arcProgress: 0,
+                        specialEffect: this.specialEffect,
+                        towerRef: this,
                         update(dt) {
                             if (!this.target || this.target.dead) { this.expired = true; return; }
-                            const dx = this.target.x - this.x;
-                            const dy = this.target.y - this.y;
-                            const dist = Math.sqrt(dx * dx + dy * dy);
-                            if (dist < 5) {
+                            const dx = this.target.x - this.startX;
+                            const dy = this.target.y - this.startY;
+                            const totalDist = Math.sqrt(dx * dx + dy * dy);
+                            const spd = this.speed * 60 * dt;
+                            this.arcProgress = Math.min(1, this.arcProgress + spd / Math.max(1, totalDist));
+                            if (this.arcProgress >= 1) {
                                 this.hit = true;
                                 this.x = this.target.x;
                                 this.y = this.target.y;
                             } else {
-                                const spd = this.speed * 60 * dt;
-                                this.x += (dx / dist) * spd;
-                                this.y += (dy / dist) * spd;
+                                this.x = this.startX + dx * this.arcProgress;
+                                this.y = this.startY + dy * this.arcProgress;
+                                if (this.arc) {
+                                    this.z = Math.sin(this.arcProgress * Math.PI) * 30;
+                                }
                             }
-                        }
+                        },
+                        z: 0
                     });
                 }
             }
@@ -154,6 +170,23 @@ export function createTower(type, gridX, gridY) {
                     this.triggeredEnemies.add(enemy);
                     enemy.takeDamage(this.triggerDamage);
                     this.usesLeft--;
+
+                    // Spike special: extra triggers on adjacent cells
+                    if (this.specialEffect && this.specialEffect.extraTriggers) {
+                        let extra = 0;
+                        for (const other of enemies) {
+                            if (extra >= this.specialEffect.extraTriggers) break;
+                            if (other === enemy || other.dead || other.reachedEnd || other.flying) continue;
+                            const ox = Math.floor(other.x / CELL_SIZE);
+                            const oy = Math.floor(other.y / CELL_SIZE);
+                            if (Math.abs(ox - this.gridX) <= 1 && Math.abs(oy - this.gridY) <= 1) {
+                                other.takeDamage(this.triggerDamage);
+                                if (other.hp <= 0) other.dead = true;
+                                extra++;
+                            }
+                        }
+                    }
+
                     if (enemy.hp <= 0) enemy.dead = true;
                 }
             }

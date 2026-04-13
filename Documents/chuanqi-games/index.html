@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>传奇塔防</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body>
     <div id="game-container">
@@ -151,6 +151,7 @@
             </div>
             <div id="lobby-waiting" class="lobby-waiting" style="display:none;">
                 <p id="lobby-waiting-text">等待对手加入...</p>
+                <button id="btn-lobby-ready" class="menu-btn" style="display:none;">准备</button>
                 <button id="btn-leave-lobby" class="menu-btn secondary">离开</button>
             </div>
             <button id="btn-back-menu-pvp" class="menu-btn secondary">返回菜单</button>
@@ -170,6 +171,7 @@
                 </div>
                 <div id="pvp-side-panel"></div>
             </div>
+            <button id="btn-toggle-pvp-panel" class="mobile-only ctrl-btn" style="display:none;">面板</button>
             <div id="pvp-control-bar">
                 <button id="btn-pvp-ready" class="ctrl-btn">准备</button>
                 <button id="btn-pvp-back-menu" class="ctrl-btn">返回菜单</button>
@@ -178,6 +180,6 @@
     </div>
 
     <!-- Load game modules -->
-    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/main.js?v=12"></script>
 </body>
 </html>

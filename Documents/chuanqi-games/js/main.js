@@ -1,6 +1,6 @@
 // js/main.js - Game entry point
 
-import { GAME_STATE, DIFFICULTY, TOWER_TYPES } from './config.js';
+import { GAME_STATE, DIFFICULTY, TOWER_TYPES, UPGRADE_STATS, MAX_TOWER_LEVEL, STARTING_TOWERS } from './config.js';
 import { Game } from './game.js';
 import { Renderer } from './renderer.js';
 import { Grid } from './systems/grid.js';
@@ -142,6 +142,14 @@ class App {
         document.getElementById('btn-pvp-ready').addEventListener('click', () => {
             if (this.network) this.network.send({ type: 'ready' });
         });
+        const lobbyReadyBtn = document.getElementById('btn-lobby-ready');
+        if (lobbyReadyBtn) {
+            lobbyReadyBtn.addEventListener('click', () => {
+                if (this.network) this.network.send({ type: 'ready' });
+                lobbyReadyBtn.style.display = 'none';
+                document.getElementById('lobby-waiting-text').textContent = '已准备，等待对手...';
+            });
+        }
     }
 
     _showScreen(id) {
@@ -184,6 +192,7 @@ class App {
 
     _startGame(mapData) {
         if (!mapData) { alert('地图数据无效'); return; }
+        this._resultShown = false;
 
         this._showScreen('game-screen');
 
@@ -196,6 +205,7 @@ class App {
         const viewportEl = document.getElementById('canvas-viewport');
         this.gameViewport = new ViewportManager(viewportEl);
         this.input = new InputHandler(canvas, this.gameViewport);
+        this.gameViewport.inputHandler = this.input;
         if (this.isMobile) {
             this.gameViewport.enable();
             this.gameViewport.clampToViewport();
@@ -204,7 +214,9 @@ class App {
         this.game.init(this.grid, this.waveSystem, this.economy, this.renderer, this.input, this.sound);
 
         this.game.totalWaves = this.waveSystem.totalWaves;
+        this.game.difficulty = this.difficulty;
         this.game.start();
+        this.game.placeStartingTowers();
 
         this._setupShopUI();
         this._updateHUD();
@@ -255,7 +267,7 @@ class App {
     _getTowerEmoji(type) {
         const emojis = {
             machinegun: '🔫', missile: '🚀', laser: '⚡', emp: '🧲',
-            freeze: '❄️', sniper: '🎯', spike: '📌', goldBoost: '💰'
+            freeze: '❄️', sniper: '🎯', grenade: '💣', spike: '📌', goldBoost: '💰'
         };
         return emojis[type] || '🗼';
     }
@@ -339,6 +351,9 @@ class App {
     }
 
     _showResult() {
+        if (this._resultShown) return;
+        this._resultShown = true;
+        if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
         const isVictory = this.game.state === GAME_STATE.VICTORY;
         if (isVictory) this.sound.victory(); else this.sound.defeat();
         const title = document.getElementById('result-title');
@@ -370,26 +385,78 @@ class App {
             let left = rect.left - containerRect.left + tower.centerX + 20;
             let top = rect.top - containerRect.top + tower.centerY - 40;
 
-            if (left + 180 > containerRect.width) {
-                left = rect.left - containerRect.left + tower.centerX - 190;
+            if (left + 200 > containerRect.width) {
+                left = rect.left - containerRect.left + tower.centerX - 210;
             }
             if (top < 0) top = 10;
-            if (top + 120 > containerRect.height) top = containerRect.height - 130;
+            if (top + 180 > containerRect.height) top = containerRect.height - 190;
 
             panel.style.left = left + 'px';
             panel.style.top = top + 'px';
             panel.style.display = 'block';
         }
 
-        document.getElementById('tower-info-name').textContent = `${tower.name} Lv.${tower.level}`;
+        const isMaxLevel = tower.level >= MAX_TOWER_LEVEL;
+        const upgradeDef = UPGRADE_STATS[tower.type];
+        const nextLevelStats = upgradeDef ? upgradeDef[tower.level + 1] : null;
+        const upgradeCost = nextLevelStats ? Math.floor(TOWER_TYPES[tower.type].price * 0.75 * tower.level) : 0;
+        const sellValue = this._getTowerTotalInvested(tower);
 
-        const upgradeCost = Math.floor(TOWER_TYPES[tower.type].price * 0.75 * tower.level);
-        const sellValue = Math.floor(tower.price * 0.5 * tower.level);
-        document.getElementById('tower-info-stats').innerHTML =
-            `伤害: ${Math.round(tower.damage * 10) / 10}<br>` +
-            `范围: ${Math.round(tower.range * 10) / 10}<br>` +
-            `升级费用: ${upgradeCost} 金币<br>` +
-            `出售价值: ${sellValue} 金币`;
+        let statsHTML = `伤害: ${Math.round(tower.damage * 10) / 10}`;
+        if (tower.fireRate > 0) statsHTML += ` | 射速: ${Math.round(tower.fireRate)}ms`;
+        statsHTML += `<br>范围: ${Math.round(tower.range * 10) / 10}`;
+        if (tower.splashRadius > 0) statsHTML += ` | 溅射: ${Math.round(tower.splashRadius)}`;
+        if (tower.slowFactor > 0) statsHTML += `<br>减速: ${Math.round(tower.slowFactor * 100)}% / ${Math.round(tower.slowDuration / 1000)}s`;
+        if (tower.freezeDuration > 0) statsHTML += `<br>冻结: ${Math.round(tower.freezeDuration / 1000)}s`;
+        if (tower.ignoresArmor) statsHTML += `<br>✦ 无视护甲`;
+        if (tower.goldMultiplier > 0) statsHTML += `<br>金币增幅: ${tower.goldMultiplier}x`;
+
+        if (!isMaxLevel && nextLevelStats) {
+            statsHTML += `<br><span style="color:#4ecca3;">── 升级预览 (Lv.${tower.level + 1}) ──</span>`;
+            if (nextLevelStats.damage) statsHTML += `<br>伤害: ${Math.round(tower.damage * nextLevelStats.damage * 10) / 10}`;
+            if (nextLevelStats.fireRate) statsHTML += `<br>射速: ${Math.round(tower.fireRate * nextLevelStats.fireRate)}ms`;
+            if (nextLevelStats.range) statsHTML += `<br>范围: ${Math.round(tower.range * nextLevelStats.range * 10) / 10}`;
+            if (nextLevelStats.splashRadius) statsHTML += `<br>溅射: ${Math.round(tower.splashRadius * nextLevelStats.splashRadius)}`;
+            if (nextLevelStats.slowDuration) statsHTML += `<br>减速时间: ${Math.round(nextLevelStats.slowDuration / 1000)}s`;
+            if (nextLevelStats.freezeDuration) statsHTML += `<br>冻结: ${Math.round(nextLevelStats.freezeDuration / 1000)}s`;
+            if (nextLevelStats.triggerDamage) statsHTML += `<br>触发伤害: ${Math.round(tower.triggerDamage * nextLevelStats.triggerDamage)}`;
+            if (nextLevelStats.uses) statsHTML += `<br>次数: ${nextLevelStats.uses}`;
+            if (nextLevelStats.goldMultiplier) statsHTML += `<br>金币: ${nextLevelStats.goldMultiplier}x`;
+            statsHTML += `<br>费用: <span style="color:#f0a500;">${upgradeCost}</span>`;
+
+            if (tower.level + 1 === MAX_TOWER_LEVEL && upgradeDef.special) {
+                statsHTML += `<br><span class="special-effect-label">★ 解锁特殊: ${upgradeDef.special.name}</span>`;
+                statsHTML += `<br><span class="special-effect-unlock">${upgradeDef.special.description}</span>`;
+            }
+        } else if (isMaxLevel && tower.specialEffect) {
+            statsHTML += `<br><span class="special-effect-label">★ ${tower.specialEffect.name}</span>`;
+            statsHTML += `<br><span class="special-effect-unlock">${tower.specialEffect.description}</span>`;
+        }
+
+        statsHTML += `<br><span style="color:#f0a500;">出售: ${sellValue} 金币</span>`;
+
+        document.getElementById('tower-info-name').textContent = `${tower.name} Lv.${tower.level}`;
+        document.getElementById('tower-info-stats').innerHTML = statsHTML;
+
+        const upgradeBtn = document.getElementById('btn-upgrade');
+        if (isMaxLevel) {
+            upgradeBtn.textContent = '已满级';
+            upgradeBtn.classList.add('max-level');
+            upgradeBtn.disabled = true;
+        } else {
+            upgradeBtn.textContent = `升级 (${upgradeCost})`;
+            upgradeBtn.classList.remove('max-level');
+            upgradeBtn.disabled = this.economy.gold < upgradeCost;
+        }
+    }
+
+    _getTowerTotalInvested(tower) {
+        const basePrice = TOWER_TYPES[tower.type].price;
+        let total = basePrice;
+        for (let lv = 1; lv < tower.level; lv++) {
+            total += Math.floor(basePrice * 0.75 * lv);
+        }
+        return Math.floor(total * 0.5);
     }
 
     _hideTowerInfo() {
@@ -399,16 +466,50 @@ class App {
 
     _upgradeTower() {
         const tower = this.game?.selectedPlacedTower;
-        if (!tower) return;
+        if (!tower || tower.level >= MAX_TOWER_LEVEL) return;
+
+        const upgradeDef = UPGRADE_STATS[tower.type];
+        const nextStats = upgradeDef ? upgradeDef[tower.level + 1] : null;
+        if (!nextStats) return;
 
         const cost = Math.floor(TOWER_TYPES[tower.type].price * 0.75 * tower.level);
         if (!this.economy.spendGold(cost)) return;
 
-        tower.damage *= 1.25;
-        tower.range *= 1.1;
+        const base = TOWER_TYPES[tower.type];
         tower.level++;
-        this.sound.upgradeTower();
 
+        // Recompute all stats from base × accumulated multipliers
+        tower.damage = base.damage;
+        tower.range = base.range;
+        tower.fireRate = base.fireRate;
+        tower.splashRadius = base.splashRadius || 0;
+        tower.slowFactor = base.slowFactor || 0;
+        tower.slowDuration = base.slowDuration || 0;
+        tower.freezeDuration = base.freezeDuration || 0;
+        tower.triggerDamage = base.triggerDamage || 0;
+        tower.usesLeft = base.uses || null;
+        tower.goldMultiplier = base.goldMultiplier || 0;
+
+        for (let lv = 2; lv <= tower.level; lv++) {
+            const stats = upgradeDef[lv];
+            if (!stats) continue;
+            if (stats.damage) tower.damage *= stats.damage;
+            if (stats.fireRate) tower.fireRate *= stats.fireRate;
+            if (stats.range) tower.range *= stats.range;
+            if (stats.splashRadius) tower.splashRadius *= stats.splashRadius;
+            if (stats.slowDuration) tower.slowDuration = stats.slowDuration;
+            if (stats.freezeDuration) tower.freezeDuration = stats.freezeDuration;
+            if (stats.triggerDamage) tower.triggerDamage *= stats.triggerDamage;
+            if (stats.uses) tower.usesLeft = stats.uses;
+            if (stats.goldMultiplier) tower.goldMultiplier = stats.goldMultiplier;
+        }
+
+        // Level 3: unlock special effect
+        if (tower.level === MAX_TOWER_LEVEL && upgradeDef.special) {
+            tower.specialEffect = { ...upgradeDef.special };
+        }
+
+        this.sound.upgradeTower();
         this._showTowerInfo(tower);
     }
 
@@ -416,10 +517,9 @@ class App {
         const tower = this.game?.selectedPlacedTower;
         if (!tower) return;
 
-        const sellValue = Math.floor(tower.price * 0.5 * tower.level);
+        const sellValue = this._getTowerTotalInvested(tower);
         this.economy.addGold(sellValue);
 
-        // Remove tower from game and grid
         const idx = this.game.towers.indexOf(tower);
         if (idx !== -1) this.game.towers.splice(idx, 1);
         this.grid.removeOccupant(tower.gridX, tower.gridY);
@@ -468,12 +568,16 @@ class App {
             this.pvpRole = msg.role;
             this.pvpMapData = msg.mapData;
             document.getElementById('lobby-waiting').style.display = 'block';
-            document.getElementById('lobby-waiting-text').textContent = '已加入房间，等待开始...';
+            document.getElementById('lobby-waiting-text').textContent = '已加入房间！点击"准备"开始';
             document.getElementById('join-status').textContent = '已加入！';
+            const btn = document.getElementById('btn-lobby-ready');
+            if (btn) btn.style.display = 'inline-block';
         });
 
         this.network.on('opponent_joined', () => {
-            document.getElementById('lobby-waiting-text').textContent = '对手已加入！点击"准备"开始';
+            document.getElementById('lobby-waiting-text').textContent = '对手已加入！';
+            const btn = document.getElementById('btn-lobby-ready');
+            if (btn) btn.style.display = 'inline-block';
         });
 
         this.network.on('opponent_ready', () => {
@@ -511,16 +615,27 @@ class App {
     async _createPvPRoom() {
         const mapName = document.getElementById('pvp-map-select').value;
         const difficulty = document.getElementById('pvp-diff-select').value;
+        console.log('[PvP] Creating room, map:', mapName, 'difficulty:', difficulty);
         const data = this.mapLoader.loadMap(mapName);
-        if (!data) { alert('地图数据无效'); return; }
+        if (!data) {
+            console.warn('[PvP] Map data invalid:', mapName);
+            document.getElementById('lobby-waiting').style.display = 'block';
+            document.getElementById('lobby-waiting-text').textContent = '没有可用地图，请先在地图编辑器中创建并保存一张地图';
+            return;
+        }
+        const pvpWsUrl = `wss://${window.location.host}`;
+        console.log('[PvP] Map loaded, connecting to', pvpWsUrl);
 
         try {
-            await this.network.connect(PVP_CONFIG.SERVER_URL);
+            await this.network.connect(pvpWsUrl);
+            console.log('[PvP] Connected, sending create_room');
             this.network.send({ type: 'create_room', mapData: data, difficulty });
             this.pvpRole = 'defender';
             this.pvpMapData = data;
         } catch (err) {
-            alert('无法连接服务器');
+            console.error('[PvP] Connection failed:', err);
+            document.getElementById('lobby-waiting').style.display = 'block';
+            document.getElementById('lobby-waiting-text').textContent = '无法连接服务器: ' + (err.message || err);
         }
     }
 
@@ -529,7 +644,7 @@ class App {
         if (!roomId) return;
 
         try {
-            await this.network.connect(PVP_CONFIG.SERVER_URL);
+            await this.network.connect(`wss://${window.location.host}`);
             this.network.send({ type: 'join_room', roomId });
             this.pvpRole = 'attacker';
             document.getElementById('join-status').textContent = '正在连接...';
@@ -539,6 +654,7 @@ class App {
     }
 
     _startPvPGame() {
+        this._pvpGameOverShown = false;
         this._showScreen('pvp-game-screen');
 
         const canvas = document.getElementById('pvp-canvas');
@@ -551,6 +667,7 @@ class App {
             this.pvpViewport.clampToViewport();
         }
         const input = new InputHandler(canvas, this.pvpViewport || null);
+        if (this.pvpViewport) this.pvpViewport.inputHandler = input;
 
         this.pvpEnemies = [];
         this.pvpTowers = [];
@@ -573,6 +690,19 @@ class App {
         this.network.on('game_over', (msg) => this._onPvPGameOver(msg));
         this.network.on('disconnected', () => alert('与服务器断开连接'));
 
+        // Mobile: collapse side panel by default, show toggle button
+        if (this.isMobile) {
+            const panel = document.getElementById('pvp-side-panel');
+            const toggleBtn = document.getElementById('btn-toggle-pvp-panel');
+            toggleBtn.style.display = 'block';
+            panel.classList.add('collapsed');
+            toggleBtn.textContent = '打开面板';
+            toggleBtn.onclick = () => {
+                panel.classList.toggle('collapsed');
+                toggleBtn.textContent = panel.classList.contains('collapsed') ? '打开面板' : '关闭面板';
+            };
+        }
+
         // Render loop
         this._pvpRender(canvas, renderer, input, grid);
     }
@@ -585,7 +715,7 @@ class App {
             const item = document.createElement('div');
             item.className = 'shop-item';
             item.dataset.towerType = key;
-            const emojis = { machinegun: '🔫', missile: '🚀', laser: '⚡', emp: '🧲', freeze: '❄️', sniper: '🎯', spike: '📌', goldBoost: '💰' };
+            const emojis = { machinegun: '🔫', missile: '🚀', laser: '⚡', emp: '🧲', freeze: '❄️', sniper: '🎯', grenade: '💣', spike: '📌', goldBoost: '💰' };
             item.innerHTML = `<div class="shop-icon" style="background:${tower.color};">${emojis[key] || '🗼'}</div><div class="shop-info"><div class="shop-name">${tower.name}</div><div class="shop-desc">${tower.description}</div></div><div class="shop-price">${tower.price}</div>`;
             item.addEventListener('click', () => {
                 document.querySelectorAll('#pvp-shop-items .shop-item').forEach(i => i.classList.remove('selected'));
@@ -599,7 +729,7 @@ class App {
         const panel = document.getElementById('pvp-side-panel');
         panel.innerHTML = '<div class="send-panel"><h3>派兵面板</h3><div id="send-items"></div><div class="regen-info">资源恢复: +<span id="regen-rate">5</span>/秒</div></div>';
         const container = document.getElementById('send-items');
-        const emojis = { infantry: '👊', heavy: '🛡️', armored: '🦺', scout: '🏃', flyer: '🦅', boss: '👹' };
+        const emojis = { infantry: '👊', heavy: '🛡️', armored: '🦺', scout: '🏃', flyer: '🦅', boss: '👹', demolisher: '💣' };
         for (const [type, cost] of Object.entries(PVP_CONFIG.SEND_COSTS)) {
             const def = ENEMY_TYPES[type];
             const item = document.createElement('div');
@@ -620,9 +750,17 @@ class App {
         this.pvpTowers = msg.towers;
         this.pvpProjectiles = msg.projectiles;
         this.pvpParticles = msg.particles;
+        this.pvpEnemyBombs = msg.enemyBombs || [];
         document.getElementById('pvp-hud-lives').textContent = `生命: ${msg.lives}`;
         document.getElementById('pvp-hud-defender-gold').textContent = `防守金币: ${msg.defenderGold}`;
         document.getElementById('pvp-hud-attacker-gold').textContent = `进攻资源: ${msg.attackerGold}`;
+
+        // Client-side game over safety: if server msg missed, end locally
+        if (msg.lives <= 0 && !this._pvpGameOverShown) {
+            this._pvpGameOverShown = true;
+            this._onPvPGameOver({ winner: 'attacker', stats: { defenderGold: msg.defenderGold, attackerGold: msg.attackerGold, livesLeft: 0, towersPlaced: this.pvpTowers.length } });
+            return;
+        }
 
         // Update shop affordability
         document.querySelectorAll('#pvp-shop-items .shop-item').forEach(item => {
@@ -636,8 +774,11 @@ class App {
     }
 
     _onPvPGameOver(msg) {
+        if (this._pvpGameOverShown) return;
+        this._pvpGameOverShown = true;
         if (this.pvpAnimFrame) cancelAnimationFrame(this.pvpAnimFrame);
         const isWinner = msg.winner === this.pvpRole;
+        if (isWinner) this.sound.victory(); else this.sound.defeat();
         document.getElementById('result-title').textContent = isWinner ? '胜利！' : '失败！';
         document.getElementById('result-title').className = isWinner ? 'victory' : 'defeat';
         document.getElementById('result-stats').innerHTML = `<div>角色: <span>${this.pvpRole === 'defender' ? '防守方' : '进攻方'}</span></div><div>剩余生命: <span>${msg.stats.livesLeft}</span></div><div>防守金币: <span>${msg.stats.defenderGold}</span></div><div>进攻资源: <span>${msg.stats.attackerGold}</span></div>`;
@@ -654,6 +795,7 @@ class App {
             renderer._drawTowers(this.pvpTowers);
             renderer._drawEnemies(this.pvpEnemies);
             renderer._drawProjectiles(this.pvpProjectiles);
+            renderer._drawEnemyBombs(this.pvpEnemyBombs || []);
             renderer._drawParticles(this.pvpParticles);
 
             // Placement preview for defender
