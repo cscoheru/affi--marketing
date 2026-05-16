@@ -157,6 +157,32 @@
               <option v-for="r in roles" :key="r.id" :value="r.id">{{ r.name }}</option>
             </select>
           </div>
+          <div v-if="!editingUser">
+            <label class="block text-xs text-gray-500 mb-1">分配团队（可选）</label>
+            <div class="grid grid-cols-5 gap-2">
+              <select v-model="selectedL1" @change="selectedL2='';selectedL3='';selectedL4='';selectedL5=''" class="border rounded-md px-2 py-1.5 text-xs">
+                <option value="">L1大区</option>
+                <option v-for="t in l1Teams" :key="t.team_name" :value="t.team_name">{{ t.team_name }}</option>
+              </select>
+              <select v-model="selectedL2" @change="selectedL3='';selectedL4='';selectedL5=''" class="border rounded-md px-2 py-1.5 text-xs" :disabled="!selectedL1">
+                <option value="">L2片区</option>
+                <option v-for="t in l2Teams" :key="t.team_name" :value="t.team_name">{{ t.team_name }}</option>
+              </select>
+              <select v-model="selectedL3" @change="selectedL4='';selectedL5=''" class="border rounded-md px-2 py-1.5 text-xs" :disabled="!selectedL2">
+                <option value="">L3城市</option>
+                <option v-for="t in l3Teams" :key="t.team_name" :value="t.team_name">{{ t.team_name }}</option>
+              </select>
+              <select v-model="selectedL4" @change="selectedL5=''" class="border rounded-md px-2 py-1.5 text-xs" :disabled="!selectedL3">
+                <option value="">L4区县</option>
+                <option v-for="t in l4Teams" :key="t.team_name" :value="t.team_name">{{ t.team_name }}</option>
+              </select>
+              <select v-model="selectedL5" class="border rounded-md px-2 py-1.5 text-xs" :disabled="!selectedL4">
+                <option value="">L5业代</option>
+                <option v-for="t in l5Teams" :key="t.team_name" :value="t.team_name">{{ t.team_name }}</option>
+              </select>
+            </div>
+            <p class="text-[10px] text-gray-400 mt-1">选择团队后，该用户将成为该团队负责人（L1-L4）或成员（L5）</p>
+          </div>
           <div>
             <label class="block text-xs text-gray-500 mb-1">用户状态</label>
             <div class="flex gap-4">
@@ -271,12 +297,20 @@ const allPermissions = [
 const users = ref<any[]>([])
 const roles = ref<any[]>([])
 const allTeams = ref<any[]>([])
+const teamHierarchy = ref<{ levels: Record<number, any[]>, flat: any[] }>({ levels: {}, flat: [] })
 const showModal = ref(false)
 const showTeamModal = ref(false)
 const showPermModal = ref(false)
 const editingUser = ref<any>(null)
 const assigningUser = ref<any>(null)
 const permUser = ref<any>(null)
+
+// 团队选择 - 级联下拉 (L1-L5)
+const selectedL1 = ref('')
+const selectedL2 = ref('')
+const selectedL3 = ref('')
+const selectedL4 = ref('')
+const selectedL5 = ref('')
 
 const form = reactive({
   phone: '',
@@ -368,12 +402,60 @@ async function loadRoles() {
 
 async function loadTeams() {
   try {
-    const res = await fetch(`${API_BASE}/admin/api/team/list`, { headers: authHeaders() })
+    const res = await fetch(`${API_BASE}/admin/api/team/hierarchy`, { headers: authHeaders() })
     const data = await res.json()
-    allTeams.value = data.teams || []
+    teamHierarchy.value = data
+    // Also keep flat list for compatibility
+    allTeams.value = data.flat || []
   } catch (e) {
     console.error('Failed to load teams:', e)
   }
+}
+
+// 级联下拉计算属性
+const l1Teams = computed(() => teamHierarchy.value.levels['1'] || [])
+const l2Teams = computed(() => {
+  if (!selectedL1.value) return []
+  const l1Team = l1Teams.value.find(t => t.team_name === selectedL1.value)
+  if (!l1Team) return []
+  // L2 teams that have parent_team_id pointing to L1's id, or have parent_name matching L1
+  return (teamHierarchy.value.levels['2'] || []).filter(t => {
+    return t.parent_team_id === l1Team.id || t.parent_name === selectedL1.value || !t.parent_team_id
+  })
+})
+const l3Teams = computed(() => {
+  if (!selectedL2.value) return []
+  const l2Team = l2Teams.value.find(t => t.team_name === selectedL2.value)
+  if (!l2Team) return []
+  return (teamHierarchy.value.levels['3'] || []).filter(t => {
+    return t.parent_team_id === l2Team.id || t.parent_name === selectedL2.value || !t.parent_team_id
+  })
+})
+const l4Teams = computed(() => {
+  if (!selectedL3.value) return []
+  const l3Team = l3Teams.value.find(t => t.team_name === selectedL3.value)
+  if (!l3Team) return []
+  return (teamHierarchy.value.levels['4'] || []).filter(t => {
+    return t.parent_team_id === l3Team.id || t.parent_name === selectedL3.value || !t.parent_team_id
+  })
+})
+const l5Teams = computed(() => {
+  if (!selectedL4.value) return []
+  const l4Team = l4Teams.value.find(t => t.team_name === selectedL4.value)
+  if (!l4Team) return []
+  return (teamHierarchy.value.levels['5'] || []).filter(t => {
+    return t.parent_team_id === l4Team.id || t.parent_name === selectedL4.value || !t.parent_team_id
+  })
+})
+
+// 获取最终选择的团队名称和层级
+function getSelectedTeamInfo() {
+  if (selectedL5.value) return { name: selectedL5.value, level: 5, is_leader: false }
+  if (selectedL4.value) return { name: selectedL4.value, level: 4, is_leader: true }
+  if (selectedL3.value) return { name: selectedL3.value, level: 3, is_leader: true }
+  if (selectedL2.value) return { name: selectedL2.value, level: 2, is_leader: true }
+  if (selectedL1.value) return { name: selectedL1.value, level: 1, is_leader: true }
+  return null
 }
 
 // Modal actions
@@ -384,6 +466,11 @@ function openCreateModal() {
   form.password = ''
   form.role_id = ''
   form.is_active = true
+  selectedL1.value = ''
+  selectedL2.value = ''
+  selectedL3.value = ''
+  selectedL4.value = ''
+  selectedL5.value = ''
   showModal.value = true
 }
 
@@ -431,6 +518,33 @@ async function saveUser() {
       body: JSON.stringify(body),
     })
     if (res.ok) {
+      const data = await res.json()
+
+      // 如果是新建用户且选择了团队，自动分配
+      if (!editingUser.value) {
+        const userId = data.user?.id
+        const teamInfo = getSelectedTeamInfo()
+        if (userId && teamInfo) {
+          await fetch(`${API_BASE}/admin/api/team/assign`, {
+            method: 'POST',
+            headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: userId,
+              team_name: teamInfo.name,
+              team_level: teamInfo.level,
+              is_leader: teamInfo.is_leader,
+            }),
+          })
+        }
+      }
+
+      // 重置级联选择
+      selectedL1.value = ''
+      selectedL2.value = ''
+      selectedL3.value = ''
+      selectedL4.value = ''
+      selectedL5.value = ''
+
       showModal.value = false
       loadUsers()
     }
