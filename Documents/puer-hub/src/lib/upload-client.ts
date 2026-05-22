@@ -237,6 +237,7 @@ function singleShotUpload(
       signal.addEventListener("abort", () => xhr.abort());
     }
 
+    xhr.withCredentials = true;
     xhr.open("POST", "/api/upload");
     xhr.send(fd);
   });
