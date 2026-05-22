@@ -20,7 +20,7 @@ ENV NODE_ENV=production
 RUN apk add --no-cache ffmpeg
 
 RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN adduser --system --uid 1001 nextjs && adduser nextjs nodejs
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
